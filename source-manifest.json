@@ -596,9 +596,9 @@
     },
     {
       "path": "plugins/platforms/qqbot/group_history.py",
-      "sha256": "9c229f6b6f476840c9db2a449fad88b3b0828b8733f73aa79ec594105559b219",
+      "sha256": "5e24f930e02091077bd5bfa6944deddbaff744421a454b342c20627afbc72d37",
       "base_sha256": null,
-      "source_sha256": "9c229f6b6f476840c9db2a449fad88b3b0828b8733f73aa79ec594105559b219",
+      "source_sha256": "5e24f930e02091077bd5bfa6944deddbaff744421a454b342c20627afbc72d37",
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": []
@@ -850,13 +850,13 @@
     },
     {
       "path": "tests/gateway/test_qqbot_group_observation.py",
-      "sha256": "976128eedcc54dc4dc81c29df9891f0b58fe01f386caaf42f9e9dd0a139c67ea",
+      "sha256": "2d84637028b5f05fb89554db1b687e9e9b9b392ce96a0e4612e031712e48867d",
       "base_sha256": null,
-      "source_sha256": "bdca3b5c8ad104c0cdc405147a5c461513e9d3ec212e2f21b062058dfb86da31",
+      "source_sha256": "eb3bf5d99bbcc9f9f8daa06c47efc98a30c90103e692a7e857ce05e7bf720a31",
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [
-        "Generic assistant label replaces private deployment persona in source/fixtures (3 occurrences); configurable assistant_names retained."
+        "Generic assistant label replaces private deployment persona in source/fixtures (5 occurrences); configurable assistant_names retained."
       ]
     },
     {
@@ -1340,7 +1340,21 @@
     "all_45_test_paths_present": true,
     "source_hashes_unchanged_during_extraction": true,
     "candidate_tests_run": true,
-    "candidate_test_summary": {"files": 45, "passed": 909, "failed": 0, "skipped": 1},
+    "candidate_test_summary": {
+      "scope": "preceding publication before mention-routing fix; full suite not rerun",
+      "files": 45,
+      "passed": 909,
+      "failed": 0,
+      "skipped": 1
+    },
+    "latest_focused_test_summary": {
+      "scope": "mention-routing fix on disposable pinned public host",
+      "files": 5,
+      "passed": 30,
+      "failed": 0,
+      "seconds": 46.4,
+      "live_model_or_QQ_actions_performed": false
+    },
     "release_tool_tests_passed": 8,
     "disposable_docker_tests_run": true,
     "live_deployment_or_QQ_actions_performed": false,
@@ -1357,5 +1371,5 @@
     "modified_at_base": 27,
     "unchanged_at_base": 12
   },
-  "patch_sha256": "8c78e1a4a36e099f348f472b72e36f117a63a4bd5b6e1be746abe3f50af1c0fb"
+  "patch_sha256": "e0ff0ad9688cfd3a6ce1a6114087f4187ef3874d88897883157b0770e20bde99"
 }

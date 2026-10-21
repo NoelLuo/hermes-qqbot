@@ -137,3 +137,64 @@ async def test_opt_in_auth_commands_and_restart(rig, monkeypatch):
     dispatch.assert_awaited_once()
     assert dispatch.call_args.args[0].text == "/help"
     assert dispatch.call_args.args[0].allow_gateway_control is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("text,data", [
+    ("这个证明怎么做", {"mentions": [{"id": "other", "is_you": False}]}),
+    ("Hermes，这个问题怎么解", {"mentions": [{"id": "other"}]}),
+    ("<@other> 这个证明怎么做", {}),
+    ("这个证明怎么做 <@!other>", {"mentions": []}),
+    ("<@other> Hermes解释一下", {"mentions": None}),
+])
+async def test_other_mentions_are_observed_without_consulting_model(rig, monkeypatch, text, data):
+    adapter, store = rig
+    judge = AsyncMock(return_value=True)
+    monkeypatch.setattr(adapter._group_reply_gate, "_judge", judge)
+    dispatch = AsyncMock()
+    monkeypatch.setattr(adapter, "handle_message", dispatch)
+    await incoming(adapter, "other-at", text, **data)
+    judge.assert_not_awaited()
+    dispatch.assert_not_awaited()
+    source = adapter.build_source(chat_id="test-group", user_id="member", chat_type="group")
+    sid = store.get_or_create_session(source).session_id
+    rows = store.load_transcript(sid, repair_alternation=False)
+    assert len(rows) == 1 and rows[0]["observed"] is True
+    assert rows[0]["message_id"] == "other-at" and text in rows[0]["content"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("mentions,bot_id", [
+    ([{"id": "self", "is_you": True}], ""),
+    ([{"id": "other"}, {"id": "self", "is_you": True}], ""),
+    ([{"id": "other"}, {"id": "self"}], "self"),
+    ([], "self"),
+])
+async def test_verified_self_mention_bypasses_autonomous_filter(rig, monkeypatch, mentions, bot_id):
+    adapter, _ = rig
+    adapter.config.extra["bot_member_openid"] = bot_id
+    judge = AsyncMock(return_value=True)
+    monkeypatch.setattr(adapter._group_reply_gate, "_judge", judge)
+    dispatch = AsyncMock()
+    monkeypatch.setattr(adapter, "handle_message", dispatch)
+    text = "<@self> <@other> 这个证明怎么做"
+    await incoming(adapter, "self-at", text, content=text, mentions=mentions)
+    judge.assert_not_awaited()
+    dispatch.assert_awaited_once()
+    assert dispatch.call_args.args[0].allow_gateway_control is True
+
+
+@pytest.mark.asyncio
+async def test_previous_other_mention_does_not_block_new_open_question(rig, monkeypatch):
+    adapter, _ = rig
+    judge = AsyncMock(return_value=False)
+    monkeypatch.setattr(adapter._group_reply_gate, "_judge", judge)
+    dispatch = AsyncMock()
+    monkeypatch.setattr(adapter, "handle_message", dispatch)
+    await incoming(adapter, "previous-at", "<@other> 怎么解")
+    judge.reset_mock()
+    judge.return_value = True
+    await incoming(adapter, "open-question", "这个定理的条件是什么")
+    judge.assert_awaited_once()
+    assert "<@other>" in judge.call_args.args[1][0]
+    dispatch.assert_awaited_once()

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from contextlib import nullcontext
 from typing import Any
 
@@ -124,8 +125,17 @@ async def handle_unmentioned(adapter: Any, d: dict, msg_id: str, content: str,
         busy = session_key in adapter._active_sessions
         # Never treat unaddressed control/approval words as commands. Explicit @
         # retains the normal gateway controls; casual chatter cannot approve tools.
+        # Verified self mentions have already taken the addressed adapter path.
+        # Any remaining mention targets someone else (or is unresolved): keep it
+        # as background, never let a model override the explicit addressee.
+        mentions = d.get("mentions")
+        mentioned_other = (isinstance(mentions, list) and bool(mentions)) or bool(
+            re.search(r"<@!?[^\s<>]+>", content))
+        if mentioned_other:
+            logger.info("QQ group reply gate: group=%s message=%s verdict=silent reason=mentioned_other",
+                        group, msg_id)
         can_judge = (adapter._group_reply_gate.enabled(group) and bool(content.strip())
-                     and not content.lstrip().startswith("/") and not busy)
+                     and not content.lstrip().startswith("/") and not busy and not mentioned_other)
         if can_judge:
             should_reply = await adapter._group_reply_gate.should_reply(
                 group, text, decision_context(rows, adapter._group_reply_gate.settings.context_messages))

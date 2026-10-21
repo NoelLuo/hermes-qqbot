@@ -1,6 +1,18 @@
 # Verification ledger — sanitized public candidate
 
-## Current public-tree status
+## Current mention-routing fix
+
+The addressee guard and ten additional parameterized regression cases were applied to the reviewed public overlay, without private persona/configuration/history. The generated patch was successfully applied to a fresh disposable checkout at the pinned upstream commit; all 103 overlay files matched manifest hashes afterward. This checkout shares immutable Git objects with the local source, not working files.
+
+Patch SHA256: `e0ff0ad9688cfd3a6ce1a6114087f4187ef3874d88897883157b0770e20bde99`.
+
+Canonical runner on Windows / PM Python 3.14.7: **5 files, 30 passed, 0 failed**, 46.4 seconds, three workers, no retries, real-home guard retained. Files: `test_qqbot_group_observation.py`, `test_qqbot_reply_gate.py`, `test_qqbot_group_event_upgrade.py`, `test_qqbot_group_identity.py`, and `test_qqbot_group_images.py` under `tests/gateway/`. Tests prove other-member mentions do not consult even a reply-true model stub and remain durable observations; verified self/mixed mentions dispatch normally; raw mention fallback works; historical mentions do not block the next open question.
+
+Scoped Ruff on the changed source/test, using the pinned host configuration, reports two pre-existing findings (`RET501` and `PLR1711`) at the unchanged test handler's `return None`; running the preceding committed fixture through the same configuration reproduces both. No new findings were introduced. The Python 3.14 release hygiene scan checked 131 files with no findings; this remains a bounded scan, not comprehensive certification.
+
+This focused run did not call a live auxiliary model or send QQ messages. The preceding 45-file/Docker and release-tool results below were not rerun for this fix and are not added to the current total. No gateway restart or live configuration upload was performed.
+
+## Preceding publication status (before the mention-routing fix)
 
 **Candidate regression and installer validation passed on Windows / PM Python 3.14.7.** An independent no-hardlinks clone at the pinned upstream commit received the reviewed overlay and an isolated plugin installation. All 103 overlay files and two plugin files were read back against manifest hashes, then independently rechecked by the release owner.
 
