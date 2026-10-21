@@ -1,0 +1,10 @@
+# Context is the suite root. Never upload profile data or vendored binaries.
+**
+!plugins/
+!plugins/guest-workspace/
+!plugins/guest-workspace/browser-runtime/
+!plugins/guest-workspace/browser-runtime/Dockerfile
+!plugins/guest-workspace/browser-runtime/requirements.txt
+!overlay/
+!overlay/tools/
+!overlay/tools/guest_browser_worker.py

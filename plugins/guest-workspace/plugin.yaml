@@ -1,0 +1,9 @@
+name: guest-workspace
+version: 0.2.0
+description: "Requester-scoped files, classified cache retention, offline Docker Python and anonymous isolated public browsing. Local role-policy integration required."
+author: local
+provides_tools:
+  - guest_workspace
+  - guest_browser
+provides_hooks:
+  - on_session_start

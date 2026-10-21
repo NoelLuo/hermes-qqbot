@@ -1,0 +1,26 @@
+# Illustrative merge fragment, NOT a complete config or an activation recipe.
+# No credentials, administrator/group IDs or usable image IDs are included.
+# Keep disabled until source, actor gates, images and transport are validated.
+platforms:
+  qqbot:
+    enabled: false
+    extra:
+      dm_policy: disabled
+      group_policy: disabled
+      allow_admin_from: []
+      group_allow_admin_from: []
+      group_reply_without_mention: []
+      group_reply_gate:
+        assistant_names: [Hermes]
+      role_policy:
+        # Keep the actor gate ON, even while the platform itself is disabled.
+        enabled: true
+        public_tools: []
+plugins:
+  enabled: []
+  entries:
+    guest-workspace:
+      browser_enabled: false
+      # Deliberately invalid placeholders: never reused from someone else's host.
+      docker_image: REPLACE_WITH_VERIFIED_FULL_PYTHON_IMAGE_ID
+      browser_image: REPLACE_WITH_VERIFIED_FULL_BROWSER_IMAGE_ID

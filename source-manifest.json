@@ -1,0 +1,1361 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repository": "https://github.com/NousResearch/hermes-agent.git",
+    "commit": "ab44d8acf7bca230aea8574f2f2ab4666ca293ce"
+  },
+  "overlay_root": "overlay",
+  "text_encoding": "UTF-8",
+  "line_endings": "LF",
+  "hash_algorithm": "sha256",
+  "files": [
+    {
+      "path": "agent/agent_init.py",
+      "sha256": "c9cee4d86d7b5b16b0ab707553410415e19323735750218fedfbb647581dfc8d",
+      "base_sha256": "29be7ec99508cb1d82685a4d535b63977dd671a43b4bef910426291d40df4da5",
+      "source_sha256": "c9cee4d86d7b5b16b0ab707553410415e19323735750218fedfbb647581dfc8d",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -1117,0 +1118,5 @@ def _load_tools(agent, enabled_toolsets, disabled_toolsets):",
+          "@@ -1119 +1124,2 @@ def _load_tools(agent, enabled_toolsets, disabled_toolsets):",
+          "@@ -1125,0 +1132,3 @@ def _load_tools(agent, enabled_toolsets, disabled_toolsets):",
+          "@@ -1308 +1317,3 @@ def _init_memory(agent, _agent_cfg, skip_memory, platform, memory_manager=None):",
+          "@@ -1974 +1985,3 @@ def _build_context_engine(agent, _agent_cfg, cs, _custom_providers, _effective_c",
+          "@@ -2320,0 +2334 @@ def init_agent(",
+          "@@ -2321,0 +2336,5 @@ def init_agent("
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "agent/agent_runtime_helpers.py",
+      "sha256": "7ae768f2a7ad0a1f00923d137bcf5b79ee91d9f6780c556cc07b201824d7ffa8",
+      "base_sha256": "295bd0adcb698ddeb87966f77a79ef1c8016702641db401bfe692ffb63e0dd49",
+      "source_sha256": "7ae768f2a7ad0a1f00923d137bcf5b79ee91d9f6780c556cc07b201824d7ffa8",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -2555,0 +2556,19 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i",
+          "@@ -2559,0 +2579,8 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i",
+          "@@ -2571,0 +2599,2 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i",
+          "@@ -2593,0 +2623,2 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i",
+          "@@ -2594,0 +2626 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i",
+          "@@ -2607,0 +2640,2 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i",
+          "@@ -2621 +2655,5 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "agent/conversation_loop.py",
+      "sha256": "2152d84954152207da5d8114bd9932741e64728694fbf1f36f5c80cce948f374",
+      "base_sha256": "5a2b1973189300f0f07a990e39c6f5ddf200288aaec1032205685bef3437e4bf",
+      "source_sha256": "2152d84954152207da5d8114bd9932741e64728694fbf1f36f5c80cce948f374",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -754,0 +755,17 @@ def _restore_or_build_system_prompt(agent, system_message, conversation_history)"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "agent/request_security.py",
+      "sha256": "f0c139e58c84602060ee6343090677b9167b96ed9ff3fb2cdeb187d5f256e79f",
+      "base_sha256": null,
+      "source_sha256": "f0c139e58c84602060ee6343090677b9167b96ed9ff3fb2cdeb187d5f256e79f",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "agent/request_workspace_guidance.py",
+      "sha256": "93f97cfc735815073fe5198490f9b396f708961817442f46a774b2c08def42d4",
+      "base_sha256": null,
+      "source_sha256": "37f2b061f98220865531c8cbbd885b2860a2daf6e0b93131ad2afd3069f85863",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Use neutral public example URL rather than deployment-specific suggested site."
+      ]
+    },
+    {
+      "path": "agent/system_prompt.py",
+      "sha256": "66054c9f2ff565b8106093e362c6ab8ff87c72aed99104a5df2480c892d52c0a",
+      "base_sha256": "f804c92ddc7197ad2483960f07d7c2545c163644085b1821ce22bdad8c7f8597",
+      "source_sha256": "66054c9f2ff565b8106093e362c6ab8ff87c72aed99104a5df2480c892d52c0a",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -254,0 +255,5 @@ def _agent_home(agent: Any) -> Optional[Path]:",
+          "@@ -526,0 +532,2 @@ def _memory_parts(agent: Any) -> list[str]:",
+          "@@ -748,0 +756,2 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None)",
+          "@@ -755 +764 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None)",
+          "@@ -762 +771,2 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None)",
+          "@@ -766,2 +776,3 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None)",
+          "@@ -769 +780 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None)",
+          "@@ -775 +786,2 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None)",
+          "@@ -788 +800,2 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None)",
+          "@@ -791 +804,2 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None)",
+          "@@ -831 +845 @@ def invalidate_system_prompt(agent: Any) -> None:"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "agent/tool_executor.py",
+      "sha256": "da4809d7c5f832bd9337e459438527ccce302acef70b643c9ea0f8be8332e26a",
+      "base_sha256": "3fb81cd7ec8946df1f6e50b0879b4be4499223b4236450da0581ac7c0a1727e6",
+      "source_sha256": "da4809d7c5f832bd9337e459438527ccce302acef70b643c9ea0f8be8332e26a",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -367,0 +368 @@ def _tool_search_scoped_names(agent) -> frozenset:",
+          "@@ -370,0 +372 @@ def _tool_search_scoped_names(agent) -> frozenset:",
+          "@@ -384,0 +387,2 @@ def _tool_search_scoped_names(agent) -> frozenset:",
+          "@@ -687,0 +692,22 @@ def _pre_tool_block(agent, ref: _ToolCallRef):",
+          "@@ -710,0 +737,2 @@ def _dispatch_authorized_once(",
+          "@@ -711,0 +740,2 @@ def _dispatch_authorized_once(",
+          "@@ -716,0 +747,8 @@ def _dispatch_authorized_once(",
+          "@@ -717,0 +756,2 @@ def _dispatch_authorized_once(",
+          "@@ -754 +794,6 @@ def _dispatch_authorized_once("
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "cron/jobs.py",
+      "sha256": "f9c754b0654c04a3034db363790afb29b44c66ecf84c5be6dcc020860a93d6f3",
+      "base_sha256": "81c8ee2fde2e351c3d5d9ac02cbc8f0eab2b2bb626ee7524f3754d9e9f5e3848",
+      "source_sha256": "f9c754b0654c04a3034db363790afb29b44c66ecf84c5be6dcc020860a93d6f3",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -424 +424,36 @@ def fire_claim_fence(job_id: str, *, expected_owner: str):",
+          "@@ -1824,0 +1860,31 @@ def create_job(",
+          "@@ -1915,0 +1982,6 @@ def create_job(",
+          "@@ -2093,0 +2166,2 @@ def update_job(job_id: str, updates: dict[str, Any]) -> Optional[dict[str, Any]]"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "cron/scheduler.py",
+      "sha256": "ab2605b98581c35449ff43390a0c5d0f6ba5f67617486f1c3f666183d53de44b",
+      "base_sha256": "d72052adb3fd3944886e75066267fd6c6cdb4c8ece68e2aa20145cfcb564fffd",
+      "source_sha256": "6c8122c2ae2f4a29d99139a92b2757f4368d8775c1c0f18349ba5fe8569c86cb",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -2456 +2459,2 @@ def _resolve_cron_agent_setup(job: dict, job_id: str, job_name: str, jc) -> _Cro",
+          "@@ -2483 +2487,2 @@ def _resolve_cron_agent_setup(job: dict, job_id: str, job_name: str, jc) -> _Cro",
+          "@@ -2492,0 +2498,64 @@ def _resolve_cron_agent_setup(job: dict, job_id: str, job_name: str, jc) -> _Cro",
+          "@@ -2493,0 +2563,14 @@ def _construct_cron_agent(AIAgent, job: dict, _cfg: dict, setup: _CronAgentSetup",
+          "@@ -2508 +2591 @@ def _construct_cron_agent(AIAgent, job: dict, _cfg: dict, setup: _CronAgentSetup",
+          "@@ -2519,4 +2602,4 @@ def _construct_cron_agent(AIAgent, job: dict, _cfg: dict, setup: _CronAgentSetup",
+          "@@ -2556,0 +2640,15 @@ def run_job(",
+          "@@ -2624,0 +2723,2 @@ def run_job(",
+          "@@ -2984,0 +3085,4 @@ def _compose_run_delivery("
+        ],
+        "excluded_hunks": [
+          "@@ -1790,0 +1791,3 @@ def _resolve_job_runtime(job: dict, job_id: str, jc: _CronJobConfig) -> tuple[di"
+        ]
+      }
+    },
+    {
+      "path": "gateway/guest_export_delivery.py",
+      "sha256": "bef44158617ff9894963e57f72eee0dc29935c81f9dce6fcd812b7dab90a1cff",
+      "base_sha256": null,
+      "source_sha256": "bef44158617ff9894963e57f72eee0dc29935c81f9dce6fcd812b7dab90a1cff",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "gateway/inbound_attachment_proofs.py",
+      "sha256": "7d0e850da3da0ffe26f03d7dcf93d224086f982eed1901f3ab0a861e60b8d000",
+      "base_sha256": null,
+      "source_sha256": "7d0e850da3da0ffe26f03d7dcf93d224086f982eed1901f3ab0a861e60b8d000",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "gateway/platforms/base.py",
+      "sha256": "62959b10fc76ebfec412d507856c8a72c3992077d14568038acedcb7417dbc47",
+      "base_sha256": "de845c825424aa55fb2b081c6cf5a5eba1c185a5275798bc28e100d3b0ce6b78",
+      "source_sha256": "62959b10fc76ebfec412d507856c8a72c3992077d14568038acedcb7417dbc47",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -1654,0 +1655 @@ class ExecApprovalPrompt:",
+          "@@ -2853,0 +2855 @@ class BasePlatformAdapter(ABC):",
+          "@@ -2861,0 +2864 @@ class BasePlatformAdapter(ABC):",
+          "@@ -3976,0 +3980,2 @@ class BasePlatformAdapter(ABC):",
+          "@@ -3995,0 +4001,9 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4017,0 +4032,4 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4066,0 +4085,2 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4067,0 +4088,5 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4286,0 +4312,21 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4295 +4341,2 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4303 +4350 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4310,0 +4358,2 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4332 +4381,4 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4345,0 +4398,3 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4347,2 +4402,5 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4427,0 +4486,7 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4435,0 +4501,2 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4465,0 +4533,2 @@ class BasePlatformAdapter(ABC):",
+          "@@ -4466,0 +4536,3 @@ class BasePlatformAdapter(ABC):"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/request_security.py",
+      "sha256": "34b6cac9b38cf85cc3a8717d46be4384e801159c5916b7012468e616fe9d0e25",
+      "base_sha256": null,
+      "source_sha256": "34b6cac9b38cf85cc3a8717d46be4384e801159c5916b7012468e616fe9d0e25",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "gateway/run_busy.py",
+      "sha256": "0d2b027d6e8220d9a8dc70dec77cdd6aed3dbf63fc1a677cd1aaeaf344af4ad2",
+      "base_sha256": "dc39233ef2fde3f3bd2475b354ab4ef8137ed6340566333713712acc439b3cb2",
+      "source_sha256": "0d2b027d6e8220d9a8dc70dec77cdd6aed3dbf63fc1a677cd1aaeaf344af4ad2",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -105,0 +106,23 @@ class GatewayBusySessionMixin:",
+          "@@ -467,0 +491,2 @@ class GatewayBusySessionMixin:",
+          "@@ -468,0 +494,2 @@ class GatewayBusySessionMixin:",
+          "@@ -886,0 +914,4 @@ class GatewayBusySessionMixin:",
+          "@@ -918,0 +950,7 @@ class GatewayBusySessionMixin:",
+          "@@ -1058,0 +1097,3 @@ class GatewayBusySessionMixin:",
+          "@@ -1171,0 +1213,3 @@ class GatewayBusySessionMixin:",
+          "@@ -1189,0 +1234,2 @@ class GatewayBusySessionMixin:"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/run_inbound.py",
+      "sha256": "fd6a260c5e3032494260717d4ae21000ff339c2d2fdc514b7aaa20ef3010e66e",
+      "base_sha256": "76136f54fa903272b99489999fb84c083827023f840e091db28724696c38f2f8",
+      "source_sha256": "fd6a260c5e3032494260717d4ae21000ff339c2d2fdc514b7aaa20ef3010e66e",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -313,0 +314,4 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
+          "@@ -471,0 +476,8 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
+          "@@ -478 +490,4 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
+          "@@ -739,0 +755,10 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
+          "@@ -1194,0 +1220,6 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
+          "@@ -1223,0 +1255,3 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
+          "@@ -1240,0 +1275,7 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/run_turn.py",
+      "sha256": "ac98020eedfa4beee28b7dd0cbcd1ad8cae0ac6e9673173a19005e5694c32343",
+      "base_sha256": "df1f57156f63b6d5649fae280eb7fad9dc39aefe7e6ee62bf743adc582fc639e",
+      "source_sha256": "ac98020eedfa4beee28b7dd0cbcd1ad8cae0ac6e9673173a19005e5694c32343",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -530 +530,9 @@ class GatewayTurnMixin(GatewayTurnPrepareMixin, GatewayTurnHygieneMixin, Gateway"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/run_turn_prepare.py",
+      "sha256": "a6ccd66242b48a1bf5d4e06a6b291ac75f4ef2dbe33b39c0b8dc4495231d09d7",
+      "base_sha256": "7debb42ae2b7607d8e3e1d75e8590b1f2b49f663461036bf2b32113562c7acf6",
+      "source_sha256": "a6ccd66242b48a1bf5d4e06a6b291ac75f4ef2dbe33b39c0b8dc4495231d09d7",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -611,0 +612,9 @@ class GatewayTurnPrepareMixin:",
+          "@@ -671 +680 @@ class GatewayTurnPrepareMixin:",
+          "@@ -695,0 +705,8 @@ class GatewayTurnPrepareMixin:"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/run_turn_runner.py",
+      "sha256": "e35736bdde493480adafd65f42d982c1ea07489d6cc490f58c7f505431132214",
+      "base_sha256": "66f4e768959343e4dd52a0b9d7f5937f9b8a5ef292fd78659cc8aae79e44fcc1",
+      "source_sha256": "e35736bdde493480adafd65f42d982c1ea07489d6cc490f58c7f505431132214",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -652,0 +653,4 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -659 +663 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -718,0 +723,7 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -741,0 +753,3 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -746 +760 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -753 +767,2 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -780 +795,2 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -782,0 +799,2 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -1115 +1133,6 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
+          "@@ -1117,0 +1141,3 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/session_context_refs.py",
+      "sha256": "ff779eabc17aaa4f43fff754e3fef827d6cf95f93cacb4e8d0036fc4ae6417f2",
+      "base_sha256": "a848bbd6ee43558cdd8ebab46097ae710d9c832ff6a9a6334980a6b0a88ae84b",
+      "source_sha256": "ff779eabc17aaa4f43fff754e3fef827d6cf95f93cacb4e8d0036fc4ae6417f2",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -48,0 +49,4 @@ async def inbound_references(runner, source, session_key, text):",
+          "@@ -63,0 +68,6 @@ async def turn_references(runner, event, source, session_key, text):"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/session_envelope.py",
+      "sha256": "136e9e8248ff4efdce053b072397320dc326f073ced0f43779562a4f7c95983b",
+      "base_sha256": "948d26349e3fb6ea865af33e18dafd2e4177e5fd887afb271de89363f4a0d68a",
+      "source_sha256": "136e9e8248ff4efdce053b072397320dc326f073ced0f43779562a4f7c95983b",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -66 +66,4 @@ def _adapter_event(event, **changes):",
+          "@@ -215,0 +219,5 @@ def _snapshot_native(runner, event, provenance, fresh_roles=False, encoded_sourc",
+          "@@ -264,0 +273,2 @@ def restore_native(payload, runner=None):"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/session_execution.py",
+      "sha256": "f6c28b43801dc65cf040fa250f0a538cbe02e11f3930a5a945329269bfb19745",
+      "base_sha256": "7c1e294795003b329cc9639fe27e9b8b8fdfbd9b1e3106fcfbd6c8e06f670a60",
+      "source_sha256": "f6c28b43801dc65cf040fa250f0a538cbe02e11f3930a5a945329269bfb19745",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -32,0 +33,31 @@ logger = logging.getLogger(\"gateway.run\")",
+          "@@ -161 +192,11 @@ class GatewaySessionAgentMixin:",
+          "@@ -203,0 +245,4 @@ class GatewaySessionAgentMixin:",
+          "@@ -233,0 +279,2 @@ class GatewaySessionAgentMixin:"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/session_ingress.py",
+      "sha256": "bbf07cb59ec0d6fd1c8efe007ddddd88e9036848617e329c1f082f356f01b914",
+      "base_sha256": "d498954d3867337e3beda70adfbef0f581671e72e73e0526ae0eefe37101127f",
+      "source_sha256": "bbf07cb59ec0d6fd1c8efe007ddddd88e9036848617e329c1f082f356f01b914",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -52,0 +53 @@ async def admit_message(authority, event):",
+          "@@ -63,0 +65 @@ async def admit_message(authority, event):",
+          "@@ -76,0 +79 @@ async def admit_message(authority, event):",
+          "@@ -271,0 +275,4 @@ async def execute_admission(authority, ref, row):",
+          "@@ -360,2 +367,2 @@ async def deliver_settled(authority, admission_id):",
+          "@@ -362,0 +370,2 @@ async def deliver_settled(authority, admission_id):",
+          "@@ -382,0 +392 @@ async def deliver_response(adapter, event, session_key, response):",
+          "@@ -398,0 +409,4 @@ async def dispatch_shared_busy(adapter, event, session_key):"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/session_transcript.py",
+      "sha256": "f99ee722c0714f0bf43e8e43a7343c128a153dbf8804e66daed1f0fa2e457f9d",
+      "base_sha256": "b1e427996751310287ac56c99f2265122f26c001acee2cd2b5198519c402f9e2",
+      "source_sha256": "f99ee722c0714f0bf43e8e43a7343c128a153dbf8804e66daed1f0fa2e457f9d",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -631 +631 @@ class SessionTranscriptMixin:",
+          "@@ -645 +645 @@ class SessionTranscriptMixin:"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "gateway/slash_commands.py",
+      "sha256": "aecdff1cb866560ff37825bdbd0b2543d2b58105aa36a2d6f852704507b2e328",
+      "base_sha256": "4e31d1342200589e1b3d65e574c00a147433c3c10063b788b8e2dcf28540e655",
+      "source_sha256": "aecdff1cb866560ff37825bdbd0b2543d2b58105aa36a2d6f852704507b2e328",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -1193,0 +1194,9 @@ class GatewaySlashCommandsMixin(",
+          "@@ -1197,0 +1207,6 @@ class GatewaySlashCommandsMixin(",
+          "@@ -1206 +1221,4 @@ class GatewaySlashCommandsMixin(",
+          "@@ -1220,0 +1239,6 @@ class GatewaySlashCommandsMixin(",
+          "@@ -1231 +1255,5 @@ class GatewaySlashCommandsMixin("
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "plugins/platforms/qqbot/__init__.py",
+      "sha256": "0d246d551dc397fc2944196d4f9368a30fadebdebf39eccd2e523521dc7605c0",
+      "base_sha256": "0d246d551dc397fc2944196d4f9368a30fadebdebf39eccd2e523521dc7605c0",
+      "source_sha256": "0d246d551dc397fc2944196d4f9368a30fadebdebf39eccd2e523521dc7605c0",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/adapter.py",
+      "sha256": "b1f0a50aac43d66c558098f71567bcab0a032a48529946bc2235566fa0bc55cb",
+      "base_sha256": "276be678419ca0dc444c95d1b0bf427de109b1a989ea80e70fc83abbe9630e4e",
+      "source_sha256": "c2f3a03189177019b60692f04bf3700f726c8ab2680c7e0ef2c1d0ebd0329b67",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "Generic assistant label replaces private deployment persona in source/fixtures (1 occurrences); configurable assistant_names retained.",
+        "Retain upstream gateway.trust_env=False proxy opt-out while keeping QQ proxy/direct retry; no deployment network setting exported."
+      ]
+    },
+    {
+      "path": "plugins/platforms/qqbot/chunked_upload.py",
+      "sha256": "c3c51ba470dfa4cd71cafbd232bfff3a333eee3b7709107634b5a61b5197107b",
+      "base_sha256": "c3c51ba470dfa4cd71cafbd232bfff3a333eee3b7709107634b5a61b5197107b",
+      "source_sha256": "c3c51ba470dfa4cd71cafbd232bfff3a333eee3b7709107634b5a61b5197107b",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/constants.py",
+      "sha256": "49f0d3b096ba35928f46eecb51fffbdcbfd3565fc4a89f8bca44e2a744f6876d",
+      "base_sha256": "49f0d3b096ba35928f46eecb51fffbdcbfd3565fc4a89f8bca44e2a744f6876d",
+      "source_sha256": "49f0d3b096ba35928f46eecb51fffbdcbfd3565fc4a89f8bca44e2a744f6876d",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/crypto.py",
+      "sha256": "676d5790e289d66a9295d737aeae27bc348cd7eb15237d480faef7f9698bd09b",
+      "base_sha256": "676d5790e289d66a9295d737aeae27bc348cd7eb15237d480faef7f9698bd09b",
+      "source_sha256": "676d5790e289d66a9295d737aeae27bc348cd7eb15237d480faef7f9698bd09b",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/delivery_binding.py",
+      "sha256": "f655a7f5f626dd3a966a1083e3b3054dd7ec7c5debf484fc7dfb022ab164be31",
+      "base_sha256": null,
+      "source_sha256": "f655a7f5f626dd3a966a1083e3b3054dd7ec7c5debf484fc7dfb022ab164be31",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/delivery_receipts.py",
+      "sha256": "4d2971acca345f5705a0a9e65ac4debdcfeb6e268d3442686aedb605883b1451",
+      "base_sha256": null,
+      "source_sha256": "4d2971acca345f5705a0a9e65ac4debdcfeb6e268d3442686aedb605883b1451",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/gateway_env.py",
+      "sha256": "414f6b7b3191a04b1b4ce3266409ad555e68e35122a7a939a215e75eb5908696",
+      "base_sha256": "414f6b7b3191a04b1b4ce3266409ad555e68e35122a7a939a215e75eb5908696",
+      "source_sha256": "414f6b7b3191a04b1b4ce3266409ad555e68e35122a7a939a215e75eb5908696",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/group_attachments.py",
+      "sha256": "b5efeabfccd3c30e039e57eb09df211b3cc7357a5743573c6ef782e48c1b4bab",
+      "base_sha256": null,
+      "source_sha256": "b5efeabfccd3c30e039e57eb09df211b3cc7357a5743573c6ef782e48c1b4bab",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/group_events.py",
+      "sha256": "84e8e3d4110deab88220baac12a371c1be4b0bfab49840a976c6faa7294aad90",
+      "base_sha256": null,
+      "source_sha256": "84e8e3d4110deab88220baac12a371c1be4b0bfab49840a976c6faa7294aad90",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/group_history.py",
+      "sha256": "9c229f6b6f476840c9db2a449fad88b3b0828b8733f73aa79ec594105559b219",
+      "base_sha256": null,
+      "source_sha256": "9c229f6b6f476840c9db2a449fad88b3b0828b8733f73aa79ec594105559b219",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/group_identity.py",
+      "sha256": "9582961e555f86cad0e71de8ae5d0b167c406eb40d9917a9c87b5b9f77a19725",
+      "base_sha256": null,
+      "source_sha256": "a5b23e8937c8b0bd1dd67c217563242fec411f9cfe6cc65db8ffafc1592fbb07",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/group_images.py",
+      "sha256": "8b226b778c3b6ad206d0d28ec4d9093cba76fa322343d50337f19dae8085427a",
+      "base_sha256": null,
+      "source_sha256": "8b226b778c3b6ad206d0d28ec4d9093cba76fa322343d50337f19dae8085427a",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/keyboards.py",
+      "sha256": "8d4f4d8526f0bae1a6a66a99b0a7a9659b5162a3fd6f9c62505edbbd2a2e4375",
+      "base_sha256": "0c67da8ea8aee4b4068a180fb0303aa7ddd53919bed02d44cbf1c9538b741228",
+      "source_sha256": "8d4f4d8526f0bae1a6a66a99b0a7a9659b5162a3fd6f9c62505edbbd2a2e4375",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/onboard.py",
+      "sha256": "461d25c741940c8650c22cc9dd890a6d5c10b35d60264449a91b9a0305d9cf31",
+      "base_sha256": "461d25c741940c8650c22cc9dd890a6d5c10b35d60264449a91b9a0305d9cf31",
+      "source_sha256": "461d25c741940c8650c22cc9dd890a6d5c10b35d60264449a91b9a0305d9cf31",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/plugin.yaml",
+      "sha256": "12db2752657da784e1e74d57719232492071004690a7b02e93b4d53f74e425ef",
+      "base_sha256": "12db2752657da784e1e74d57719232492071004690a7b02e93b4d53f74e425ef",
+      "source_sha256": "12db2752657da784e1e74d57719232492071004690a7b02e93b4d53f74e425ef",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/receipt_adapter.py",
+      "sha256": "74f78d17786508f07f108cf705278bf06991a0cec3ceced710b612dcda175268",
+      "base_sha256": null,
+      "source_sha256": "74f78d17786508f07f108cf705278bf06991a0cec3ceced710b612dcda175268",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/register.py",
+      "sha256": "3a10377f3bebdb115c1f7251078fd2add4529bcb4d18f74db48a65e2c1b9b350",
+      "base_sha256": "aed6297650598a7b04ef54715209ebdfc0e908fce856529c6481f8a0041b419d",
+      "source_sha256": "3a10377f3bebdb115c1f7251078fd2add4529bcb4d18f74db48a65e2c1b9b350",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/reply_gate.py",
+      "sha256": "2f991c4d2ea10ba44b1b903bac86a1fe53bea45efa7fb6baf70cb341c117775e",
+      "base_sha256": null,
+      "source_sha256": "2f991c4d2ea10ba44b1b903bac86a1fe53bea45efa7fb6baf70cb341c117775e",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/send.py",
+      "sha256": "30711a1088772906d56a459a5677fba52f553217bb668d962de36da8e444feb7",
+      "base_sha256": "30711a1088772906d56a459a5677fba52f553217bb668d962de36da8e444feb7",
+      "source_sha256": "30711a1088772906d56a459a5677fba52f553217bb668d962de36da8e444feb7",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/utils.py",
+      "sha256": "5ed8f5e37eb8f71054318d7cff091a9fbdb7398fff05dc3695c0e6cb340e27d2",
+      "base_sha256": "5ed8f5e37eb8f71054318d7cff091a9fbdb7398fff05dc3695c0e6cb340e27d2",
+      "source_sha256": "5ed8f5e37eb8f71054318d7cff091a9fbdb7398fff05dc3695c0e6cb340e27d2",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/agent/test_guest_browser_invalid_arguments.py",
+      "sha256": "9323f25e469da4daa7aed914483ad2b2b069dbcc9dd9fceb689023b327fe2c85",
+      "base_sha256": null,
+      "source_sha256": "9323f25e469da4daa7aed914483ad2b2b069dbcc9dd9fceb689023b327fe2c85",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/agent/test_guest_workspace_prompt.py",
+      "sha256": "08dba591a6e8cad44e03ffcf946eacad2c322db4952e79fe4fda51d4d8406936",
+      "base_sha256": null,
+      "source_sha256": "08dba591a6e8cad44e03ffcf946eacad2c322db4952e79fe4fda51d4d8406936",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/agent/test_guest_workspace_repair_guidance.py",
+      "sha256": "dda6b070fe8f750fd29cb23d66c4f958c1b221faba4ecb9e3ee7ca882a911ad0",
+      "base_sha256": null,
+      "source_sha256": "dda6b070fe8f750fd29cb23d66c4f958c1b221faba4ecb9e3ee7ca882a911ad0",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/agent/test_guest_workspace_surface.py",
+      "sha256": "71e4f619f9314e449ad5288b36ad94d34d8485d0a2890aeb9ada7cbd6071e4a1",
+      "base_sha256": null,
+      "source_sha256": "71e4f619f9314e449ad5288b36ad94d34d8485d0a2890aeb9ada7cbd6071e4a1",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/agent/test_request_security.py",
+      "sha256": "a95016b8f9a5839b59661c1df53d3d494a5251912d5af2412280f50542666b5b",
+      "base_sha256": null,
+      "source_sha256": "88a23abf4734ed7c9a494de49d388aa6dfdc6a72419b36945589fe3d3778f791",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/agent/test_request_security_direct_and_restore.py",
+      "sha256": "b78ffabd5319d7088f693b5c4f03a1435ef353ba32c6839f672b2a50e7782546",
+      "base_sha256": null,
+      "source_sha256": "b78ffabd5319d7088f693b5c4f03a1435ef353ba32c6839f672b2a50e7782546",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/cron/test_public_admin_cron_context.py",
+      "sha256": "0f7c39087c2800eb7d1634d09f0bb18460d3ced9f04957a4b36137de8d163085",
+      "base_sha256": null,
+      "source_sha256": "0f7c39087c2800eb7d1634d09f0bb18460d3ced9f04957a4b36137de8d163085",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/cron/test_public_cron_policy.py",
+      "sha256": "e9700ad389f0fc269f91e319d80e494edac569896639bce404c6f844e6f380a1",
+      "base_sha256": null,
+      "source_sha256": "e9700ad389f0fc269f91e319d80e494edac569896639bce404c6f844e6f380a1",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_guest_export_delivery.py",
+      "sha256": "d71dcb5596725544f41bd6f029a550c162fc0465498e4c5653010780b859c73b",
+      "base_sha256": null,
+      "source_sha256": "d71dcb5596725544f41bd6f029a550c162fc0465498e4c5653010780b859c73b",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot.py",
+      "sha256": "5567a50ea9460c95299584bcf16e1bea0244b54cc2da457abb9dae67fc8da66c",
+      "base_sha256": "cd704a9f4c731f7d8681865fabbae83c5b61242ccbbfde4a42ae8d3b39a2956c",
+      "source_sha256": "6ee782b9dd90581141b793c101ecaee96de9cea3ba522cf0cffa87502f5d57ef",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_agent_security.py",
+      "sha256": "f1f63062d67ae769a777777095139cebd69950eb15a8960f22a522284082131a",
+      "base_sha256": null,
+      "source_sha256": "f59d16fa97189d2163074bd370c03d2d84c980cf1c111d51aff1db6af317075d",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_control_security.py",
+      "sha256": "2dba63a74484546cba62ecc65814a0735841e4d97aa7790d3477687deccad91b",
+      "base_sha256": null,
+      "source_sha256": "2dba63a74484546cba62ecc65814a0735841e4d97aa7790d3477687deccad91b",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_credential_isolation.py",
+      "sha256": "617579189d5e3de7cfb7fd6d7b8938f37e18320066a99155b1ed07673005789a",
+      "base_sha256": "617579189d5e3de7cfb7fd6d7b8938f37e18320066a99155b1ed07673005789a",
+      "source_sha256": "617579189d5e3de7cfb7fd6d7b8938f37e18320066a99155b1ed07673005789a",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_delivery_receipts.py",
+      "sha256": "0830a967159024b4823f29b67e44e06881cb91a2d6b2cc3d60aba6a3f28144a6",
+      "base_sha256": null,
+      "source_sha256": "0830a967159024b4823f29b67e44e06881cb91a2d6b2cc3d60aba6a3f28144a6",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_group_event_upgrade.py",
+      "sha256": "77f3988fef4915e76e4c044158613b684e920b6e5795e9a59052496626f423a0",
+      "base_sha256": null,
+      "source_sha256": "77f3988fef4915e76e4c044158613b684e920b6e5795e9a59052496626f423a0",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_group_identity.py",
+      "sha256": "a3fb1ea8326010440b327f085f49b028841da8e86683f92080640431a3142ec4",
+      "base_sha256": null,
+      "source_sha256": "5c5138401e35c56a13ea1226db9a1c14ccdbed9242e9ec2d529f4b2013fe11fa",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Generic assistant label replaces private deployment persona in source/fixtures (7 occurrences); configurable assistant_names retained."
+      ]
+    },
+    {
+      "path": "tests/gateway/test_qqbot_group_images.py",
+      "sha256": "5d68bf98d779af436b62915a8079281952a91cd2cb5ac11fc8bb58c0e4a56207",
+      "base_sha256": null,
+      "source_sha256": "5d68bf98d779af436b62915a8079281952a91cd2cb5ac11fc8bb58c0e4a56207",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_group_observation.py",
+      "sha256": "976128eedcc54dc4dc81c29df9891f0b58fe01f386caaf42f9e9dd0a139c67ea",
+      "base_sha256": null,
+      "source_sha256": "bdca3b5c8ad104c0cdc405147a5c461513e9d3ec212e2f21b062058dfb86da31",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Generic assistant label replaces private deployment persona in source/fixtures (3 occurrences); configurable assistant_names retained."
+      ]
+    },
+    {
+      "path": "tests/gateway/test_qqbot_group_portability.py",
+      "sha256": "8926b7ec3cf2842853308c6c13d626b2e18b8a2511d261e3ceac86c06a55d892",
+      "base_sha256": null,
+      "source_sha256": "8926b7ec3cf2842853308c6c13d626b2e18b8a2511d261e3ceac86c06a55d892",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_guest_attachment_ingress.py",
+      "sha256": "2b05e939ef319039082b06845051b403933135d1ee6663d1cc9b887ce41164d7",
+      "base_sha256": null,
+      "source_sha256": "2b05e939ef319039082b06845051b403933135d1ee6663d1cc9b887ce41164d7",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_local_migration.py",
+      "sha256": "d16be8aafad737834e7d551a0ab78c9fc66d6a72eca37fd20f26d79ecbcd6740",
+      "base_sha256": null,
+      "source_sha256": "3235ae8ac0e33a0dff203b750f03a5a8d93accd6c9cf37cd0f30316a0a1d53c4",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Generic assistant label replaces private deployment persona in source/fixtures (1 occurrences); configurable assistant_names retained.",
+        "Cover upstream gateway.trust_env proxy opt-out together with QQ retry behavior.",
+        "Explicitly label synthetic OpenID parser fixtures; preserve malformed negative fixture literally."
+      ]
+    },
+    {
+      "path": "tests/gateway/test_qqbot_public_reference_security.py",
+      "sha256": "4476d6129f1601b887382bec5f354698c0a91a8b4cecc23d218332a3ba0cebfa",
+      "base_sha256": null,
+      "source_sha256": "4476d6129f1601b887382bec5f354698c0a91a8b4cecc23d218332a3ba0cebfa",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_real_message_ids.py",
+      "sha256": "1077341c88afa4e995180e353bd2d21f814c7a3b40b570ff921f7f23d773e1db",
+      "base_sha256": null,
+      "source_sha256": "1077341c88afa4e995180e353bd2d21f814c7a3b40b570ff921f7f23d773e1db",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_receipt_integration.py",
+      "sha256": "c64d2d918deb8795bc93f801ae6bb489ba9a0e8ef68b50bd527a11ebf9584415",
+      "base_sha256": null,
+      "source_sha256": "c64d2d918deb8795bc93f801ae6bb489ba9a0e8ef68b50bd527a11ebf9584415",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_reply_gate.py",
+      "sha256": "c5a4ed1a17041219c20dbe7bed674c73c231d6c334bccaf393e252273495daf3",
+      "base_sha256": null,
+      "source_sha256": "601de841b2a6763e1da20ea9dbfea611f85dc4bbf72fb8d62eb8ae1f6ae7cf4d",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Generic assistant label replaces private deployment persona in source/fixtures (4 occurrences); configurable assistant_names retained."
+      ]
+    },
+    {
+      "path": "tests/gateway/test_qqbot_scope_paths.py",
+      "sha256": "16862726d70a878fc92947cfa3a957ba8ee1c178cb1da906161aef98bf81cd06",
+      "base_sha256": "1b96f707ecf9b91006cd8dea68c8c7ceb7b39f1e70aecb140b580253b9ea9676",
+      "source_sha256": "16862726d70a878fc92947cfa3a957ba8ee1c178cb1da906161aef98bf81cd06",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_security_delivery_binding.py",
+      "sha256": "b05027e5c31463a0ddef9c4280fb656d3cf92628a4ff0a18b3d8d5a9fbbe4dc4",
+      "base_sha256": null,
+      "source_sha256": "b05027e5c31463a0ddef9c4280fb656d3cf92628a4ff0a18b3d8d5a9fbbe4dc4",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_update_prompt_key.py",
+      "sha256": "48115604b5c81c96821031fd80e88c4a36096fb181b6e8b53612e35a47afd401",
+      "base_sha256": "48115604b5c81c96821031fd80e88c4a36096fb181b6e8b53612e35a47afd401",
+      "source_sha256": "48115604b5c81c96821031fd80e88c4a36096fb181b6e8b53612e35a47afd401",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_request_security_policy_resolution.py",
+      "sha256": "81f8002f11b244cd0bb026c36c633ad7cc3f3f86b446b37f49ce99b28067524b",
+      "base_sha256": null,
+      "source_sha256": "81f8002f11b244cd0bb026c36c633ad7cc3f3f86b446b37f49ce99b28067524b",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_plugin.py",
+      "sha256": "0d8beeb94c683a5870be17fb00f100bf16444dc676fac6665acc934ef71f7083",
+      "base_sha256": "0d8beeb94c683a5870be17fb00f100bf16444dc676fac6665acc934ef71f7083",
+      "source_sha256": "0d8beeb94c683a5870be17fb00f100bf16444dc676fac6665acc934ef71f7083",
+      "source_kind": "live_source",
+      "status_at_base": "unchanged",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_send_targets.py",
+      "sha256": "e7229b32f84bad35226880cfb6e574789bfcc7305f9482a95227266e67e53642",
+      "base_sha256": null,
+      "source_sha256": "1e7344b5c6201530b32f6f2131935315fbaec3ad49f7b04b381f970daa8f8464",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Explicitly label synthetic OpenID parser fixtures; preserve malformed negative fixture literally."
+      ]
+    },
+    {
+      "path": "tests/qq_role_runtime_bootstrap.py",
+      "sha256": "ce2105e5e675da0bd66ebb13deb6fe1a53de47e6d4a27e6df145e0f053c22432",
+      "base_sha256": null,
+      "source_sha256": "148d51e339e6d359ba81d380ffc2fdbb1cde69d66531f2b6e3254928d122e048",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_browser_docker.py",
+      "sha256": "9dd74fc1f3e4221392fe46013367fbd9171131bfd5d2a01ac61d9dae10af575d",
+      "base_sha256": null,
+      "source_sha256": "9dd74fc1f3e4221392fe46013367fbd9171131bfd5d2a01ac61d9dae10af575d",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_browser_live_integration.py",
+      "sha256": "0d123e34f3f8b219b02ba6768bf9c0ca86758caa4e0bd2f7255c2ee1bd2ea12a",
+      "base_sha256": null,
+      "source_sha256": "0d123e34f3f8b219b02ba6768bf9c0ca86758caa4e0bd2f7255c2ee1bd2ea12a",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_browser_network.py",
+      "sha256": "a8f42f141a25f83598086bc26b72f201bbf596b43c86990f886a1962f1d972a3",
+      "base_sha256": null,
+      "source_sha256": "a8f42f141a25f83598086bc26b72f201bbf596b43c86990f886a1962f1d972a3",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_browser_surface.py",
+      "sha256": "5ee2a23e2e1ae7f8c12d2b17ea8d0f22cb686a427b1a10698e60feee2a747598",
+      "base_sha256": null,
+      "source_sha256": "5ee2a23e2e1ae7f8c12d2b17ea8d0f22cb686a427b1a10698e60feee2a747598",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_workspace_docker.py",
+      "sha256": "c14cb78dbf09249c1403a97dd9776546b05032964ababbcd552a7c72a6789650",
+      "base_sha256": null,
+      "source_sha256": "c14cb78dbf09249c1403a97dd9776546b05032964ababbcd552a7c72a6789650",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_workspace_lifecycle.py",
+      "sha256": "2849436d8f8a19a2f7ba78c79f924ea775542849fa41c02de87f3113689d0d6e",
+      "base_sha256": null,
+      "source_sha256": "2849436d8f8a19a2f7ba78c79f924ea775542849fa41c02de87f3113689d0d6e",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_workspace_live_docker.py",
+      "sha256": "b8d2d5195d1e4d7d9d9d8d661cdd43cfd541f98c43005955119cae4fc635cff8",
+      "base_sha256": null,
+      "source_sha256": "30fa6ec1e587a40c04bc3304ffbe9eff7c9f6aac0b1bde344c313763c6c86404",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Remove deployment-specific Docker image fingerprint; require explicit test-only immutable image ID via QQBOT_TEST_PYTHON_IMAGE."
+      ]
+    },
+    {
+      "path": "tests/tools/test_guest_workspace_maintenance.py",
+      "sha256": "ca509eaae23b62deaf6410f6cc16becf9e037887164c02e8048d9af0c6184499",
+      "base_sha256": null,
+      "source_sha256": "ca509eaae23b62deaf6410f6cc16becf9e037887164c02e8048d9af0c6184499",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_workspace_plugin.py",
+      "sha256": "a4c727cd7f555d131fa974354147577c11054664228498ad23e1d16cf06f38e0",
+      "base_sha256": null,
+      "source_sha256": "a4c727cd7f555d131fa974354147577c11054664228498ad23e1d16cf06f38e0",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_workspace_store.py",
+      "sha256": "2943685f0e278aa28de8fa033d322a49521a2327f072ec565e93e9adba8c738d",
+      "base_sha256": null,
+      "source_sha256": "2943685f0e278aa28de8fa033d322a49521a2327f072ec565e93e9adba8c738d",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_workspace_text.py",
+      "sha256": "698b0a98e2531b3c1b8b6f2e062f284dd26596eb54ba60ea8d0c4d50863568ec",
+      "base_sha256": null,
+      "source_sha256": "698b0a98e2531b3c1b8b6f2e062f284dd26596eb54ba60ea8d0c4d50863568ec",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_qqbot_public_cron_security.py",
+      "sha256": "c53f9311cd76644ba2a05bad04760653f775a3ca2bb9bb9e9fe715f91cae82e7",
+      "base_sha256": null,
+      "source_sha256": "c53f9311cd76644ba2a05bad04760653f775a3ca2bb9bb9e9fe715f91cae82e7",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_send_message_plugin_extensibility.py",
+      "sha256": "36665c5ef62511d090a42db372db23cf6e37180cc3ab5185962111acbd5e9834",
+      "base_sha256": "5c534e262a6f7ad38bb78ecea87b5e951c92c03b2337e377c75e8a6cd2826640",
+      "source_sha256": "36665c5ef62511d090a42db372db23cf6e37180cc3ab5185962111acbd5e9834",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_send_message_target_parse.py",
+      "sha256": "2caec8b0d71c3d636dddaeddf912ffdedd9a2be38eb6ebe7482852ea0c0d32fb",
+      "base_sha256": "69b6e09d99ce247f89af31dfb78d02d35b408a3a1c00acb555237545ba6c11f0",
+      "source_sha256": "2caec8b0d71c3d636dddaeddf912ffdedd9a2be38eb6ebe7482852ea0c0d32fb",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/cronjob_tools.py",
+      "sha256": "be0cf917154b3517266a477ebffeee757f0ace7862e6e31283573c2f6f6f46da",
+      "base_sha256": "99f980bc671e5dc48bd982a8ed0c21fe93b3ab2262f6c723ff6319d8f6910822",
+      "source_sha256": "be0cf917154b3517266a477ebffeee757f0ace7862e6e31283573c2f6f6f46da",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -1022,0 +1023,16 @@ def cronjob(",
+          "@@ -1178,0 +1195,8 @@ def _cronjob_handler(args, **kw):"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "tools/guest_browser_docker.py",
+      "sha256": "25295fe17309c94d409e440f142b8e95fe1b7f799aeb261135c38c14300552e2",
+      "base_sha256": null,
+      "source_sha256": "25295fe17309c94d409e440f142b8e95fe1b7f799aeb261135c38c14300552e2",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_browser_interface.py",
+      "sha256": "d6db2ef15447c676fce419a6b6b4fc107e60da4a66112af35aa4c5a6fd1e7b52",
+      "base_sha256": null,
+      "source_sha256": "d6db2ef15447c676fce419a6b6b4fc107e60da4a66112af35aa4c5a6fd1e7b52",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_browser_network.py",
+      "sha256": "cd2f7875e901b254638b72c555282c967d0baaa19e7ab19361b8090e643b0ce0",
+      "base_sha256": null,
+      "source_sha256": "cd2f7875e901b254638b72c555282c967d0baaa19e7ab19361b8090e643b0ce0",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_browser_service.py",
+      "sha256": "1d571b606b2b9ff49d5ffd3c5e3074cbe8a123e8b5fc3ba4bbe0770569f5b926",
+      "base_sha256": null,
+      "source_sha256": "1d571b606b2b9ff49d5ffd3c5e3074cbe8a123e8b5fc3ba4bbe0770569f5b926",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_browser_worker.py",
+      "sha256": "543a70e9359328d1206ecf9f2eb40005c204d4957c331bd90de1c14ac4f3ee72",
+      "base_sha256": null,
+      "source_sha256": "543a70e9359328d1206ecf9f2eb40005c204d4957c331bd90de1c14ac4f3ee72",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_workspace_docker.py",
+      "sha256": "671a533c088630b75873d992eb5056d7a123cdcbe0d9c41581cd406cc4379da5",
+      "base_sha256": null,
+      "source_sha256": "671a533c088630b75873d992eb5056d7a123cdcbe0d9c41581cd406cc4379da5",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_workspace_interface.py",
+      "sha256": "90a62ec86fecbd0e7525a8d2e5ee3d9e5a6052dd4adcf6dcfb352c0b1f3b277d",
+      "base_sha256": null,
+      "source_sha256": "90a62ec86fecbd0e7525a8d2e5ee3d9e5a6052dd4adcf6dcfb352c0b1f3b277d",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_workspace_lifecycle.py",
+      "sha256": "d6fff5bb2df8b3514d4fa714fa8fee4b350bd8ea0963301213d7dfb886b8bf42",
+      "base_sha256": null,
+      "source_sha256": "d6fff5bb2df8b3514d4fa714fa8fee4b350bd8ea0963301213d7dfb886b8bf42",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_workspace_maintenance.py",
+      "sha256": "5dff037abc84e03aa96ee1544553529607cafce6d699b6430eb8286e79f26654",
+      "base_sha256": null,
+      "source_sha256": "5dff037abc84e03aa96ee1544553529607cafce6d699b6430eb8286e79f26654",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_workspace_store.py",
+      "sha256": "6c96153c70d6d9809cef305d893eaee75dfe6608e6a0847347d072ac27f91619",
+      "base_sha256": null,
+      "source_sha256": "6c96153c70d6d9809cef305d893eaee75dfe6608e6a0847347d072ac27f91619",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    },
+    {
+      "path": "tools/guest_workspace_text.py",
+      "sha256": "7db2c0c98e27426821c22d7ef9081f0d692c8a1f54c4e45304382610f6785c17",
+      "base_sha256": null,
+      "source_sha256": "7db2c0c98e27426821c22d7ef9081f0d692c8a1f54c4e45304382610f6785c17",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": []
+    }
+  ],
+  "plugins": [
+    {
+      "path": "plugins/guest-workspace/__init__.py",
+      "sha256": "de045c048e3ae103246e456641b0717fbaa9117b6a53c3e4debb227cbe5e57b5",
+      "base_sha256": null,
+      "source_sha256": "de045c048e3ae103246e456641b0717fbaa9117b6a53c3e4debb227cbe5e57b5",
+      "source_kind": "profile_plugin_source_only",
+      "redaction_rationale": [
+        "Only plugin entrypoint/manifest copied; no runtime data, configuration, README, build receipts, binaries or archives."
+      ]
+    },
+    {
+      "path": "plugins/guest-workspace/plugin.yaml",
+      "sha256": "483f3b49e74da14ba98e8ff10293c7ea49099e1c2f1800a861d4b20307c09781",
+      "base_sha256": null,
+      "source_sha256": "483f3b49e74da14ba98e8ff10293c7ea49099e1c2f1800a861d4b20307c09781",
+      "source_kind": "profile_plugin_source_only",
+      "redaction_rationale": [
+        "Only plugin entrypoint/manifest copied; no runtime data, configuration, README, build receipts, binaries or archives."
+      ]
+    }
+  ],
+  "tests": [
+    "tests/agent/test_guest_browser_invalid_arguments.py",
+    "tests/agent/test_guest_workspace_prompt.py",
+    "tests/agent/test_guest_workspace_repair_guidance.py",
+    "tests/agent/test_guest_workspace_surface.py",
+    "tests/agent/test_request_security.py",
+    "tests/agent/test_request_security_direct_and_restore.py",
+    "tests/cron/test_public_admin_cron_context.py",
+    "tests/cron/test_public_cron_policy.py",
+    "tests/gateway/test_guest_export_delivery.py",
+    "tests/gateway/test_qqbot.py",
+    "tests/gateway/test_qqbot_agent_security.py",
+    "tests/gateway/test_qqbot_control_security.py",
+    "tests/gateway/test_qqbot_credential_isolation.py",
+    "tests/gateway/test_qqbot_delivery_receipts.py",
+    "tests/gateway/test_qqbot_group_event_upgrade.py",
+    "tests/gateway/test_qqbot_group_identity.py",
+    "tests/gateway/test_qqbot_group_images.py",
+    "tests/gateway/test_qqbot_group_observation.py",
+    "tests/gateway/test_qqbot_group_portability.py",
+    "tests/gateway/test_qqbot_guest_attachment_ingress.py",
+    "tests/gateway/test_qqbot_local_migration.py",
+    "tests/gateway/test_qqbot_public_reference_security.py",
+    "tests/gateway/test_qqbot_real_message_ids.py",
+    "tests/gateway/test_qqbot_receipt_integration.py",
+    "tests/gateway/test_qqbot_reply_gate.py",
+    "tests/gateway/test_qqbot_scope_paths.py",
+    "tests/gateway/test_qqbot_security_delivery_binding.py",
+    "tests/gateway/test_qqbot_update_prompt_key.py",
+    "tests/gateway/test_request_security_policy_resolution.py",
+    "tests/plugins/platforms/test_qqbot_plugin.py",
+    "tests/plugins/platforms/test_qqbot_send_targets.py",
+    "tests/tools/test_guest_browser_docker.py",
+    "tests/tools/test_guest_browser_live_integration.py",
+    "tests/tools/test_guest_browser_network.py",
+    "tests/tools/test_guest_browser_surface.py",
+    "tests/tools/test_guest_workspace_docker.py",
+    "tests/tools/test_guest_workspace_lifecycle.py",
+    "tests/tools/test_guest_workspace_live_docker.py",
+    "tests/tools/test_guest_workspace_maintenance.py",
+    "tests/tools/test_guest_workspace_plugin.py",
+    "tests/tools/test_guest_workspace_store.py",
+    "tests/tools/test_guest_workspace_text.py",
+    "tests/tools/test_qqbot_public_cron_security.py",
+    "tests/tools/test_send_message_plugin_extensibility.py",
+    "tests/tools/test_send_message_target_parse.py"
+  ],
+  "test_bootstrap": "tests/qq_role_runtime_bootstrap.py",
+  "public_differences": [
+    "Default assistant display alias and associated fixtures use Hermes; assistant_names remains configurable.",
+    "Live Python Docker integration uses QQBOT_TEST_PYTHON_IMAGE rather than a private deployment image fingerprint.",
+    "Workspace browser prompt example uses example.com."
+  ],
+  "prerequisites": [
+    "Apply overlay to the exact pinned upstream commit; this is a core integration overlay, not a standalone plugin.",
+    "Install plugins/guest-workspace into the disposable test profile or stage equivalent test registration; never load a real profile.",
+    "Canonical scripts/run_tests.sh with PM-managed test interpreter and -p tests.qq_role_runtime_bootstrap; retain real-home I/O protection.",
+    "Browser Docker tests require a locally built hermes-guest-browser:1.63.0 image; missing engine/image is an actual test failure in the source suite.",
+    "Python live Docker test requires QQBOT_TEST_PYTHON_IMAGE=sha256:<64 hex> and a verified local image; no automatic pull or host fallback.",
+    "Actual-public-browser integration accesses https://example.com/ through the guarded broker; this extraction does not execute it."
+  ],
+  "excluded_core_changes": [
+    "agent/auxiliary_client.py",
+    "agent/chat_completion_helpers.py",
+    "agent/turn_recovery.py",
+    "agent/turn_response_check.py",
+    "gateway/run_config_loaders.py",
+    "hermes_cli/cli_agent_setup_mixin.py",
+    "hermes_cli/config_defaults.py",
+    "hermes_cli/runtime_provider.py",
+    "tui_gateway/agent_factory.py",
+    "cron/scheduler.py: unrelated provider fallback hunk"
+  ],
+  "verification": {
+    "pinned_source_head": "ab44d8acf7bca230aea8574f2f2ab4666ca293ce",
+    "all_45_test_paths_present": true,
+    "source_hashes_unchanged_during_extraction": true,
+    "candidate_tests_run": true,
+    "candidate_test_summary": {"files": 45, "passed": 909, "failed": 0, "skipped": 1},
+    "release_tool_tests_passed": 8,
+    "disposable_docker_tests_run": true,
+    "live_deployment_or_QQ_actions_performed": false,
+    "public_recipe_images_rebuilt": false
+  },
+  "counts": {
+    "overlay_files": 103,
+    "complete_qq_package_files": 21,
+    "core_reconstructed_files": 20,
+    "regression_test_files": 45,
+    "bootstrap_files": 1,
+    "external_plugin_files": 2,
+    "new_at_base": 64,
+    "modified_at_base": 27,
+    "unchanged_at_base": 12
+  },
+  "patch_sha256": "8c78e1a4a36e099f348f472b72e36f117a63a4bd5b6e1be746abe3f50af1c0fb"
+}

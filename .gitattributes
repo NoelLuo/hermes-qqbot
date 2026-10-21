@@ -1,0 +1,7 @@
+* text=auto eol=lf
+# Unified patch payloads require space-prefixed empty context lines.
+*.patch -whitespace
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
