@@ -181,7 +181,7 @@ class RequestSecurityPolicy:
         if name == 'guest_workspace':
             return isinstance(args, dict) and isinstance(args.get('action'), str) and args['action'] in {
                 'info', 'list', 'read', 'write', 'mkdir', 'copy', 'move', 'search',
-                'organize_csv', 'import_attachment', 'export', 'run_python', 'delete', 'cleanup',
+                'organize_csv', 'import_attachment', 'export', 'run_python', 'run_office', 'delete', 'cleanup',
             } and (args['action'] != 'delete' or args.get('confirm') is True)
         if name == 'guest_browser':
             return isinstance(args, dict) and isinstance(args.get('action'), str) and args['action'] in {

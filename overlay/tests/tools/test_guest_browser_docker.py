@@ -71,7 +71,7 @@ def test_decode_rejects_bad_artifacts():
 
 def test_mutable_image_rejected_without_docker():
     result = browser._run("https://example.com/", [], image="latest", timeout=1, fetcher=None)
-    assert not result["success"] and "sha256" in result["error"]
+    assert not result["success"] and result["error_code"] == "worker_failure"
 
 
 def test_real_offline_chromium_javascript_links_png_download_isolation(own_browser_containers):
@@ -195,14 +195,14 @@ def test_fetch_rpc_strips_secrets_and_honors_remaining_budget():
 
 def test_real_resource_request_budget_fails_closed():
     calls = []
-    html = ("<body>budget" + "".join(f'<img src="/resource-{i}">' for i in range(140)) + "</body>").encode()
+    html = ("<body>budget" + "".join(f'<script src="/resource-{i}"></script>' for i in range(140)) + "</body>").encode()
 
     def fetch(url, **kwargs):
         calls.append(url)
         return {"status": 200, "headers": {"content-type": "text/html"}, "body": html if url.endswith("/") else b""}
 
     result = browser._run("https://example.com/", [], image=_image(), timeout=45, fetcher=fetch)
-    assert not result["success"] and "budget" in result["error"], result
+    assert not result["success"] and result["error_code"] == "worker_failure", result
     assert len(calls) == 128
 
 

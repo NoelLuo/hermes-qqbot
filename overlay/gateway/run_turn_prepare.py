@@ -702,13 +702,11 @@ class GatewayTurnPrepareMixin:
             # A refused local turn answers with its refusal (session_context_refs.turn_references).
             return getattr(event, "_gateway_turn_refusal", None), _session_env_tokens
 
-        from gateway.request_security import grant_verified_event_attachments
+        from gateway.request_security import attachment_workspace_note, grant_verified_event_attachments
         eligible = await asyncio.to_thread(grant_verified_event_attachments, self, event)
-        if eligible:
-            turn_sidecar_notes.append(
-                '[本请求已核验可导入附件；import_attachment 的 source 使用以下最终路径，'
-                'path 另填本人工作区相对目标；其他背景图片不因此获得导入授权]\n'
-                + '\n'.join(eligible))
+        attachment_note = attachment_workspace_note(self, event, eligible)
+        if attachment_note:
+            turn_sidecar_notes.append(attachment_note)
 
         message_text, persist_user_message, persist_user_timestamp = (
             self._hmwa_apply_message_timestamp(event, message_text)

@@ -10,11 +10,21 @@ import base64
 import json
 import re
 import sys
-from urllib.parse import urlsplit
+from html.parser import HTMLParser
+from urllib.parse import urljoin, urlsplit
 
 MAX_FILE = 32 * 1024 * 1024
 MAX_TOTAL = 64 * 1024 * 1024
 MAX_LINE = 92 * 1024 * 1024
+ERROR_CODES = {"network_error", "network_connect_failed", "network_connect_timeout", "network_read_timeout", "network_tls_error", "http_error", "navigation_timeout", "unsupported_document", "download_failed", "worker_failure", "cleanup_failed"}
+
+
+class BrowserError(Exception):
+    def __init__(self, error_code):
+        self.error_code = error_code if error_code in ERROR_CODES else "worker_failure"
+        super().__init__(self.error_code)
+
+
 EXTENSIONS = {"txt", "csv", "json", "md", "pdf", "png", "jpg", "jpeg", "webp"}
 
 
@@ -77,7 +87,7 @@ class Broker:
                 raise ValueError("Broker protocol line limit/EOF")
             response = json.loads(line)
             if response.get("id") != self.sequence or response.get("success") is not True:
-                raise ValueError("Public fetch denied or failed")
+                raise BrowserError(response.get("error_code", "network_error"))
             data = base64.b64decode(response["body"], validate=True)
             if len(data) > MAX_FILE:
                 raise ValueError("Fetch body limit exceeded")
@@ -108,6 +118,10 @@ async def browse(request):
     artifacts = {}
     total = 0
     navigation_redirect = None
+    navigation_error = None
+    document = {}
+    downloads = []
+    visual = any(a["kind"] == "screenshot" for a in request["actions"])
 
     def artifact(name, data):
         nonlocal total
@@ -118,6 +132,36 @@ async def browse(request):
             raise ValueError("Artifact byte/count limit exceeded")
         total += len(data)
         artifacts[name] = base64.b64encode(data).decode("ascii")
+
+    async def download(action):
+        response, data = await broker.fetch(action["url"])
+        if not 200 <= response["status"] < 300:
+            raise BrowserError("http_error")
+        content_type = response["headers"].get("content-type", "application/octet-stream").split(";", 1)[0].lower()
+        if data.startswith(b"%PDF-"):
+            content_type = "application/pdf"
+        if action["name"].lower().endswith(".pdf") and content_type != "application/pdf":
+            raise BrowserError("download_failed")
+        artifact(action["name"], data)
+        downloads.append({"name": action["name"], "url": response.get("final_url", action["url"]),
+                          "content_type": content_type, "bytes": len(data), "http_status": response["status"]})
+
+    if request["actions"] and all(a["kind"] == "download" for a in request["actions"]):
+        for action in request["actions"]:
+            await download(action)
+        return {"event": "result", "success": True, "title": "", "url": downloads[-1]["url"],
+                "text": "", "links": [], "artifacts": artifacts, "result_type": "download", "downloads": downloads}
+
+    # Classify the main response before launching Chromium: PDFs are downloads.
+    initial_response, initial_data = await broker.fetch(request["url"])
+    if initial_response["status"] >= 400:
+        raise BrowserError("http_error")
+    initial_type = initial_response["headers"].get("content-type", "").split(";", 1)[0].lower()
+    if initial_data.startswith(b"%PDF-") or initial_type == "application/pdf":
+        raise BrowserError("unsupported_document")
+    initial_url = validate_url(initial_response.get("final_url", request["url"]))
+    initial_response.pop("redirect_url", None)
+    initial_pending = True
 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(headless=True, chromium_sandbox=False, args=[
@@ -131,13 +175,27 @@ async def browse(request):
         await context.add_init_script("Object.defineProperty(globalThis,'RTCPeerConnection',{value:undefined}); Object.defineProperty(globalThis,'webkitRTCPeerConnection',{value:undefined});")
 
         async def route_request(route):
-            nonlocal navigation_redirect
+            nonlocal navigation_redirect, navigation_error, initial_pending
             req = route.request
             if req.method != "GET" or not _valid_url(req.url):
                 await route.abort("blockedbyclient")
                 return
+            main = req.is_navigation_request() and req.frame == page.main_frame
+            if not visual and req.resource_type in {"image", "font", "media", "stylesheet"}:
+                await route.abort("blockedbyclient")
+                return
             try:
-                response, data = await broker.fetch(req.url, req.method, await req.all_headers())
+                if main and initial_pending and req.url == initial_url:
+                    response, data = initial_response, initial_data
+                    initial_pending = False
+                else:
+                    response, data = await broker.fetch(req.url, req.method, await req.all_headers())
+                if main:
+                    document.update(http_status=response["status"], content_type=response["headers"].get("content-type", "").split(";", 1)[0])
+                    if response["status"] >= 400:
+                        raise BrowserError("http_error")
+                    if data.startswith(b"%PDF-") or document["content_type"] == "application/pdf":
+                        raise BrowserError("unsupported_document")
                 if (response.get("redirect_url") and req.is_navigation_request()
                         and req.frame == page.main_frame):
                     # Chromium cannot follow a native redirect with network=none:
@@ -149,7 +207,9 @@ async def browse(request):
                            if k.lower() not in {"set-cookie", "set-cookie2", "content-length", "content-encoding", "transfer-encoding", "connection", "location", "refresh"}}
                 # Redirects are resolved and revalidated by the public broker.
                 await route.fulfill(status=response["status"], headers=headers, body=data)
-            except (ValueError, KeyError, TypeError):
+            except (ValueError, KeyError, TypeError, BrowserError) as exc:
+                if main:
+                    navigation_error = getattr(exc, "error_code", "worker_failure")
                 await route.abort("blockedbyclient")
 
         await context.route("**/*", route_request)
@@ -160,20 +220,34 @@ async def browse(request):
         page.set_default_timeout(7000)
 
         async def navigate(target):
-            nonlocal navigation_redirect
+            nonlocal navigation_redirect, navigation_error
             for _ in range(6):
                 navigation_redirect = None
+                navigation_error = None
                 try:
-                    await page.goto(target, wait_until="load", timeout=20000)
-                except PlaywrightError:
+                    await page.goto(target, wait_until="domcontentloaded", timeout=20000)
+                except PlaywrightError as exc:
+                    if navigation_error:
+                        raise BrowserError(navigation_error) from None
                     if navigation_redirect is None:
-                        raise
+                        raise BrowserError("navigation_timeout" if "Timeout" in type(exc).__name__ else "worker_failure") from None
                 if navigation_redirect is None:
                     return
                 target = navigation_redirect
             raise ValueError("Browser navigation redirect limit")
 
-        await navigate(request["url"])
+        try:
+            await navigate(initial_url)
+        except BrowserError as exc:
+            if exc.error_code != "navigation_timeout" or any(a["kind"] != "read" for a in request["actions"]):
+                raise
+            # A read can still use the real server HTML when blocking scripts
+            # prevent DOM readiness. Never substitute this for a screenshot or
+            # claim that JavaScript finished executing.
+            await browser.close()
+            return {"event": "result", "success": True, **static_snapshot(initial_data, initial_url),
+                    "artifacts": {}, "result_type": "page", "downloads": [], **document,
+                    "rendering": "static_html", "warning": "Rendering timed out; text is from server HTML only, not completed JavaScript."}
         for index, action in enumerate(request["actions"]):
             kind = action["kind"]
             if kind == "click_link":
@@ -184,15 +258,60 @@ async def browse(request):
             elif kind == "scroll":
                 await page.mouse.wheel(0, action["pixels"])
             elif kind == "screenshot":
-                artifact(f"screenshot-{index + 1}.png", await page.screenshot(type="png", full_page=False))
+                await page.wait_for_timeout(250)
+                artifact(f"screenshot-{index + 1}.png", await page.screenshot(type="png", full_page=False, timeout=5000, animations="disabled"))
             elif kind == "download":
-                response, data = await broker.fetch(action["url"])
-                if not 200 <= response["status"] < 300:
-                    raise ValueError("Download HTTP failure")
-                artifact(action["name"], data)
+                await download(action)
         result = await snapshot(page)
         await browser.close()
-        return {"event": "result", "success": True, **result, "artifacts": artifacts}
+        return {"event": "result", "success": True, **result, "artifacts": artifacts, "result_type": "page", "downloads": downloads, **document}
+
+
+def static_snapshot(data, url):
+    class Reader(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.skip = 0
+            self.title = False
+            self.titles, self.texts, self.links = [], [], []
+            self.current = None
+            self.text_bytes = 0
+
+        def handle_starttag(self, tag, attrs):
+            if tag in {"script", "style", "noscript"}:
+                self.skip += 1
+            if tag == "title":
+                self.title = True
+            if tag == "a" and not self.skip and len(self.links) < 80:
+                target = urljoin(url, dict(attrs).get("href") or "")
+                if _valid_url(target):
+                    self.current = {"text": "", "url": target}
+                    self.links.append(self.current)
+
+        def handle_endtag(self, tag):
+            if tag in {"script", "style", "noscript"}:
+                self.skip = max(0, self.skip - 1)
+            if tag == "title":
+                self.title = False
+            if tag == "a":
+                self.current = None
+
+        def handle_data(self, text):
+            if self.skip:
+                return
+            if self.title:
+                self.titles.append(text[:1024])
+            elif text.strip() and self.text_bytes < 32768:
+                self.texts.append(text.strip())
+                self.text_bytes += len(text.encode("utf-8"))
+            if self.current is not None:
+                self.current["text"] = (self.current["text"] + text)[:512]
+
+    parser = Reader()
+    parser.feed(data[:4 * 1024 * 1024].decode("utf-8", errors="replace"))
+    return {"title": "".join(parser.titles)[:1024], "url": url,
+            "text": "\n".join(parser.texts).encode("utf-8")[:32768].decode("utf-8", errors="ignore"),
+            "links": parser.links}
 
 
 def main():
@@ -203,7 +322,7 @@ def main():
         result = asyncio.run(browse(json.loads(raw)))
     except Exception as exc:
         result = {"event": "result", "success": False, "title": "", "url": "", "text": "",
-                  "links": [], "artifacts": {}, "error": str(exc)[:512]}
+                  "links": [], "artifacts": {}, "error_code": getattr(exc, "error_code", "worker_failure")}
     emit(result)
 
 

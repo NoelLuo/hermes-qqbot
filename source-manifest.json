@@ -77,23 +77,25 @@
     },
     {
       "path": "agent/request_security.py",
-      "sha256": "f0c139e58c84602060ee6343090677b9167b96ed9ff3fb2cdeb187d5f256e79f",
+      "sha256": "e66ec4fef9093c931ced95f3d0d20a457c609bb85189a1117a258c4e52b1dc66",
       "base_sha256": null,
-      "source_sha256": "f0c139e58c84602060ee6343090677b9167b96ed9ff3fb2cdeb187d5f256e79f",
+      "source_sha256": "e66ec4fef9093c931ced95f3d0d20a457c609bb85189a1117a258c4e52b1dc66",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "agent/request_workspace_guidance.py",
-      "sha256": "93f97cfc735815073fe5198490f9b396f708961817442f46a774b2c08def42d4",
+      "sha256": "ad46ac0388e7fd296cebde07e8fc60b34fc8802b6801f0c7c81f3291dad9e6e3",
       "base_sha256": null,
-      "source_sha256": "37f2b061f98220865531c8cbbd885b2860a2daf6e0b93131ad2afd3069f85863",
+      "source_sha256": "658ba92b93ce959f0fd2677c33cf7b4cf9382b821ebc3e628f0cc848f59a50d3",
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [
         "Use neutral public example URL rather than deployment-specific suggested site."
-      ]
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "agent/system_prompt.py",
@@ -254,12 +256,13 @@
     },
     {
       "path": "gateway/request_security.py",
-      "sha256": "34b6cac9b38cf85cc3a8717d46be4384e801159c5916b7012468e616fe9d0e25",
+      "sha256": "9cc2b75af1784f0c75341d57ae70a449e81b684a4dd9ad387d7a4263e4d6eb58",
       "base_sha256": null,
-      "source_sha256": "34b6cac9b38cf85cc3a8717d46be4384e801159c5916b7012468e616fe9d0e25",
+      "source_sha256": "9cc2b75af1784f0c75341d57ae70a449e81b684a4dd9ad387d7a4263e4d6eb58",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "gateway/run_busy.py",
@@ -330,9 +333,9 @@
     },
     {
       "path": "gateway/run_turn_prepare.py",
-      "sha256": "a6ccd66242b48a1bf5d4e06a6b291ac75f4ef2dbe33b39c0b8dc4495231d09d7",
+      "sha256": "b1311003e7d4957a09e1ff8b4b9a219f25f0607a548c341b72eca9a0c5fbf964",
       "base_sha256": "7debb42ae2b7607d8e3e1d75e8590b1f2b49f663461036bf2b32113562c7acf6",
-      "source_sha256": "a6ccd66242b48a1bf5d4e06a6b291ac75f4ef2dbe33b39c0b8dc4495231d09d7",
+      "source_sha256": "b1311003e7d4957a09e1ff8b4b9a219f25f0607a548c341b72eca9a0c5fbf964",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -346,7 +349,8 @@
           "@@ -695,0 +705,8 @@ class GatewayTurnPrepareMixin:"
         ],
         "excluded_hunks": []
-      }
+      },
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "gateway/run_turn_runner.py",
@@ -703,6 +707,18 @@
       "redaction_rationale": []
     },
     {
+      "path": "tests/agent/test_guest_office_surface.py",
+      "sha256": "58de972feb1a08fb7c5360dd11fa778846a0788fdc6d896dcfb6d0ccdf9d7648",
+      "base_sha256": null,
+      "source_sha256": "58de972feb1a08fb7c5360dd11fa778846a0788fdc6d896dcfb6d0ccdf9d7648",
+      "source_kind": "live_source",
+      "status_at_base": "added",
+      "redaction_rationale": [
+        "Isolated office/browser implementation and regression coverage; no runtime configuration or private data."
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
+    },
+    {
       "path": "tests/agent/test_guest_workspace_prompt.py",
       "sha256": "08dba591a6e8cad44e03ffcf946eacad2c322db4952e79fe4fda51d4d8406936",
       "base_sha256": null,
@@ -956,6 +972,18 @@
       "redaction_rationale": []
     },
     {
+      "path": "tests/gateway/test_quoted_attachment_workspace_guidance.py",
+      "sha256": "495a2c4a2e3213db6342e2b273e21c4da001fa1a0ed61a90369bca4bd0f4bf26",
+      "base_sha256": null,
+      "source_sha256": "495a2c4a2e3213db6342e2b273e21c4da001fa1a0ed61a90369bca4bd0f4bf26",
+      "source_kind": "live_source",
+      "status_at_base": "added",
+      "redaction_rationale": [
+        "Isolated office/browser implementation and regression coverage; no runtime configuration or private data."
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
+    },
+    {
       "path": "tests/gateway/test_request_security_policy_resolution.py",
       "sha256": "81f8002f11b244cd0bb026c36c633ad7cc3f3f86b446b37f49ce99b28067524b",
       "base_sha256": null,
@@ -994,31 +1022,46 @@
       "redaction_rationale": []
     },
     {
-      "path": "tests/tools/test_guest_browser_docker.py",
-      "sha256": "9dd74fc1f3e4221392fe46013367fbd9171131bfd5d2a01ac61d9dae10af575d",
+      "path": "tests/tools/test_guest_browser_diagnostics.py",
+      "sha256": "c9ec2eb330f73d4004328e7bb06be86069646d94eb648cf78e4a09d79b18eb18",
       "base_sha256": null,
-      "source_sha256": "9dd74fc1f3e4221392fe46013367fbd9171131bfd5d2a01ac61d9dae10af575d",
+      "source_sha256": "c9ec2eb330f73d4004328e7bb06be86069646d94eb648cf78e4a09d79b18eb18",
+      "source_kind": "live_source",
+      "status_at_base": "added",
+      "redaction_rationale": [
+        "Isolated office/browser implementation and regression coverage; no runtime configuration or private data."
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
+    },
+    {
+      "path": "tests/tools/test_guest_browser_docker.py",
+      "sha256": "451842ac86ec31ac3746e8f1656795380d52de248ad72847a81cf554aa6cd75b",
+      "base_sha256": null,
+      "source_sha256": "451842ac86ec31ac3746e8f1656795380d52de248ad72847a81cf554aa6cd75b",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tests/tools/test_guest_browser_live_integration.py",
-      "sha256": "0d123e34f3f8b219b02ba6768bf9c0ca86758caa4e0bd2f7255c2ee1bd2ea12a",
+      "sha256": "a6fc0900991f5fb50318ec58fb97753fb89c1dbc6bbc0393539c59aa48a3fe96",
       "base_sha256": null,
-      "source_sha256": "0d123e34f3f8b219b02ba6768bf9c0ca86758caa4e0bd2f7255c2ee1bd2ea12a",
+      "source_sha256": "a6fc0900991f5fb50318ec58fb97753fb89c1dbc6bbc0393539c59aa48a3fe96",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tests/tools/test_guest_browser_network.py",
-      "sha256": "a8f42f141a25f83598086bc26b72f201bbf596b43c86990f886a1962f1d972a3",
+      "sha256": "7ef2edd5a6e57b7021bdb8fbb89a84b8665adecfd8d5b83abf26d73bd7de2b44",
       "base_sha256": null,
-      "source_sha256": "a8f42f141a25f83598086bc26b72f201bbf596b43c86990f886a1962f1d972a3",
+      "source_sha256": "7ef2edd5a6e57b7021bdb8fbb89a84b8665adecfd8d5b83abf26d73bd7de2b44",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tests/tools/test_guest_browser_surface.py",
@@ -1028,6 +1071,43 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": []
+    },
+    {
+      "path": "tests/tools/test_guest_office_docker.py",
+      "sha256": "932e2f0bd3e4f3a4cf97449a621f4fb1ef03ef19002e9ddc5978abc86dbb0117",
+      "base_sha256": null,
+      "source_sha256": "932e2f0bd3e4f3a4cf97449a621f4fb1ef03ef19002e9ddc5978abc86dbb0117",
+      "source_kind": "live_source",
+      "status_at_base": "added",
+      "redaction_rationale": [
+        "Isolated office/browser implementation and regression coverage; no runtime configuration or private data."
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
+    },
+    {
+      "path": "tests/tools/test_guest_office_live.py",
+      "sha256": "8347648abe77bdcca215744e99b734ba5775c645b6b338d5ddb3f85307feb720",
+      "base_sha256": null,
+      "source_sha256": "8347648abe77bdcca215744e99b734ba5775c645b6b338d5ddb3f85307feb720",
+      "source_kind": "live_source",
+      "status_at_base": "added",
+      "redaction_rationale": [
+        "Isolated office/browser implementation and regression coverage; no runtime configuration or private data."
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
+    },
+    {
+      "path": "tests/tools/test_guest_office_store.py",
+      "sha256": "81178e75c29b54d139bb6d35c5ae9df08fe79e6cef18e90f2db024e2d4c5a329",
+      "base_sha256": null,
+      "source_sha256": "b9abdd68eb9171404c9f51bc26c9decbca4e10a7b7bfc0ef7e66013bd986ba6d",
+      "source_kind": "live_source",
+      "status_at_base": "added",
+      "redaction_rationale": [
+        "Isolated office/browser implementation and regression coverage; no runtime configuration or private data.",
+        "Fictional Windows path normalized to an explicit example fixture; path-redaction assertion retained."
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tests/tools/test_guest_workspace_docker.py",
@@ -1142,48 +1222,77 @@
     },
     {
       "path": "tools/guest_browser_docker.py",
-      "sha256": "25295fe17309c94d409e440f142b8e95fe1b7f799aeb261135c38c14300552e2",
+      "sha256": "e15d1fa5bbabadd392bdc13223b0dc3106ccaaced1c67c7cc3119b0b58a227cd",
       "base_sha256": null,
-      "source_sha256": "25295fe17309c94d409e440f142b8e95fe1b7f799aeb261135c38c14300552e2",
+      "source_sha256": "e15d1fa5bbabadd392bdc13223b0dc3106ccaaced1c67c7cc3119b0b58a227cd",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tools/guest_browser_interface.py",
-      "sha256": "d6db2ef15447c676fce419a6b6b4fc107e60da4a66112af35aa4c5a6fd1e7b52",
+      "sha256": "8118f4ed40178175d9342f5a3d5966bbf50ab839c824a368edd1c0051078d355",
       "base_sha256": null,
-      "source_sha256": "d6db2ef15447c676fce419a6b6b4fc107e60da4a66112af35aa4c5a6fd1e7b52",
+      "source_sha256": "8118f4ed40178175d9342f5a3d5966bbf50ab839c824a368edd1c0051078d355",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tools/guest_browser_network.py",
-      "sha256": "cd2f7875e901b254638b72c555282c967d0baaa19e7ab19361b8090e643b0ce0",
+      "sha256": "b2ce63945f337979a61ef29eed93dae2b66bea5e87bfbce7053198c205e7957b",
       "base_sha256": null,
-      "source_sha256": "cd2f7875e901b254638b72c555282c967d0baaa19e7ab19361b8090e643b0ce0",
+      "source_sha256": "b2ce63945f337979a61ef29eed93dae2b66bea5e87bfbce7053198c205e7957b",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tools/guest_browser_service.py",
-      "sha256": "1d571b606b2b9ff49d5ffd3c5e3074cbe8a123e8b5fc3ba4bbe0770569f5b926",
+      "sha256": "9820b2797ce85b86ef5d442bc616b1b6cb70f593e0a6ac04e795681065b6d57c",
       "base_sha256": null,
-      "source_sha256": "1d571b606b2b9ff49d5ffd3c5e3074cbe8a123e8b5fc3ba4bbe0770569f5b926",
+      "source_sha256": "9820b2797ce85b86ef5d442bc616b1b6cb70f593e0a6ac04e795681065b6d57c",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tools/guest_browser_worker.py",
-      "sha256": "543a70e9359328d1206ecf9f2eb40005c204d4957c331bd90de1c14ac4f3ee72",
+      "sha256": "b1fb866978dfbbe38e9e8334dbe2f40ba846ec58810ea35bf061412f5a355187",
       "base_sha256": null,
-      "source_sha256": "543a70e9359328d1206ecf9f2eb40005c204d4957c331bd90de1c14ac4f3ee72",
+      "source_sha256": "b1fb866978dfbbe38e9e8334dbe2f40ba846ec58810ea35bf061412f5a355187",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
+    },
+    {
+      "path": "tools/guest_office_docker.py",
+      "sha256": "77b7a270c41d170c43b7db758aa53431f78870b3099d7c823a6520879bf4e5cb",
+      "base_sha256": null,
+      "source_sha256": "77b7a270c41d170c43b7db758aa53431f78870b3099d7c823a6520879bf4e5cb",
+      "source_kind": "live_source",
+      "status_at_base": "added",
+      "redaction_rationale": [
+        "Isolated office/browser implementation and regression coverage; no runtime configuration or private data."
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
+    },
+    {
+      "path": "tools/guest_office_worker.py",
+      "sha256": "ccd0ec7f7c80973996d94333ac4d549c9e26183e90c5546906fad669a1ea2f86",
+      "base_sha256": null,
+      "source_sha256": "ccd0ec7f7c80973996d94333ac4d549c9e26183e90c5546906fad669a1ea2f86",
+      "source_kind": "live_source",
+      "status_at_base": "added",
+      "redaction_rationale": [
+        "Isolated office/browser implementation and regression coverage; no runtime configuration or private data."
+      ],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tools/guest_workspace_docker.py",
@@ -1196,12 +1305,13 @@
     },
     {
       "path": "tools/guest_workspace_interface.py",
-      "sha256": "90a62ec86fecbd0e7525a8d2e5ee3d9e5a6052dd4adcf6dcfb352c0b1f3b277d",
+      "sha256": "80ad4d5b21174214dd3fb42cf4879eab5c3db4906e47d67a10f11ba8300624c3",
       "base_sha256": null,
-      "source_sha256": "90a62ec86fecbd0e7525a8d2e5ee3d9e5a6052dd4adcf6dcfb352c0b1f3b277d",
+      "source_sha256": "80ad4d5b21174214dd3fb42cf4879eab5c3db4906e47d67a10f11ba8300624c3",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tools/guest_workspace_lifecycle.py",
@@ -1223,12 +1333,13 @@
     },
     {
       "path": "tools/guest_workspace_store.py",
-      "sha256": "6c96153c70d6d9809cef305d893eaee75dfe6608e6a0847347d072ac27f91619",
+      "sha256": "5e41336fd5aff71bc3aa75a392036bd27e63672557057bdb5d84001d55d5449b",
       "base_sha256": null,
-      "source_sha256": "6c96153c70d6d9809cef305d893eaee75dfe6608e6a0847347d072ac27f91619",
+      "source_sha256": "5e41336fd5aff71bc3aa75a392036bd27e63672557057bdb5d84001d55d5449b",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "isolated-office-and-browser-repair"
     },
     {
       "path": "tools/guest_workspace_text.py",
@@ -1264,6 +1375,7 @@
   ],
   "tests": [
     "tests/agent/test_guest_browser_invalid_arguments.py",
+    "tests/agent/test_guest_office_surface.py",
     "tests/agent/test_guest_workspace_prompt.py",
     "tests/agent/test_guest_workspace_repair_guidance.py",
     "tests/agent/test_guest_workspace_surface.py",
@@ -1291,13 +1403,18 @@
     "tests/gateway/test_qqbot_scope_paths.py",
     "tests/gateway/test_qqbot_security_delivery_binding.py",
     "tests/gateway/test_qqbot_update_prompt_key.py",
+    "tests/gateway/test_quoted_attachment_workspace_guidance.py",
     "tests/gateway/test_request_security_policy_resolution.py",
     "tests/plugins/platforms/test_qqbot_plugin.py",
     "tests/plugins/platforms/test_qqbot_send_targets.py",
+    "tests/tools/test_guest_browser_diagnostics.py",
     "tests/tools/test_guest_browser_docker.py",
     "tests/tools/test_guest_browser_live_integration.py",
     "tests/tools/test_guest_browser_network.py",
     "tests/tools/test_guest_browser_surface.py",
+    "tests/tools/test_guest_office_docker.py",
+    "tests/tools/test_guest_office_live.py",
+    "tests/tools/test_guest_office_store.py",
     "tests/tools/test_guest_workspace_docker.py",
     "tests/tools/test_guest_workspace_lifecycle.py",
     "tests/tools/test_guest_workspace_live_docker.py",
@@ -1371,5 +1488,5 @@
     "modified_at_base": 27,
     "unchanged_at_base": 12
   },
-  "patch_sha256": "e0ff0ad9688cfd3a6ce1a6114087f4187ef3874d88897883157b0770e20bde99"
+  "patch_sha256": "799d0402946bd2912d82a6a0910830f5fb9c1f6819a24d529134057ae30f64ec"
 }

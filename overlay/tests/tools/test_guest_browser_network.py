@@ -319,8 +319,9 @@ def test_tls_verification_failure_is_not_downgraded(transport, monkeypatch):
             raise ssl.SSLCertVerificationError("secret upstream certificate detail")
 
     monkeypatch.setattr(net.ssl, "create_default_context", lambda: BadCertificate())
-    with pytest.raises(net.PublicNetworkError, match="Public connection failed"):
+    with pytest.raises(net.PublicNetworkError, match="Public transport failed") as caught:
         net.fetch_public("https://example.com/")
+    assert caught.value.error_code == "network_tls_error"
     assert transport[0][0].closed
     assert not transport[0][0].sent
 

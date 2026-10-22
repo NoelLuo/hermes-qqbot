@@ -29,6 +29,12 @@ python -c 'import hashlib,pathlib; print(hashlib.sha256(pathlib.Path("overlay/to
 
 Require Playwright `1.63.0` and equal source/baked-worker SHA256, then run the actual host driver's Docker fixture tests and optional live broker tests. Hash equality alone does not prove runtime safety or delivery. The driver expects an immutable local image ID and worker path `/opt/hermes/guest_browser_worker.py`; set the reviewed plugin entry's `browser_image` to your ID only after acceptance. Keep `browser_enabled` false until then. Changing the worker requires rebuilding and rechecking the configured image.
 
+## Office: separate binary-processing runtime
+
+The optional office executor has its own [build assets and operator guide](../plugins/guest-workspace/office-runtime/README.md). Its online recipe pins an official Python 3.13 base and a twelve-wheel Linux/amd64 dependency closure with SHA256 hashes; Debian application versions are selected from signed repositories at build time, not a frozen snapshot. An optional host-download/offline-build path stages signed Debian indexes and hash-checked packages/wheels without changing Docker proxy settings or exposing a host mount to guests. Build dependencies, logs and OCI archives stay outside the published source tree.
+
+`build_office.py --source PREPARED_HOST --scratch NEW_EVIDENCE_DIRECTORY` builds the selected worker/helper and records their hashes. Verify the actual image ID, source/baked worker/helper equality, installed app/library versions and real office/Docker tests before configuring `office_image`; the small-text Python `docker_image` is a different runtime. Do not reuse a private deployment's image ID. New portable recipes still require fresh-build acceptance; an existing source-matched image passing tests is reported separately.
+
 ## Python: minimal public replacement candidate
 
 Inspection established that the historical Python runtime used `python3` from an **unrelated pre-existing application image**, not a dedicated redistributable sandbox build. The reported interpreter was Python 3.14.6. Its original build inputs cannot be reconstructed from that image ID alone. That private image/service and its mutable tag are **not** installation dependencies, and its ID is deliberately not published here.
@@ -54,6 +60,6 @@ This Dockerfile creates no mounted data volumes and starts no application servic
 
 ## Build failure policy and licensing
 
-If a base/blob/wheel is inaccessible or hashes fail, report the blocker. Do not replace it with a plausible hash, host-installed wheel, arbitrary image or a private archive. The online browser recipe still requires downloading the official base layers and four specified public wheels. Offline environments must stage those exact validated inputs through an operator-reviewed process; no fallback image-import utility is shipped or promised here.
+If a base/blob/wheel is inaccessible or hashes fail, report the blocker. Do not replace it with a plausible hash, host-installed wheel, arbitrary image or a private archive. The online browser recipe still requires downloading the official base layers and four specified public wheels. Offline browser environments must stage those exact validated inputs through an operator-reviewed process. The separate office directory supplies an optional digest-verified official-base OCI fetch aid and offline build path; neither silently loads archives, changes the daemon nor enables a runtime.
 
 No private local image ID proves reproducibility. No raw build receipt, real screenshot, wheel or Docker archive belongs in this source repository. Preserve upstream MIT notices and all relevant Python/Playwright/Chromium/container third-party notices. Installing these recipes does not enable a plugin or change/restart the gateway.

@@ -1,6 +1,20 @@
 # Verification ledger — sanitized public candidate
 
-## Current mention-routing fix
+## Current isolated-office and browser update
+
+The reviewed increment was migrated onto the public overlay without replacing its neutral names or adding private configuration/history/attachments. The regenerated patch applied to a fresh disposable checkout of the exact pinned upstream commit; all **111 overlay files** matched their manifest hashes. The checkout shares immutable Git objects with the source repository, not working files. An explicit installation to a new isolated plugin destination was read back byte-for-byte for all 14 plugin/build files; it changed no live configuration or service. The final 146-file bounded hygiene scan, including a private deny list kept outside the project, had no findings; relative Markdown links were also checked.
+
+Patch SHA256: `799d0402946bd2912d82a6a0910830f5fb9c1f6819a24d529134057ae30f64ec`.
+
+Canonical Windows / prepared PM Python 3.14.7 run: **51 files, 996 passed, 0 failed, 1 skipped**, 574.1 seconds, two workers, no file retries, real-home protection retained. The sole skip is POSIX-only. The full manifest test set was exercised on this public candidate, not inferred from the private deployment's different count.
+
+This includes actual hardened browser JavaScript/screenshot/download tests, live public GET/store/export integration, small-text Python Docker tests, and the new office live path: a generated 24 MiB binary ZIP, DOCX/XLSX/PPTX creation, PDF text extraction, LibreOffice headless conversion, persistence/export/ledger checks, failure rollback, ZIP traversal/link refusal and descendant cleanup. Controlled broker fixtures and real public requests are separate cases; no real QQ message was sent.
+
+Release-tool tests: **eight passed**, with five additional pytest-reported subtests; these are separate from the 996 suite passes. Scoped Ruff passed for the changed overlay files using the pinned host configuration. All supplied office Python build/helper sources compiled. The twelve-wheel CPython 3.13/Linux hash lock was exercised with `pip download --no-index --require-hashes` against the previously acquired cache, with no host package installation. This validates the dependency lock, not a fresh Docker build. Public metadata/examples remain disabled and carry no usable private image ID.
+
+Existing runtime images were used. The office supervisor/helper and browser worker were checked against public source after LF normalization; the browser image contains CRLF source, so this is **normalized source equivalence, not a raw-byte image/source hash equality claim**. The published build/activation instructions continue to require rebuilding and checking exact baked hashes for each deployment. Fresh builds of the newly supplied portable office recipe, and of every other public recipe, remain acceptance work. There is no Linux/macOS CI or real QQ delivery receipt in this ledger. Source scans are bounded hygiene, not comprehensive secret/security certification; raw host logs and images remain private.
+
+## Previous mention-routing fix
 
 The addressee guard and ten additional parameterized regression cases were applied to the reviewed public overlay, without private persona/configuration/history. The generated patch was successfully applied to a fresh disposable checkout at the pinned upstream commit; all 103 overlay files matched manifest hashes afterward. This checkout shares immutable Git objects with the local source, not working files.
 

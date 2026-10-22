@@ -38,7 +38,7 @@ _LOCK = threading.RLock()
 _RESERVED = {'.exports', '.lock', '.txn', '.lifecycle.json'}
 _DEVICE = re.compile(r'^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)', re.IGNORECASE)
 _FIELDS = {
-    'info': set(), 'list': {'path'}, 'read': {'path'},
+    'info': set(), 'list': {'path'}, 'read': {'path', 'offset', 'limit'},
     'write': {'path', 'text', 'overwrite'}, 'mkdir': {'path'},
     'copy': {'path', 'destination', 'overwrite'},
     'move': {'path', 'destination', 'overwrite'},
@@ -47,15 +47,20 @@ _FIELDS = {
     'import_attachment': {'source', 'path', 'overwrite', 'temporary'}, 'export': {'path'},
     'delete': {'path', 'confirm'}, 'cleanup': set(),
     'run_python': {'code', 'inputs', 'overwrite'},
+    'run_office': {'command', 'inputs', 'timeout', 'overwrite'},
 }
+OFFICE_FILES = 256
+OFFICE_TOTAL_BYTES = 128 * 1024 * 1024
 
 
 class WorkspaceError(Exception):
-    pass
+    def __init__(self, message, code='workspace_refused'):
+        super().__init__(message)
+        self.code = code
 
 
-def _deny(message):
-    raise WorkspaceError(message)
+def _deny(message, code='workspace_refused'):
+    raise WorkspaceError(message, code)
 
 
 def _check_node(path):
@@ -304,6 +309,26 @@ def _public_snapshot(root, inputs=None):
     return snapshot
 
 
+def _batch_paths(root, names):
+    aliases = {}
+    for name in names:
+        parts = _parts(name)
+        parent = root
+        for index, part in enumerate(parts):
+            prefix = '/'.join(parts[:index + 1])
+            key = prefix.casefold()
+            if key in aliases and aliases[key] != prefix:
+                _deny('case-aliased sandbox paths')
+            aliases[key] = prefix
+            if parent.is_dir():
+                for entry in parent.iterdir():
+                    if entry.name.casefold() == part.casefold() and entry.name != part:
+                        _deny('case-aliased existing workspace path')
+            parent = parent / part
+            if parent.exists() or parent.is_symlink():
+                _check_node(parent)
+
+
 def _apply_sandbox_outputs(base, root, before, outputs, overwrite, *,
                            max_files=32, max_file_bytes=256 * 1024,
                            max_total_bytes=1024 * 1024):
@@ -314,6 +339,7 @@ def _apply_sandbox_outputs(base, root, before, outputs, overwrite, *,
         _deny('invalid sandbox output path')
     if len({name.casefold() for name in outputs}) != len(outputs):
         _deny('case-aliased sandbox output paths')
+    _batch_paths(root, outputs)
     for name, data in outputs.items():
         target = _path(root, name)
         if type(data) is not bytes or len(data) > min(max_file_bytes, MAX_FILE_BYTES):
@@ -321,6 +347,8 @@ def _apply_sandbox_outputs(base, root, before, outputs, overwrite, *,
         if name in before and before[name] == data:
             continue
         if target.exists():
+            if target.is_file() and _read(target) == data:
+                continue
             if not overwrite or not target.is_file():
                 _deny('sandbox changed an existing file; overwrite required')
         changes[name] = data
@@ -400,6 +428,107 @@ def _run_python(args, base, root):
     return {'output_files': changed, 'stdout': stdout, 'stderr': stderr}
 
 
+def _office_image():
+    from hermes_cli.config import load_config_readonly
+    try:
+        image = load_config_readonly()['plugins']['entries']['guest-workspace']['office_image']
+    except (KeyError, TypeError):
+        _deny('Office Docker image is not configured; no host fallback', 'office_not_configured')
+    if not isinstance(image, str) or not re.fullmatch(r'sha256:[0-9a-f]{64}', image):
+        _deny('Office image must be a full pinned sha256 ID', 'office_not_configured')
+    return image
+
+
+def _office_snapshot(root, inputs):
+    if inputs is not None and (type(inputs) is not list or len(inputs) > OFFICE_FILES
+                              or any(not isinstance(n, str) for n in inputs)):
+        _deny('Office inputs must be at most 256 relative file paths', 'office_input_invalid')
+    names = inputs if inputs is not None else [
+        p.relative_to(root).as_posix() for p in sorted(root.rglob('*'))
+        if not any(c.casefold() in _RESERVED or c.casefold().startswith('.txn-')
+                   for c in p.relative_to(root).parts)
+        and stat.S_ISREG(_check_node(p).st_mode)
+    ]
+    if len(names) > OFFICE_FILES or len({n.casefold() for n in names}) != len(names):
+        _deny('Office input count or duplicate path limit', 'office_input_invalid')
+    _batch_paths(root, names)
+    snapshot, total = {}, 0
+    for name in names:
+        data = _read(_path(root, name))
+        total += len(data)
+        if total > OFFICE_TOTAL_BYTES:
+            _deny('Office inputs exceed 128 MiB total', 'office_input_limit')
+        snapshot[name] = data
+    return snapshot
+
+
+def _office_text(value, maximum=16384):
+    if not isinstance(value, str):
+        _deny('Invalid office diagnostic response', 'office_protocol_error')
+    # Runtime exceptions must never disclose host paths. Container /work paths
+    # remain useful for correcting commands; Windows and profile paths do not.
+    from hermes_constants import get_hermes_home
+    value = value.replace(str(get_hermes_home()), '[host-path]')
+    value = re.sub(r'(?i)[a-z]:[\\/][^\s\"\'<>]*', '[host-path]', value)
+    value = re.sub(r'\\\\[^\s\"\'<>]+', '[host-path]', value)
+    data = value.encode('utf-8', errors='replace')
+    return data[:maximum].decode('utf-8', errors='ignore') + ('\n[truncated]' if len(data) > maximum else '')
+
+
+def _run_office(args, base, root):
+    command, timeout = args.get('command'), args.get('timeout', 60)
+    if (not isinstance(command, str) or not command.strip() or '\x00' in command
+            or len(command.encode('utf-8')) > 32768
+            or type(timeout) is not int or not 1 <= timeout <= 90):
+        _deny('Office command requires 1..32768 UTF-8 bytes and timeout integer 1..90', 'office_arguments_invalid')
+    image = _office_image()
+    before = _office_snapshot(root, args.get('inputs'))
+    try:
+        from tools.guest_office_docker import run_office_sandbox
+        result = run_office_sandbox(command, dict(before), image=image, timeout=timeout)
+    except (ImportError, OSError, RuntimeError, ValueError, TypeError):
+        _deny('Office runner unavailable; no outputs saved; no host fallback', 'office_unavailable')
+    if type(result) is not dict or type(result.get('success')) is not bool:
+        _deny('Invalid office runner response', 'office_protocol_error')
+    errors = result.get('errors', [])
+    if type(errors) is not list or any(not isinstance(e, str) for e in errors):
+        _deny('Invalid office runner errors', 'office_protocol_error')
+    response = {'stdout': _office_text(result.get('stdout', '')),
+                'stderr': _office_text(result.get('stderr', '')),
+                'errors': [_office_text(e, 512) for e in errors[:16]], 'output_files': []}
+    if not result['success']:
+        code = result.get('error_code', 'office_execution_failed')
+        response.update(success=False, error='Office execution failed; no outputs saved',
+                        error_code=code if isinstance(code, str) and re.fullmatch(r'[a-z_]{1,64}', code)
+                        else 'office_execution_failed')
+        return response
+    outputs = result.get('files')
+    if type(outputs) is not dict or len(outputs) > OFFICE_FILES:
+        _deny('Invalid or excessive office output files', 'office_output_invalid')
+    # Check the model response envelope before any persistent mutation.
+    preview = {**response, 'output_files': list(outputs)}
+    if len(json.dumps(preview, ensure_ascii=False).encode('utf-8')) > MAX_OUTPUT_BYTES - 256:
+        _deny('Office output listing exceeds response budget', 'office_output_limit')
+    response['output_files'] = _apply_sandbox_outputs(
+        base, root, before, outputs, args.get('overwrite', False), max_files=OFFICE_FILES,
+        max_file_bytes=MAX_FILE_BYTES, max_total_bytes=OFFICE_TOTAL_BYTES)
+    return response
+
+
+def _read_document(path, args):
+    if 'offset' not in args and 'limit' not in args:
+        return {'path': args['path'], **decode_text(_read(path, MAX_OUTPUT_BYTES))}
+    offset, limit = args.get('offset', 0), args.get('limit', 16384)
+    if type(offset) is not int or offset < 0 or type(limit) is not int or not 1 <= limit <= 16384:
+        _deny('read offset must be nonnegative; limit must be 1..16384 characters')
+    decoded = decode_text(_read(path))
+    text = decoded['text']
+    end = min(len(text), offset + limit)
+    return {'path': args['path'], **decoded, 'text': text[offset:end],
+            'offset': offset, 'next_offset': end if end < len(text) else None,
+            'total_characters': len(text), 'truncated': end < len(text)}
+
+
 def _run(args, policy, base, root):
     action = args['action']
     from tools.guest_workspace_lifecycle import cleanup_workspace, delete_file
@@ -411,6 +540,8 @@ def _run(args, policy, base, root):
     usage = _budget(base, root)
     if action == 'run_python':
         return _run_python(args, base, root)
+    if action == 'run_office':
+        return _run_office(args, base, root)
     if action == 'info':
         return {'usage': usage, 'limits': {'file_bytes': MAX_FILE_BYTES,
                 'text_bytes': MAX_TEXT_BYTES, 'output_bytes': MAX_OUTPUT_BYTES,
@@ -424,8 +555,15 @@ def _run(args, policy, base, root):
                                   'total_document_bytes': 1024 * 1024, 'seconds': 20,
                                   'extensions': ['.txt', '.csv', '.json', '.md'],
                                   'network': False, 'subprocesses_and_threads': False},
+                'office_limits': {'input_files': OFFICE_FILES, 'output_files': OFFICE_FILES,
+                                  'file_bytes': MAX_FILE_BYTES, 'total_bytes_per_direction': OFFICE_TOTAL_BYTES,
+                                  'timeout_default': 60, 'timeout_max': 90, 'network': False,
+                                  'command_bytes': 32768, 'diagnostic_bytes_per_stream': 16384,
+                                  'apps': 'Only applications baked into the trusted office_image; installation not asserted',
+                                  'image': 'plugins.entries.guest-workspace.office_image; full sha256 required; no host fallback'},
                 'help': {'write': 'path + text (UTF-8)',
-                         'read': 'path; UTF-8, BOM-marked UTF-16/32, GB18030 fallback; returns encoding and encoding_detection; bytes unchanged; text_decode_error is not a permission denial',
+                         'run_office': 'command (container bash at /work); timeout integer 1..90 default60; inputs omitted snapshots own public regular files, [] none; binary inputs/outputs; overwrite=true for existing changes; no deletes; failure saves nothing',
+                         'read': 'path; optional offset (zero-based characters) + limit (1..16384, default16384); ordinary documents only; UTF-8, BOM-marked UTF-16/32, GB18030 fallback; returns encoding and encoding_detection; bytes unchanged; text_decode_error is not a permission denial',
                          'copy/move': 'path (source) + destination',
                          'import_attachment': 'source (granted absolute transport path) + path (relative destination)',
                          'temporary': 'import_attachment only: temporary=true expires unchanged file after 72 hours; default persistent',
@@ -455,7 +593,7 @@ def _run(args, policy, base, root):
             items.append(entry)
         return {'entries': items, 'truncated': False}
     if action == 'read':
-        return {'path': args['path'], **decode_text(_read(path, MAX_OUTPUT_BYTES))}
+        return _read_document(path, args)
     if action == 'search':
         query = args.get('query')
         if not isinstance(query, str) or not query or len(query.encode('utf-8')) > 1024:
@@ -534,6 +672,8 @@ def execute_workspace(args: dict, policy: RequestSecurityPolicy, *, base_dir: Pa
         if type(args) is not dict or not isinstance(args.get('action'), str):
             _deny('invalid arguments')
         action = args['action']
+        if not policy.allows_tool('guest_workspace', args):
+            _deny('workspace action is not authorized', 'workspace_forbidden')
         if action not in _FIELDS or set(args) - (_FIELDS[action] | {'action'}):
             _deny('unsupported action or argument')
         if 'overwrite' in args and type(args['overwrite']) is not bool:
@@ -568,10 +708,11 @@ def execute_workspace(args: dict, policy: RequestSecurityPolicy, *, base_dir: Pa
     except TextDecodingError as exc:
         return {'success': False, 'error': str(exc), 'error_code': 'text_decode_error'}
     except WorkspaceError as exc:
-        return {'success': False, 'error': str(exc)}
+        return {'success': False, 'error': str(exc), 'error_code': exc.code}
     except (OSError, ValueError, TypeError, UnicodeError, csv.Error, RuntimeError):
         # Do not echo exception filenames or user-supplied absolute host paths.
-        return {'success': False, 'error': 'workspace operation refused or unavailable'}
+        return {'success': False, 'error': 'workspace operation refused or unavailable',
+                'error_code': 'workspace_unavailable'}
 
 
 def save_browser_artifacts(files: dict[str, bytes], policy: RequestSecurityPolicy, *,

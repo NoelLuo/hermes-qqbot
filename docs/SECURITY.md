@@ -20,6 +20,7 @@ The guest file tree is application-level storage on the host, not an OS sandbox.
 | Public browser | Public URLs and allowed GET headers, DNS and resource requests | DNS resolver and visited public servers; remote server sees broker egress IP. No host cookies/auth/proxy credentials forwarded |
 | Export/delivery | Explicit exported file snapshot and reply | QQ/platform recipients and platform storage; a public group sees the result |
 | Docker Python | Selected UTF-8 documents and code | Disposable local Linux container, offline; no model-free promise for the surrounding conversation |
+| Docker office | Selected binary files and bash command | Disposable local Linux container, offline; no complete chat, private profile context, host mounts or credentials are supplied |
 
 Notify participants, minimize retained content and obey applicable platform/privacy rules before enabling observation/image/auxiliary flows. Disabling auto-reply alone does not disable every image download, persistence or primary-model call. Review actual switches and retention in the candidate source; do not promise a comprehensive conversation/log purge from workspace cleanup.
 
@@ -30,6 +31,10 @@ The container has `network=none`; host broker performs bounded **GET-only** fetc
 Each call has a fresh nonroot container/context, read-only root, dropped capabilities, no-new-privileges, bounded CPU/RAM/PIDs/tmpfs and no host mounts/socket/ports. Playwright pipe transport is used, not an exposed CDP endpoint. Service workers and WebSockets are blocked; WebRTC constructors are disabled and network-none is the OS backstop. Only current DOM link navigation, read, scroll, fixed viewport screenshot and explicit public download are supported. No login, form fill, upload, POST, arbitrary caller JS/Python, publishing, checkout or general button click.
 
 **Chromium's inner sandbox is disabled.** The hardened Docker container is the isolation boundary; untrusted website JS still runs. Docker/kernel/browser vulnerabilities remain possible. Download extensions do not certify benign content; PDF/images can be hostile. GET can cause remote side effects. Anti-bot/login/JS-heavy sites and complex resource redirects may fail. Do not connect this browser to accounts, a private network, or the operator's browser profile.
+
+## Office execution is a separate, broader guest-code surface
+
+The optional office executor intentionally permits arbitrary bash commands and bounded subprocesses/threads **inside** the hardened container. It is not the older small-text Python tool's restricted interpreter, and its safety does not come from forbidding shell syntax. Keep the matched action gate, validated immutable image, nonroot/read-only/network-none/capability/PID/resource flags, protected namespace supervisor and transactional output checks together. ZIP/PDF/Office inputs and native parsers may be hostile; containers share a kernel with the host and are not absolute isolation. Operator-only build/download helpers have network access for approved dependencies but are not guest-callable and do not change that runtime network boundary. Never forward the operator's browser, socket, private directory, provider key or full model conversation into the executor.
 
 ## Receipts and attachments
 

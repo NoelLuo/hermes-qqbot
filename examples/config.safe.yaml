@@ -24,3 +24,4 @@ plugins:
       # Deliberately invalid placeholders: never reused from someone else's host.
       docker_image: REPLACE_WITH_VERIFIED_FULL_PYTHON_IMAGE_ID
       browser_image: REPLACE_WITH_VERIFIED_FULL_BROWSER_IMAGE_ID
+      office_image: REPLACE_WITH_VERIFIED_FULL_OFFICE_IMAGE_ID

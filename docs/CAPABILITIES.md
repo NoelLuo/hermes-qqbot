@@ -10,14 +10,14 @@ Before auxiliary admission, verified bot mentions take the existing addressed pa
 
 ## Requester files
 
-Partitioning is by owning profile, chat and trusted requester, not by a caller-selected root. Supported actions: `info`, `list`, `search`, `read`, `write`, `mkdir`, `copy`, `move`, `organize_csv`, `import_attachment`, `export`, `run_python`, `delete`, `cleanup`. Write uses `text`; copy/move use `path` and `destination`; CSV uses `sort_by`/`dedupe_by` lists and writes a UTF-8 target. Overwrite is explicit. Deletion needs an explicit user request plus `confirm=true`, only for named files/empty directories; no wildcard/recursive wipe. Cleanup does not delete ordinary persistent work to make space.
+Partitioning is by owning profile, chat and trusted requester, not by a caller-selected root. Supported actions: `info`, `list`, `search`, `read`, `write`, `mkdir`, `copy`, `move`, `organize_csv`, `import_attachment`, `export`, `run_python`, `run_office`, `delete`, `cleanup`. Write uses `text`; copy/move use `path` and `destination`; CSV uses `sort_by`/`dedupe_by` lists and writes a UTF-8 target. Overwrite is explicit. Deletion needs an explicit user request plus `confirm=true`, only for named files/empty directories; no wildcard/recursive wipe. Cleanup does not delete ordinary persistent work to make space.
 
 | Boundary | Limit / behavior |
 | --- | --- |
 | Per workspace | 256 MiB, 2048 files, 4096 entries, relative paths at most 8 levels |
 | Global storage | 2 GiB, 65536 entries; exports and private lifecycle metadata count |
 | Ordinary file | 32 MiB; not a promise QQ can deliver that size |
-| Text write/read result | 128 KiB bounds; final JSON/output limits still apply |
+| Text write/read result | Bounded writes; read uses zero-based character `offset`, `limit` 1..16384 and `next_offset`; final JSON/output limits still apply |
 | Export snapshots | 7 days |
 | Explicit `temporary=true` imports | 72 hours; default imports and browser results persist |
 | Transport proofs | 10 minutes; up to 4 files, each 32 MiB, per association |
@@ -35,8 +35,15 @@ Read/search/CSV paths support UTF-8, BOM-marked UTF-16/UTF-32 and a GB18030-comp
 
 Fresh Linux Docker execution: nonroot, read-only root, network disabled, no host mounts/Docker socket, bounded CPU/memory/PIDs/tmpfs/files/output and no guest subprocesses/threads. The configured image must provide `python3`/stdlib. No on-demand dependencies, caller-controlled image/flags, automatic pulls or host fallback. Persistent files live in host application storage, not in a long-running container.
 
+## Isolated office commands
+
+`run_office` runs bash commands, Python and bounded child processes/threads in a separate pinned image. It supports ZIP/PDF and Word/Excel/PowerPoint tools via LibreOffice and Python document libraries; it is not host shell access. The old `run_python` limits above remain unchanged. `inputs` are requester-relative filenames; omission snapshots ordinary work files, `[]` means no input. Timeout is 1..90 seconds (default 60), command at most 32 KiB; exchange permits at most 256 files, 32 MiB each / 128 MiB combined. Use explicit `overwrite=true` for changed existing files. Failures, unsafe paths/links, over-budget output or unconfirmed cleanup do not save outputs; guest deletions are not mirrored into persistent storage.
+
+Fresh nonroot containers use no network or host mounts, read-only root, dropped capabilities, no-new-privileges, 1 CPU / 1 GiB / 128 PIDs and bounded tmpfs. A protected PID-namespace supervisor stops/reaps guests before collection. Containers share the host kernel: this is not absolute isolation. Only selected files/commands enter the executor, not full chats, private profile context or credentials. Scanned PDFs may need separate OCR, which is not promised; complex Microsoft Office layouts/macros are not guaranteed compatible. See [office runtime](../plugins/guest-workspace/office-runtime/README.md).
+
 ## Anonymous public browser
 
 45 seconds; at most 8 actions and 8 artifact files, each 32 MiB, combined 64 MiB. Broker budget: 128 fetches / 64 MiB response bodies total including downloads; at most two concurrent calls per host process. Read text is capped at 32 KiB UTF-8 and up to 80 current anchors. Scroll range -2000..2000, link indices 0..79 and eight actions maximum. Fixed 1280×720 viewport PNG, not arbitrary full-page capture. Artifact basenames are ASCII, at most 67 characters; only txt/csv/json/md/pdf/png/jpg/jpeg/webp suffixes, no paths/device names/collisions. A suffix is not content validation.
 
-This is not the administrator's browser. New ephemeral context per call; no accounts, cookies from host, forms, POST, uploading, arbitrary code or persistence. [Security](SECURITY.md) documents DNS pinning/SSRF safeguards and the disabled inner Chromium sandbox caveat.
+This is not the administrator's browser.
+Main responses are classified before Chromium navigation: download PDF documents explicitly and parse them with the office worker instead of treating them as HTML. Navigation/TLS/public-network/HTTP errors are classified without exposing internal tracebacks. For pure read actions only, a navigation timeout can return actual server HTML with `rendering=static_html` and an explicit warning; this never claims completed JavaScript, click success or a screenshot. Missing/currently expired attachment proof is not repaired by filename/hash guessing; reuse a previously persisted requester-owned copy where possible. New ephemeral context per call; no accounts, cookies from host, forms, POST, uploading, arbitrary code or persistence. [Security](SECURITY.md) documents DNS pinning/SSRF safeguards and the disabled inner Chromium sandbox caveat.

@@ -55,6 +55,22 @@ def _platform(source: Any) -> str:
     return value if isinstance(value, str) else ''
 
 
+def attachment_workspace_note(runner: Any, event: Any, eligible: list[str]) -> str:
+    """Explain final import grants without promoting downloaded quote/background media."""
+    if eligible:
+        return ('[本请求已核验可导入附件；import_attachment 的 source 使用以下最终路径，'
+                'path 另填本人工作区相对目标；列表外的引用或背景附件不因此获得导入授权]\n'
+                + '\n'.join(eligible))
+    policy = policy_for_source(runner, event.source)
+    if (_platform(event.source) == 'qqbot' and policy is not None
+            and policy.public_context and getattr(event, 'media_urls', None)):
+        return ('[附件导入授权说明：本请求没有已核验可供 import_attachment 使用的附件路径。'
+                '缓存中的引用或背景附件仅是资料，不代表本请求获得导入权限。'
+                '若引用此前已导入的文件，先 list 本人工作区并复用已保存文件的相对路径，'
+                '不要未经检查就要求重传，也不要按文件名或哈希绕过授权。]')
+    return ''
+
+
 def policy_from_extra(extra: dict, source: Any, *, scope_id: str = 'default') -> RequestSecurityPolicy | None:
     if _platform(source) != 'qqbot':
         return None

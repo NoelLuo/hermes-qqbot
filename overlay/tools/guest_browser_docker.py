@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import queue
 import re
 import secrets
@@ -15,7 +16,7 @@ import subprocess
 import threading
 import time
 
-from tools.guest_browser_worker import MAX_FILE, MAX_TOTAL, validate_name, validate_request, validate_url
+from tools.guest_browser_worker import ERROR_CODES, MAX_FILE, MAX_TOTAL, validate_name, validate_request, validate_url
 from tools.guest_workspace_docker import _docker_env, _exchange
 
 _MAX_LINE = 92 * 1024 * 1024
@@ -36,16 +37,34 @@ def _command(image, name):
             "-i", image, "-I", "-B", "/opt/hermes/guest_browser_worker.py"]
 
 
-def _failure(message):
+_ERROR_MESSAGES = {
+    "network_connect_timeout": "Public network connection timed out.",
+    "network_connect_failed": "Public network connection failed.",
+    "network_tls_error": "Public TLS handshake or certificate validation failed.",
+    "network_read_timeout": "Public response timed out.",
+    "network_error": "Public network fetch refused or failed.",
+    "http_error": "The public server returned an HTTP error.",
+    "navigation_timeout": "Browser navigation deadline exceeded.",
+    "unsupported_document": "PDF is not an HTML page. Use download(url,name) and process it with the isolated office worker.",
+    "download_failed": "Download content did not match the requested document type.",
+    "worker_failure": "Isolated browser worker failed; no host fallback.",
+    "cleanup_failed": "Browser cleanup could not be verified; no outputs saved.",
+}
+_LOG = logging.getLogger(__name__)
+
+
+def _failure(message=None, error_code="worker_failure"):
+    if error_code not in ERROR_CODES:
+        error_code = "worker_failure"
     return {"success": False, "title": "", "url": "", "text": "", "links": [],
-            "artifacts": {}, "error": str(message)[:512]}
+            "artifacts": {}, "error_code": error_code, "error": _ERROR_MESSAGES[error_code]}
 
 
 def _decode_result(value):
     if not isinstance(value, dict) or type(value.get("success")) is not bool:
         raise ValueError("Invalid browser response")
     if not value["success"]:
-        return _failure(value.get("error", "Browser failed"))
+        return _failure(error_code=value.get("error_code", "worker_failure"))
     for field, limit in (("title", 4096), ("url", 8192), ("text", 32768)):
         if not isinstance(value.get(field), str) or len(value[field].encode("utf-8")) > limit:
             raise ValueError("Browser output limit exceeded")
@@ -76,7 +95,45 @@ def _decode_result(value):
             raise ValueError("Artifact byte limit exceeded")
         artifacts[name] = decoded
     return {"success": True, "title": value["title"], "url": value["url"],
-            "text": value["text"], "links": links, "artifacts": artifacts}
+            "text": value["text"], "links": links, "artifacts": artifacts,
+            **_result_metadata(value)}
+
+
+def _result_metadata(value):
+    result_type = value.get("result_type", "page")
+    if result_type not in {"page", "download"}:
+        raise ValueError("Invalid browser result type")
+    downloads = value.get("downloads", [])
+    if not isinstance(downloads, list) or len(downloads) > 8:
+        raise ValueError("Invalid downloads metadata")
+    clean = []
+    for item in downloads:
+        if not isinstance(item, dict) or set(item) != {"name", "url", "content_type", "bytes", "http_status"}:
+            raise ValueError("Invalid download metadata")
+        validate_name(item["name"])
+        validate_url(item["url"])
+        if (item["name"] not in value["artifacts"] or type(item["bytes"]) is not int
+                or not 0 <= item["bytes"] <= MAX_FILE or type(item["http_status"]) is not int
+                or not 200 <= item["http_status"] < 300 or not isinstance(item["content_type"], str)
+                or not re.fullmatch(r"[a-z0-9.+-]+/[a-z0-9.+-]+", item["content_type"])):
+            raise ValueError("Invalid download metadata")
+        if len(base64.b64decode(value["artifacts"][item["name"]], validate=True)) != item["bytes"]:
+            raise ValueError("Download size mismatch")
+        clean.append(dict(item))
+    metadata = {"result_type": result_type, "downloads": clean}
+    if "rendering" in value:
+        if value["rendering"] != "static_html" or not isinstance(value.get("warning"), str) or len(value["warning"]) > 256:
+            raise ValueError("Invalid rendering metadata")
+        metadata.update(rendering="static_html", warning=value["warning"])
+    if "http_status" in value:
+        if type(value["http_status"]) is not int or not 200 <= value["http_status"] < 400:
+            raise ValueError("Invalid page HTTP status")
+        metadata["http_status"] = value["http_status"]
+    if "content_type" in value:
+        if not isinstance(value["content_type"], str) or len(value["content_type"]) > 128:
+            raise ValueError("Invalid content type")
+        metadata["content_type"] = value["content_type"]
+    return metadata
 
 
 def _fetch_response(event, fetcher, deadline, max_bytes=MAX_FILE):
@@ -96,9 +153,10 @@ def _fetch_response(event, fetcher, deadline, max_bytes=MAX_FILE):
     try:
         response = fetcher(event["url"], method="GET", headers=headers,
                            max_bytes=max_bytes, deadline=deadline)
-    except Exception:
-        # Broker denials, DNS failures and transport errors are opaque to pages.
-        return {"id": event["id"], "success": False}
+    except Exception as exc:
+        code = getattr(exc, "error_code", "network_error")
+        return {"id": event["id"], "success": False,
+                "error_code": code if code in ERROR_CODES else "network_error"}
     if not isinstance(response, dict) or response.get("success") is False:
         return {"id": event["id"], "success": False}
     status, body, response_headers = response.get("status"), response.get("body"), response.get("headers")
@@ -112,6 +170,7 @@ def _fetch_response(event, fetcher, deadline, max_bytes=MAX_FILE):
              "body": base64.b64encode(body).decode("ascii")}
     final_url = response.get("url", event["url"])
     validate_url(final_url)
+    reply["final_url"] = final_url
     if final_url != event["url"]:
         # Let Chromium observe the broker-validated redirect too, so origin,
         # relative resources and the reported final URL stay correct.
@@ -224,6 +283,8 @@ def _run(url, actions, *, image, timeout, fetcher):
     name = None
     acquired = False
     env = _docker_env()
+    correlation_id = secrets.token_hex(8)
+    started = time.monotonic()
     try:
         validate_request(url, actions)
         if not isinstance(image, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", image):
@@ -247,7 +308,7 @@ def _run(url, actions, *, image, timeout, fetcher):
             try:
                 output.put(_browser_exchange(_command(image, name), {"url": url, "actions": actions}, deadline, env, fetcher))
             except Exception as exc:
-                output.put(_failure(exc))
+                output.put(_failure(error_code="navigation_timeout" if isinstance(exc, TimeoutError) else "worker_failure"))
             finally:
                 # A timed-out caller must not free capacity while a broker
                 # operation is still unwinding in this supervisor.
@@ -259,17 +320,25 @@ def _run(url, actions, *, image, timeout, fetcher):
         try:
             result = output.get(timeout=timeout)
         except queue.Empty:
-            result = _failure("Browser deadline exceeded")
+            result = _failure(error_code="navigation_timeout")
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
         result = _failure(exc)
     finally:
         if name is not None:
             try:
                 _remove(name, env)
-            except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
-                result = _failure(exc)
+            except (OSError, RuntimeError, subprocess.SubprocessError):
+                original = result.get("error_code") if not result.get("success") else None
+                result = _failure(error_code="cleanup_failed")
+                if original:
+                    result["cause_error_code"] = original
         if acquired:
             _SLOTS.release()
+    result["correlation_id"] = correlation_id
+    # Bounded structured fields only: never exception text, URLs, IDs, cookies or bodies.
+    _LOG.info("guest_browser correlation=%s outcome=%s cause=%s elapsed_ms=%d",
+              correlation_id, "success" if result.get("success") else result.get("error_code"),
+              result.get("cause_error_code", "none"), int((time.monotonic() - started) * 1000))
     return result
 
 

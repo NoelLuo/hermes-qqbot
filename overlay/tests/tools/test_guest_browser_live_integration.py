@@ -82,3 +82,23 @@ def test_actual_public_screenshot_store_export_isolation_and_own_delete(ready):
     assert Path(exported['file_path']).is_file(), 'Removing work must not delete a still-valid delivery snapshot'
     blocked = call(p, 'guest_browser', action='browse', url='http://127.0.0.1/')
     assert not blocked['success']
+
+
+def test_actual_pdf_download_store_export_metadata_and_owner_isolation(ready):
+    p = RequestSecurityPolicy('live-pdf-visitor', 'qqbot', 'live-pdf-room')
+    pdf_url = 'https://pdf.hanspub.org/ar_3141070.pdf'
+    result = call(p, 'guest_browser', action='browse', url=pdf_url,
+                  actions=[{'kind': 'download', 'url': pdf_url, 'name': 'hans-report.pdf'}])
+    assert result['success'], (result, ready)
+    assert result['result_type'] == 'download' and result['text'] == ''
+    assert result['downloads'][0]['content_type'] == 'application/pdf'
+    assert result['downloads'][0]['url'] == pdf_url
+    path = result['files'][0]['path']
+    other = RequestSecurityPolicy('other-pdf-visitor', 'qqbot', 'live-pdf-room')
+    assert not call(other, 'guest_workspace', action='export', path=path)['success']
+    exported = call(p, 'guest_workspace', action='export', path=path)
+    assert exported['success'], exported
+    raw = Path(exported['file_path']).read_bytes()
+    assert raw.startswith(b'%PDF-')
+    assert len(raw) == result['downloads'][0]['bytes']
+    assert call(p, 'guest_workspace', action='delete', path=path, confirm=True)['success']

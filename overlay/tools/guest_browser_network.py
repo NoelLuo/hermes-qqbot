@@ -38,6 +38,10 @@ _TRANSITION = tuple(ipaddress.ip_network(n) for n in ("2001::/23", "2002::/16"))
 class PublicNetworkError(Exception):
     """Safe refusal message; never includes upstream URLs, headers or exceptions."""
 
+    def __init__(self, message, error_code="network_error"):
+        super().__init__(message)
+        self.error_code = error_code
+
 
 def _remaining(deadline):
     remaining = deadline - time.monotonic()
@@ -131,22 +135,28 @@ def _resolve(host, port, deadline):
 
 
 def _dial(host, port, pins, tls, deadline):
+    failure = PublicNetworkError("Public connection failed", "network_connect_failed")
     for pin in pins:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             sock.settimeout(_remaining(deadline))
             # No create_connection: it would perform a second DNS lookup.
+            stage = "connect"
             sock.connect((pin, port))
+            stage = "tls"
             if tls:
                 sock.settimeout(_remaining(deadline))
                 sock = ssl.create_default_context().wrap_socket(sock, server_hostname=host)
             return sock
-        except (OSError, ssl.SSLError):
+        except (OSError, ssl.SSLError) as exc:
+            code = ("network_tls_error" if stage == "tls" else
+                    "network_connect_timeout" if isinstance(exc, TimeoutError) else "network_connect_failed")
+            failure = PublicNetworkError("Public transport failed", code)
             sock.close()
         except PublicNetworkError:
             sock.close()
             raise
-    raise PublicNetworkError("Public connection failed")
+    raise failure
 
 
 class _SocketReader(io.RawIOBase):
@@ -315,5 +325,7 @@ def fetch_public(url: str, *, method="GET", headers=None, max_bytes=MAX_BYTES, d
         raise PublicNetworkError("Public redirect limit exceeded")
     except PublicNetworkError:
         raise
+    except TimeoutError:
+        raise PublicNetworkError("Public response timed out", "network_read_timeout") from None
     except Exception:
         raise PublicNetworkError("Public fetch failed") from None
