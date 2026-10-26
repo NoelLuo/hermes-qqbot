@@ -2324,17 +2324,18 @@
  from urllib.parse import urlparse
  
  try:
-@@ -68,6 +68,9 @@
+@@ -68,6 +68,10 @@
      DEDUP_WINDOW_SECONDS, DEDUP_MAX_SIZE, MSG_TYPE_TEXT, MSG_TYPE_MARKDOWN, MSG_TYPE_MEDIA,
      MSG_TYPE_INPUT_NOTIFY, MEDIA_TYPE_IMAGE, MEDIA_TYPE_VIDEO, MEDIA_TYPE_VOICE, MEDIA_TYPE_FILE)
  from .utils import coerce_list as _coerce_list, build_user_agent
++from .markdown import normalize_qq_markdown
 +from .reply_gate import GroupReplyGate
 +from .group_images import QuietGroupImages
 +from .group_events import GroupEventDispatcher
  from .chunked_upload import (
      ChunkedUploader, UploadDailyLimitExceededError, UploadFileTooLargeError)
  from .keyboards import (
-@@ -153,6 +156,22 @@
+@@ -153,6 +157,22 @@
          self._allow_from = _coerce_list(extra.get("allow_from") or extra.get("allowFrom"))
          self._group_policy = str(extra.get("group_policy", "pairing")).strip().lower()
          self._group_allow_from = _coerce_list(extra.get("group_allow_from") or extra.get("groupAllowFrom"))
@@ -2357,7 +2358,7 @@
  
          self._session: Optional[aiohttp.ClientSession] = None
          self._ws: Optional[aiohttp.ClientWebSocketResponse] = None
-@@ -310,14 +329,35 @@
+@@ -310,14 +330,35 @@
  
      async def _open_ws(self, gateway_url: str) -> None:
          await self._close_ws()
@@ -2400,7 +2401,7 @@
  
      async def _listen_loop(self) -> None:
          """Read WebSocket events and reconnect on errors. Close codes: 4004 → refresh
-@@ -474,11 +514,11 @@
+@@ -474,11 +515,11 @@
  
      async def _send_identify(self) -> None:
          """Send op 2 Identify (reply to Hello); server answers with READY. Intents:
@@ -2414,7 +2415,7 @@
              "shard": [0, 1],
              "properties": {"$os": "macOS", "$browser": "hermes-agent", "$device": "hermes-agent"}}}
          await self._send_ws_auth("Identify", payload, "Identify sent")
-@@ -525,6 +565,8 @@
+@@ -525,6 +566,8 @@
              if t == "READY":
                  if isinstance(d, dict):  # store session_id for resume
                      self._session_id = d.get("session_id")
@@ -2423,7 +2424,7 @@
                      logger.info("[%s] Ready, session_id=%s", self._log_tag, self._session_id)
              elif t == "RESUMED":
                  logger.info("[%s] Session resumed", self._log_tag)
-@@ -579,6 +621,9 @@
+@@ -579,6 +622,9 @@
      async def _on_message(self, event_type: str, d: Any) -> None:
          if not isinstance(d, dict):
              return
@@ -2433,7 +2434,7 @@
          msg_id = str(d.get("id", ""))
          if not msg_id or self._dedup.is_duplicate(msg_id):
              logger.debug("[%s] Duplicate or missing message id: %s", self._log_tag, msg_id)
-@@ -666,13 +711,24 @@
+@@ -666,13 +712,24 @@
  
          chat_type = parsed.get("chat_type", "")
          chat_id = parsed.get("chat_id", "")
@@ -2459,7 +2460,7 @@
              session_user = str(parsed.get("user_id", "")).strip()
              return bool(session_user) and operator == session_user
          return False
-@@ -690,7 +746,12 @@
+@@ -690,7 +747,12 @@
          button_data = event.button_data
          if not button_data:
              return
@@ -2473,7 +2474,7 @@
          approval = parse_approval_button_data(button_data)
          if approval is not None:
              session_key, decision = approval
-@@ -703,9 +764,15 @@
+@@ -703,9 +765,15 @@
                      "[%s] Rejected unauthorized approval click for session %s (operator=%s)",
                      self._log_tag, session_key, event.operator_openid)
                  return
@@ -2490,7 +2491,7 @@
                  logger.info(
                      "[%s] Button resolved %d approval(s) for session %s (choice=%s, operator=%s)",
                      self._log_tag, count, session_key, choice, event.operator_openid)
-@@ -713,6 +780,13 @@
+@@ -713,6 +781,13 @@
                  logger.error("[%s] resolve_gateway_approval failed for session %s: %s", self._log_tag, session_key, exc)
              return
  
@@ -2504,7 +2505,7 @@
          update_answer = parse_update_prompt_button_data(button_data)
          if update_answer is not None:
              chat = event.group_openid or event.guild_id or event.user_openid
-@@ -721,6 +795,13 @@
+@@ -721,6 +796,13 @@
                      "[%s] Rejected unauthorized update prompt click (operator=%s)", self._log_tag, event.operator_openid
                  )
                  return
@@ -2518,7 +2519,7 @@
              self._write_update_response(update_answer, event.operator_openid)
              return
  
-@@ -742,9 +823,17 @@
+@@ -742,9 +824,17 @@
  
      async def _handle_c2c_message(self, d, msg_id, content, author, timestamp) -> None:
          user_openid = str(author.get("user_openid", ""))
@@ -2539,7 +2540,7 @@
          attachments_raw = d.get("attachments")
          logger.info(
              "[%s] C2C message: id=%s content=%r attachments=%s",
-@@ -768,9 +857,77 @@
+@@ -768,9 +858,77 @@
          member = str(author.get("member_openid", ""))
          if not group_openid or not self._is_group_allowed(group_openid, member):
              return
@@ -2618,7 +2619,7 @@
  
      async def _handle_guild_message(self, d, msg_id, content, author, timestamp) -> None:
          channel_id = str(d.get("channel_id", ""))
-@@ -803,9 +960,104 @@
+@@ -803,9 +961,104 @@
              d, msg_id, content, d.get("attachments"), timestamp,
              chat_id=guild_id, qq_chat_type="dm", user_id=author_id, chat_type="dm")
  
@@ -2723,7 +2724,7 @@
          "GUILD_MESSAGE_CREATE": "_handle_guild_message",
          "GUILD_AT_MESSAGE_CREATE": "_handle_guild_message",
          "DIRECT_MESSAGE_CREATE": "_handle_dm_message"}
-@@ -819,7 +1071,8 @@
+@@ -819,7 +1072,8 @@
  
      async def _ingest(
          self, d: dict[str, Any], msg_id: str, content: str, attachments: Any, timestamp: str, *,
@@ -2733,7 +2734,7 @@
          """Shared inbound tail: fold attachment transcripts/file info and quoted context
          into the text, drop empty events, remember the QQ chat kind and dispatch."""
          att = await self._process_attachments(attachments)
-@@ -846,8 +1099,21 @@
+@@ -846,8 +1100,21 @@
              source=self.build_source(chat_id=chat_id,** source_kwargs), text=text,
              message_type=self._detect_message_type(image_urls, image_media_types), raw_message=d,
              message_id=msg_id, media_urls=image_urls, media_types=image_media_types,
@@ -2755,7 +2756,7 @@
          await self.handle_message(event)
  
      # ── Quoted-message handling ──
-@@ -920,13 +1186,14 @@
+@@ -920,13 +1187,14 @@
          voice_transcripts: list[str] = []
          other_attachments: list[str] = []
  
@@ -2771,7 +2772,7 @@
                  continue
              if url.startswith("//"):
                  url = f"https:{url}"
-@@ -948,7 +1215,7 @@
+@@ -948,7 +1216,7 @@
  
              is_image = ct.startswith("image/")
              try:
@@ -2780,7 +2781,7 @@
              except Exception as exc:
                  logger.debug("[%s] Failed to cache %s: %s", self._log_tag, "image" if is_image else "attachment", exc)
                  continue
-@@ -956,7 +1223,9 @@
+@@ -956,7 +1224,9 @@
                  continue
              if not is_image:
                  label = "video" if ct.startswith("video/") else "file"
@@ -2791,7 +2792,7 @@
              elif os.path.isfile(cached_path):
                  image_urls.append(cached_path)
                  image_media_types.append(ct or "image/jpeg")
-@@ -973,7 +1242,9 @@
+@@ -973,7 +1243,9 @@
      def _opt_str(value: Any) -> Optional[str]:
          return (value.strip() if isinstance(value, str) else "") or None
  
@@ -2802,7 +2803,7 @@
          """Download a URL and cache it locally (``original_name`` falls back to the URL basename)."""
          from tools.url_safety import is_safe_url
  
-@@ -982,9 +1253,24 @@
+@@ -982,9 +1254,24 @@
          if not self._http_client:
              return None
          try:
@@ -2830,7 +2831,7 @@
          except Exception as exc:
              logger.debug("[%s] Download failed for %s: %s", self._log_tag, url[:80], exc)
              return None
-@@ -1297,9 +1583,17 @@
+@@ -1297,9 +1584,17 @@
          headers = await self._auth_headers()
          try:
              resp = await client.request(method, f"{API_BASE}{path}", headers=headers, json=body, timeout=timeout)
@@ -2850,7 +2851,7 @@
              return data
          except httpx.TimeoutException as exc:
              raise RuntimeError(f"QQ Bot API timeout [{path}]: {exc}") from exc
-@@ -1356,11 +1650,33 @@
+@@ -1356,11 +1651,33 @@
          """True when connected now or after waiting for the listener to reconnect."""
          return self.is_connected or await self._wait_for_reconnection()
  
@@ -2885,7 +2886,7 @@
          if not await self._ensure_connected():
              return self._NOT_CONNECTED
          if not content or not content.strip():
-@@ -1368,36 +1684,43 @@
+@@ -1368,36 +1685,43 @@
  
          chunks = self.truncate_message(self.format_message(content), self.MAX_MESSAGE_LENGTH)
          last_result = SendResult(success=False, error="No chunks")
@@ -2947,7 +2948,7 @@
  
      @staticmethod
      def _rest_path(chat_type: str, target_id: str, endpoint: str) -> str:
-@@ -1411,8 +1734,17 @@
+@@ -1411,8 +1735,17 @@
  
      async def _post_message(self, path: str, body: dict[str, Any]) -> SendResult:
          """POST a message body and wrap the response as a successful SendResult."""
@@ -2967,7 +2968,7 @@
  
      async def _send_text_to(
          self, chat_type: str, target_id: str, content: str, reply_to: Optional[str] = None,
-@@ -1473,7 +1805,8 @@
+@@ -1473,7 +1806,8 @@
          """Send a 3-button approval request (allow-once / allow-always / deny);
          clicks come back as INTERACTION_CREATE decoded by parse_approval_button_data."""
          from .keyboards import build_approval_text
@@ -2977,7 +2978,7 @@
          return await self.send_with_keyboard(chat_id, build_approval_text(req), keyboard, reply_to=reply_to)
  
      # Cross-adapter gateway contract: gateway/run.py detects send_exec_approval /
-@@ -1486,11 +1819,20 @@
+@@ -1486,11 +1820,20 @@
          _default_interaction_dispatch. QQ's 3-button keyboard has no session tier and no thread /
          DM targeting, so only the ``always`` choice and the raw command/reason are used."""
          description = prompt.description
@@ -2998,7 +2999,7 @@
              allow_permanent="always" in prompt.choices)
          # QQ requires a msg_id for passive replies; the last inbound id is the natural one.
          return await self.send_approval_request(
-@@ -1504,8 +1846,22 @@
+@@ -1504,8 +1847,22 @@
          del session_key, metadata  # present for contract parity only.
          default_hint = f" (default: {default})" if default else ""
          content = f"☤ **Update Needs Your Input**\n\n{prompt}{default_hint}"
@@ -3022,7 +3023,7 @@
          )
  
      def _build_text_body(self, content: str, reply_to: Optional[str] = None) -> dict[str, Any]:
-@@ -1553,6 +1909,17 @@
+@@ -1553,6 +1910,17 @@
          """Upload media and send as a native message. HTTP(S) URLs → single ``POST
          .../files`` with ``url=`` (QQ fetches it). Local files → chunked upload
          (prepare / PUT parts / complete), up to the platform's ~100 MB per-file limit."""
@@ -3040,7 +3041,18 @@
          if not await self._ensure_connected():
              return self._NOT_CONNECTED
          chat_type = self._guess_chat_type(chat_id)
-@@ -1658,7 +2025,18 @@
+@@ -1641,8 +2009,8 @@
+     # ── Format / chat info / helpers ──
+ 
+     def format_message(self, content: str) -> str:
+-        """Pass markdown through when supported, else strip it (as BlueBubbles/SMS do)."""
+-        return content if self._markdown_support else strip_markdown(content)
++        """Repair QQ bold punctuation boundaries, or strip markup in plain-text mode."""
++        return normalize_qq_markdown(content) if self._markdown_support else strip_markdown(content)
+ 
+     async def get_chat_info(self, chat_id: str) -> dict[str, Any]:
+         chat_type = self._guess_chat_type(chat_id)
+@@ -1658,7 +2026,18 @@
  
      @staticmethod
      def _strip_at_mention(content: str) -> str:
@@ -14560,3 +14572,228 @@
 +    if any((ord(char) < 32 and char not in '\t\n\r\f') or 127 <= ord(char) <= 159 for char in text):
 +        raise TextDecodingError('Text decoding failed: binary/control data or BOM-less Unicode is not supported.')
 +    return {'text': text, 'encoding': encoding, 'encoding_detection': detection}
+--- /dev/null
++++ b/plugins/platforms/qqbot/markdown.py
+@@ -0,0 +1,90 @@
++"""Minimal QQ wire-format repair for bold next to Unicode punctuation.
++
++QQ receives raw Markdown, so changing a local Markdown parser cannot fix its
++rendering. Add ordinary spaces only at blocked outer delimiter boundaries. Never
++normalize full-width characters or put invisible characters into message text.
++"""
++from __future__ import annotations
++
++import re
++import unicodedata
++
++
++_FENCE = re.compile(r"^(?: {0,3}>[ \t]?)* {0,3}(?:(?:[-+*]|\d+[.)])[ \t]+)?(`{3,}|~{3,})([^\r\n]*)")
++_TOKENS = re.compile(
++    r"(?P<escape>\\.)"
++    r"|(?P<code>(?<!`)(?P<ticks>`+)(?!`)[\s\S]*?(?<!`)(?P=ticks)(?!`))"
++    r"|(?P<destination>\]\((?:\\.|[^()\\\n]|\([^()\n]*\))*\))"
++    r"|(?P<url>https?://[^\s<>]+)"
++    r"|(?P<tag><[^>\n]+>)"
++    r"|(?P<strong>(?<!\*)\*{2,3}(?!\*)|(?<!_)_{2,3}(?!_))"
++)
++_REFERENCE = re.compile(r"^ {0,3}\[[^]\n]+\]:")
++
++
++def _punctuation(char: str) -> bool:
++    # CommonMark punctuation includes symbols, not just full-width/CJK marks.
++    return bool(char) and unicodedata.category(char)[0] in {"P", "S"}
++
++
++def _blocked_boundary(inner: str, outer: str) -> bool:
++    return _punctuation(inner) and bool(outer) and not outer.isspace() and not _punctuation(outer)
++
++
++def _normalize_line(line: str, code_spans: list[tuple[int, int]]) -> str:
++    openers: dict[str, tuple[int, int]] = {}
++    spaces: set[int] = set()
++    for token in _TOKENS.finditer(line):
++        if token.lastgroup != "strong" or any(left <= token.start() < right for left, right in code_spans):
++            continue
++        marker = token.group()
++        start, end = token.span()
++        before = line[start - 1] if start else ""
++        after = line[end] if end < len(line) else ""
++        if marker in openers and before and not before.isspace():
++            left, inner_start = openers.pop(marker)
++            if _blocked_boundary(line[inner_start], line[left - 1] if left else ""):
++                spaces.add(left)
++            if _blocked_boundary(before, after):
++                spaces.add(end)
++        elif after and not after.isspace():
++            openers[marker] = (start, end)
++    if not spaces:
++        return line
++    parts, previous = [], 0
++    for position in sorted(spaces):
++        parts.extend((line[previous:position], " "))
++        previous = position
++    parts.append(line[previous:])
++    return "".join(parts)
++
++
++def normalize_qq_markdown(content: str) -> str:
++    """Repair paired **/__ (and triple) spans, leaving code/URLs/escapes intact.
++
++    This is a conservative inline-bold pre-pass, not a Markdown parser: unmatched
++    or cross-line delimiters are left alone. Run before chunking; repeated calls
++    are idempotent. Inline code may still appear *inside* a repaired bold span.
++    """
++    lines = []
++    # Code spans may contain newlines; protect them before splitting into lines.
++    code_spans = [token.span() for token in _TOKENS.finditer(content) if token.lastgroup == "code"]
++    offset = 0
++    fence_char, fence_length = "", 0
++    for line in content.splitlines(keepends=True):
++        fence = _FENCE.match(line)
++        if fence_char:
++            if fence and fence[1][0] == fence_char and len(fence[1]) >= fence_length and not fence[2].strip():
++                fence_char = ""
++            lines.append(line)
++        elif fence:
++            fence_char, fence_length = fence[1][0], len(fence[1])
++            lines.append(line)
++        elif line.startswith(("    ", "\t")) or _REFERENCE.match(line):
++            lines.append(line)
++        else:
++            local_spans = [(left - offset, right - offset) for left, right in code_spans
++                           if left < offset + len(line) and right > offset]
++            lines.append(_normalize_line(line, local_spans))
++        offset += len(line)
++    return "".join(lines)
+--- /dev/null
++++ b/tests/gateway/test_qqbot_markdown.py
+@@ -0,0 +1,129 @@
++"""QQ outbound bold must survive CommonMark's punctuation flanking rules."""
++from html import unescape
++from unittest.mock import AsyncMock
++
++import pytest
++from markdown_it import MarkdownIt
++
++from gateway.config import PlatformConfig
++from gateway.platforms.base import SendResult
++from plugins.platforms.qqbot.adapter import QQAdapter
++from plugins.platforms.qqbot.keyboards import InlineKeyboard
++
++
++@pytest.fixture
++def adapter():
++    return QQAdapter(PlatformConfig(enabled=True, extra={"markdown_support": True}))
++
++
++@pytest.mark.parametrize("source,strong", [
++    ("- **玩法：**小队制回合战术 RPG", "玩法："),
++    ("- **设定剧情：**寻找失踪故人的旅程", "设定剧情："),
++    ("前文**“中文引号”**后文", "“中文引号”"),
++    ("前文**‘单引号’**后文", "‘单引号’"),
++    ("前文**「直角引号」**后文", "「直角引号」"),
++    ("前文**『双直角引号』**后文", "『双直角引号』"),
++    ('前文**"English quotes"**后文', '"English quotes"'),
++    ("前文**'single quotes'**后文", "'single quotes'"),
++    ("前文**（括号）**后文", "（括号）"),
++    ("前文**《书名》**后文", "《书名》"),
++    ("前文**【标签】**后文", "【标签】"),
++    ("**结论。**后文", "结论。"),
++    ("前文**“只修左边**。", "“只修左边"),
++    ("**只修右边”**后文", "只修右边”"),
++    ("**玩法:**正文", "玩法:"),
++    ("前文__“下划线粗体”__后文", "“下划线粗体”"),
++    ("前文***“粗斜体”***后文", "“粗斜体”"),
++    ("前文**“包含 `code` 的引号”**后文", "“包含 <code>code</code> 的引号”"),
++])
++def test_bold_punctuation_renders_and_is_idempotent(adapter, source, strong):
++    formatted = adapter.format_message(source)
++    html = unescape(MarkdownIt().render(formatted))
++    assert f"<strong>{strong}</strong>" in html or f"<strong><em>{strong}</em></strong>" in html
++    assert "**" not in html and "__" not in html
++    assert adapter.format_message(formatted) == formatted
++    assert formatted.replace(" ", "") == source.replace(" ", "")
++
++
++@pytest.mark.parametrize("source", [
++    "玩法能钻研，**世界观够怪，剧情还得有东西**。",
++    "**标签：** 正文与 **正常粗体**。",
++    "**“整行引用”**",
++    "前文**正常粗体**后文",
++    r"\*\*“不应加粗”\*\*后文",
++    r"\**“不完整转义”**后文",
++    "`前文**“行内代码”**后文`",
++    "``前文**“含 ` 的代码”**后文``",
++    "`跨行代码\n前文**“代码内容”**后文\n结束`",
++    "- ```markdown\n前文**“列表内围栏”**后文",
++    "> ```markdown\n> 前文**“引用内围栏”**后文\n> ```",
++    "[ref]: relative/**“literal”**tail",
++    "[链接](relative/**“literal”**tail)",
++    '<span title="前文**“属性”**后文">text</span>',
++    "```markdown\n前文**“围栏代码”**后文\n```",
++    "~~~markdown\n前文**“波浪围栏”**后文\n~~~",
++    "```markdown\n前文**“未闭合围栏”**后文",
++    "    前文**“缩进代码”**后文",
++    "https://example.invalid/**“literal”**tail",
++    "[链接](https://example.invalid/**“literal”**tail)",
++    "**\n不完整段落\n**正文",
++    "**未闭合的“正文",
++    "    code\n\n普通正文",
++])
++def test_code_escapes_urls_and_valid_markdown_are_unchanged(adapter, source):
++    assert adapter.format_message(source) == source
++
++
++def test_multiple_labels_do_not_swallow_each_other(adapter):
++    source = '- **玩法：**正文\n- **“设定”**正文\n\n**正常**与**“第二处”**后文'
++    html = MarkdownIt().render(adapter.format_message(source))
++    assert html.count("<strong>") == 4
++    assert "**" not in html
++
++
++def test_multiline_code_does_not_block_neighboring_prose(adapter):
++    source = "前文**“引号”**后文\n`代码\n**“不改”**内容\n结束`\n**结论：**正文"
++    formatted = adapter.format_message(source)
++    assert '`代码\n**“不改”**内容\n结束`' in formatted
++    html = MarkdownIt().render(formatted)
++    assert "<strong>“引号”</strong>" in html
++    assert "<strong>结论：</strong>" in html
++
++
++def test_plain_text_mode_does_not_insert_spacing():
++    adapter = QQAdapter(PlatformConfig(enabled=True, extra={"markdown_support": False}))
++    assert adapter.format_message("前文**“引号”**后文") == "前文“引号”后文"
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize("chat_type,keyboard", [("group", False), ("c2c", False), ("group", True), ("c2c", True)])
++async def test_real_outbound_path_normalizes_before_post(adapter, chat_type, keyboard):
++    adapter._ensure_connected = AsyncMock(return_value=True)
++    adapter._chat_type_map["target"] = chat_type
++    adapter._post_message = AsyncMock(return_value=SendResult(success=True, message_id="receipt"))
++    source = "前文**“引号”**后文\n- **玩法：**正文"
++    if keyboard:
++        await adapter.send_with_keyboard("target", source, InlineKeyboard())
++    else:
++        await adapter.send("target", source)
++    path, body = adapter._post_message.call_args.args
++    assert path == f"/v2/{'groups' if chat_type == 'group' else 'users'}/target/messages"
++    assert body["msg_type"] == 2
++    html = MarkdownIt().render(body["markdown"]["content"])
++    assert "<strong>“引号”</strong>" in html
++    assert "<strong>玩法：</strong>" in html
++    assert "**" not in html
++
++
++@pytest.mark.asyncio
++async def test_formatting_precedes_chunking(adapter):
++    adapter._ensure_connected = AsyncMock(return_value=True)
++    adapter.MAX_MESSAGE_LENGTH = 80
++    adapter._send_chunk = AsyncMock(return_value=SendResult(success=True, message_id="receipt"))
++    source = ("- **“标签”**正文\n" * 20).strip()
++    await adapter.send("target", source)
++    assert adapter._send_chunk.await_count > 1
++    for call in adapter._send_chunk.call_args_list:
++        chunk = call.args[1]
++        assert len(chunk) <= adapter.MAX_MESSAGE_LENGTH
++        assert "**" not in MarkdownIt().render(chunk)

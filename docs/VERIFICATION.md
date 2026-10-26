@@ -1,6 +1,16 @@
 # Verification ledger — sanitized public candidate
 
-## Current isolated-office and browser update
+## Current Markdown punctuation / quotation-mark update
+
+Only the reviewed Markdown import/formatting hunks were migrated into the neutral public adapter; its assistant label and `gateway.trust_env` proxy opt-out were retained. The new sibling module and regression file are included in the overlay, manifest test list and regenerated patch. The patch applied to a fresh disposable checkout of the exact pinned upstream commit, and `prepare_host.py` read back **all 113 overlay files** as `already_matches`. This checkout shares immutable Git objects, not working files, with the local source tree. No live configuration or service was changed.
+
+Patch SHA256: `a8304ef2bab36bab94235e36554082e3fdff9ff9242b8bb40f9e42efaae0f095`.
+
+Canonical Windows / prepared PM Python 3.14.7 focused run: **6 files, 173 passed, 0 failed**, 37.7 seconds, three workers, no file retries, explicit QQ bootstrap and real-home protection retained. Files: `tests/gateway/test_qqbot_markdown.py`, `test_qqbot.py`, `test_qqbot_local_migration.py`, `test_qqbot_receipt_integration.py`, `test_qqbot_delivery_receipts.py`, and `tests/plugins/platforms/test_qqbot_send_targets.py`. The new file contributes 49 cases. The public candidate has its own fixture set; this result is not copied from the private deployment's count.
+
+The new tests check strict CommonMark rendering, character preservation, idempotence, group/C2C and keyboard outbound payloads, pre-chunking normalization, and preservation of code, escapes, URLs and valid bold. Eight separate release-tool unittest cases also passed. Scoped Ruff passed for the new source/test using the pinned host configuration. A final bounded 149-file hygiene scan, including a private deny list outside the project, had no findings; changed documentation's relative links were checked. This is not comprehensive secret/security certification. These are offline tests: no QQ message, live auxiliary-model request or gateway restart was performed. Actual QQ client rendering remains unverified. The remaining manifest tests and Docker/browser/office runs were not rerun for this narrow increment; the full manifest lists 52 test files. Previous results below are historical, not added to the current total.
+
+## Previous isolated-office and browser update
 
 The reviewed increment was migrated onto the public overlay without replacing its neutral names or adding private configuration/history/attachments. The regenerated patch applied to a fresh disposable checkout of the exact pinned upstream commit; all **111 overlay files** matched their manifest hashes. The checkout shares immutable Git objects with the source repository, not working files. An explicit installation to a new isolated plugin destination was read back byte-for-byte for all 14 plugin/build files; it changed no live configuration or service. The final 146-file bounded hygiene scan, including a private deny list kept outside the project, had no findings; relative Markdown links were also checked.
 

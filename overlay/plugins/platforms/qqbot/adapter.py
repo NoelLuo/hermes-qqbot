@@ -68,6 +68,7 @@ from .constants import (
     DEDUP_WINDOW_SECONDS, DEDUP_MAX_SIZE, MSG_TYPE_TEXT, MSG_TYPE_MARKDOWN, MSG_TYPE_MEDIA,
     MSG_TYPE_INPUT_NOTIFY, MEDIA_TYPE_IMAGE, MEDIA_TYPE_VIDEO, MEDIA_TYPE_VOICE, MEDIA_TYPE_FILE)
 from .utils import coerce_list as _coerce_list, build_user_agent
+from .markdown import normalize_qq_markdown
 from .reply_gate import GroupReplyGate
 from .group_images import QuietGroupImages
 from .group_events import GroupEventDispatcher
@@ -2008,8 +2009,8 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
     # ── Format / chat info / helpers ──
 
     def format_message(self, content: str) -> str:
-        """Pass markdown through when supported, else strip it (as BlueBubbles/SMS do)."""
-        return content if self._markdown_support else strip_markdown(content)
+        """Repair QQ bold punctuation boundaries, or strip markup in plain-text mode."""
+        return normalize_qq_markdown(content) if self._markdown_support else strip_markdown(content)
 
     async def get_chat_info(self, chat_id: str) -> dict[str, Any]:
         chat_type = self._guess_chat_type(chat_id)

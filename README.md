@@ -8,6 +8,7 @@
 
 - 群聊观察、静默文本/图片/文件的类型化记录、受限背景回放；按群选择启用辅助模型判断是否接话，支持图片处理。只 @ 其他成员时仅观察，不让辅助模型覆盖明确的对话对象；可信 @ 机器人或同时 @ 双方仍正常处理。
 - 原生队列/历史接线，出站发送回执与自身消息受控撤回。内部方法存在不代表当前模型有可调用工具，仍须核验实际入口与授权。
+- QQ Markdown 加粗的标点边界兼容：修复冒号、中英文引号、括号等与正文紧贴时露出 `**` 的情况；发送分片前按需补普通空格，不替换全角字符，保留代码和链接目标。
 - 基于真实请求主体的工具/指令门禁，公共与私人上下文分离。昵称、提示词标签、共享会话、默认投递对象均不授予管理权限。
 - 按 profile、聊天与真实发起者分区的持久文件，可信附件导入、文本/CSV 操作、显式导出与实际投递状态、生命周期清理、断网 Docker Python 和受限匿名公网浏览器。
 - 完整隔离办公命令入口 `run_office`：使用单独准备的 Docker 镜像及 LibreOffice、Python 文档库处理 ZIP/PDF/Word/Excel/PowerPoint 二进制文件；不是开放宿主 shell，也不放宽旧小文本 Python 工具。
@@ -28,6 +29,6 @@
 
 每工作区 256 MiB、普通单文件 32 MiB、2048 文件，全体工作区 2 GiB。导出副本保留 7 天，显式临时导入保留 72 小时；传输证明有效 10 分钟、每次最多关联 4 文件。[完整限制](docs/CAPABILITIES.md)。
 
-办公/浏览器公开候选已在 Windows 通过 **51 个相关测试文件：996 passed、0 failed、1 项 POSIX-only skip**，另有 8 项发布工具测试。具体范围见 [VERIFICATION](docs/VERIFICATION.md)；前版 @ 指向修复和首次发布的统计保留为历史，不冒充本次结果。源码与运行测试不等于 Linux/macOS CI、全部公开 Docker 配方已重新构建、真实 QQ API 交付证明或安全认证。
+本次 Markdown／引号修复在 Windows 的干净固定基线副本通过 **6 个相关测试文件：173 passed、0 failed**，其中新增专项用例 49 项；另有 8 项发布工具测试通过。完整 manifest 现含 113 个 overlay 文件和 52 个测试文件，本次只重跑上述相关套件。前版办公/浏览器的 **51 文件、996 passed、1 项 POSIX-only skip** 保留为历史结果，不与本次相加。具体范围见 [VERIFICATION](docs/VERIFICATION.md)。源码与离线发送边界测试不等于 Linux/macOS CI、全部公开 Docker 配方已重新构建、真实 QQ 客户端渲染/交付证明或安全认证。
 
 上游 Hermes Agent 属于 Nous Research 与贡献者，采用 MIT 许可证；分发衍生源码须保留通知及仓库 LICENSE。Playwright、Chromium、Python 与镜像层各有自己的许可；本仓库不附第三方 wheel/浏览器/镜像、不附私人构建回执、会话、凭据或部署数据。[Hermes 官方文档](https://hermes-agent.nousresearch.com/docs/)用于核对宿主功能，本项目兼容性仍以固定源码为准。

@@ -516,15 +516,16 @@
     },
     {
       "path": "plugins/platforms/qqbot/adapter.py",
-      "sha256": "b1f0a50aac43d66c558098f71567bcab0a032a48529946bc2235566fa0bc55cb",
+      "sha256": "a572e6f5e9cd890ab2838ff4c2ebb52166141c082774dc56fded3043b27ace2c",
       "base_sha256": "276be678419ca0dc444c95d1b0bf427de109b1a989ea80e70fc83abbe9630e4e",
-      "source_sha256": "c2f3a03189177019b60692f04bf3700f726c8ab2680c7e0ef2c1d0ebd0329b67",
+      "source_sha256": "4ee6874146ea8003875502afbea40a341c71e9cc6bf4fb13ba7824f724c26297",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
         "Generic assistant label replaces private deployment persona in source/fixtures (1 occurrences); configurable assistant_names retained.",
         "Retain upstream gateway.trust_env=False proxy opt-out while keeping QQ proxy/direct retry; no deployment network setting exported."
-      ]
+      ],
+      "incremental_update": "markdown-punctuation-boundaries"
     },
     {
       "path": "plugins/platforms/qqbot/chunked_upload.py",
@@ -1349,6 +1350,26 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/markdown.py",
+      "sha256": "2b01ac82edbab5fda0da8df99d0a1878f3f6f3afa21281172580b5a7a6fdd987",
+      "base_sha256": null,
+      "source_sha256": "2b01ac82edbab5fda0da8df99d0a1878f3f6f3afa21281172580b5a7a6fdd987",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "incremental_update": "markdown-punctuation-boundaries"
+    },
+    {
+      "path": "tests/gateway/test_qqbot_markdown.py",
+      "sha256": "29fafab89b033195ec8068338c798892f4ac2521ac686d51b9937b39be683e8a",
+      "base_sha256": null,
+      "source_sha256": "29fafab89b033195ec8068338c798892f4ac2521ac686d51b9937b39be683e8a",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "incremental_update": "markdown-punctuation-boundaries"
     }
   ],
   "plugins": [
@@ -1396,6 +1417,7 @@
     "tests/gateway/test_qqbot_group_portability.py",
     "tests/gateway/test_qqbot_guest_attachment_ingress.py",
     "tests/gateway/test_qqbot_local_migration.py",
+    "tests/gateway/test_qqbot_markdown.py",
     "tests/gateway/test_qqbot_public_reference_security.py",
     "tests/gateway/test_qqbot_real_message_ids.py",
     "tests/gateway/test_qqbot_receipt_integration.py",
@@ -1454,7 +1476,7 @@
   ],
   "verification": {
     "pinned_source_head": "ab44d8acf7bca230aea8574f2f2ab4666ca293ce",
-    "all_45_test_paths_present": true,
+    "all_manifest_test_paths_present": true,
     "source_hashes_unchanged_during_extraction": true,
     "candidate_tests_run": true,
     "candidate_test_summary": {
@@ -1464,7 +1486,7 @@
       "failed": 0,
       "skipped": 1
     },
-    "latest_focused_test_summary": {
+    "previous_focused_test_summary": {
       "scope": "mention-routing fix on disposable pinned public host",
       "files": 5,
       "passed": 30,
@@ -1472,21 +1494,31 @@
       "seconds": 46.4,
       "live_model_or_QQ_actions_performed": false
     },
+    "latest_focused_test_summary": {
+      "scope": "Markdown punctuation and quotation-mark fix on disposable pinned public host; remaining suites not rerun",
+      "files": 6,
+      "passed": 173,
+      "failed": 0,
+      "seconds": 37.7,
+      "new_markdown_cases": 49,
+      "live_model_or_QQ_actions_performed": false,
+      "QQ_client_rendering_verified": false
+    },
     "release_tool_tests_passed": 8,
     "disposable_docker_tests_run": true,
     "live_deployment_or_QQ_actions_performed": false,
     "public_recipe_images_rebuilt": false
   },
   "counts": {
-    "overlay_files": 103,
-    "complete_qq_package_files": 21,
+    "overlay_files": 113,
+    "complete_qq_package_files": 22,
     "core_reconstructed_files": 20,
-    "regression_test_files": 45,
+    "regression_test_files": 52,
     "bootstrap_files": 1,
-    "external_plugin_files": 2,
-    "new_at_base": 64,
+    "external_plugin_files": 14,
+    "new_at_base": 74,
     "modified_at_base": 27,
     "unchanged_at_base": 12
   },
-  "patch_sha256": "799d0402946bd2912d82a6a0910830f5fb9c1f6819a24d529134057ae30f64ec"
+  "patch_sha256": "a8304ef2bab36bab94235e36554082e3fdff9ff9242b8bb40f9e42efaae0f095"
 }

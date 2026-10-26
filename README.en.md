@@ -8,6 +8,7 @@
 
 - QQ group observation with typed quiet text/image/file records, bounded background replay, optional per-group auxiliary-model admission for non-mentioned messages, and image handling. Messages mentioning other members only are observation-only: the auxiliary model cannot override the addressee. Verified self/mixed mentions retain normal addressed handling.
 - Native queue/history integration, outgoing send receipts, and controlled recall of the bot's own confirmed messages. An internal recall method is **not** automatically a model-callable tool; availability and authorization must both be checked.
+- QQ Markdown bold punctuation compatibility: repair literal `**` when colons, Chinese/English quotation marks or brackets touch adjacent prose. Insert ordinary spaces only where needed before chunking, without changing full-width characters, code or link destinations.
 - Request-actor tool/command gates and public/private context separation. A nickname, prompt label, shared session, or home delivery target never grants administrator rights.
 - Requester-scoped persistent files, trusted attachment import, text/CSV operations, explicit export and transport delivery accounting, lifecycle cleanup, offline Docker Python, and a restricted anonymous public-page browser.
 - Isolated office commands (`run_office`) for binary ZIP/PDF/Word/Excel/PowerPoint work, using a separately provisioned Docker image with LibreOffice and Python document libraries. This is not host shell access or a relaxation of the small-text Python tool.
@@ -28,7 +29,7 @@ No automated gateway restart, service installation, or live configuration mutati
 
 Workspace: 256 MiB per requester/chat/profile, 32 MiB per ordinary file, 2048 files; global 2 GiB. Exports expire after 7 days, explicitly temporary imports after 72 hours. Attachment transport proofs last 10 minutes and authorize at most four files per association. [Full limits](docs/CAPABILITIES.md).
 
-The office/browser public candidate passed **51 targeted files: 996 tests passed, zero failed, one POSIX-only skip**, plus eight separate release-tool tests, on Windows. See [VERIFICATION](docs/VERIFICATION.md); earlier mention-routing/publication counts remain historical and are not substituted for this update. Source/runtime tests are not Linux/macOS CI, a fresh build of every published Docker recipe, real QQ API delivery proof, or security certification.
+This Markdown/quotation-mark update passed **six targeted files: 173 tests passed, zero failed** on a clean pinned Windows host, including 49 new focused cases; eight separate release-tool tests also passed. The full manifest now lists 113 overlay files and 52 test files, but only the stated targeted suite was rerun for this increment. The preceding office/browser result (**51 files, 996 passes, one POSIX-only skip**) remains historical and is not added to this count. See [VERIFICATION](docs/VERIFICATION.md). Source and offline outbound-boundary tests are not Linux/macOS CI, a fresh build of every published Docker recipe, real QQ client rendering/delivery proof, or security certification.
 
 ## Licensing and upstream
 
