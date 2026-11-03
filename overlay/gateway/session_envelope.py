@@ -166,13 +166,17 @@ def _validate_native(runner, event, provenance=None, fresh_roles=False):
 
 def snapshot_native(runner, event):
     from gateway.session_ingress_context import capture_provenance
+    from gateway.native_adapter_turns import snapshot_adapter_turn
     provenance = capture_provenance(runner, event)
-    return _snapshot_native(runner, _adapter_event(event), provenance)
+    state = snapshot_adapter_turn(runner, event)
+    return _snapshot_native(runner, _adapter_event(event), provenance, adapter_turn=state)
 
 
 async def prepare_native(runner, event):
     from gateway.session_ingress_context import capture_provenance, reauthorize_roles
+    from gateway.native_adapter_turns import snapshot_adapter_turn
     provenance = capture_provenance(runner, event)
+    state = snapshot_adapter_turn(runner, event)
     # Freeze caller-owned identity and content before the first network yield.
     # Preserve dynamic trust fields too: validation must reject forged ones,
     # not silently discard them while freezing the caller's source identity.
@@ -182,16 +186,18 @@ async def prepare_native(runner, event):
     # Copy + SHA-256 + fsyncs of up to max_inbound_media_bytes stay off the owner loop; the
     # copied context carries the admission's capture lease.
     media = await asyncio.to_thread(capture_native_media, frozen.media_urls) if frozen.media_urls else None
-    return _snapshot_native(runner, frozen, provenance, fresh_roles, encoded_source, media)
+    return _snapshot_native(runner, frozen, provenance, fresh_roles, encoded_source, media, adapter_turn=state)
 
 
-def _snapshot_native(runner, event, provenance, fresh_roles=False, encoded_source=None, media=None):
+def _snapshot_native(runner, event, provenance, fresh_roles=False, encoded_source=None, media=None, *, adapter_turn=None):
     if encoded_source is None:
         encoded_source = _validate_native(runner, event, provenance, fresh_roles)
     envelope = {'source': encoded_source,
                 'route': runner.session_store._generate_session_key(event.source),
                 'event': deepcopy({name: getattr(event, name) for name in _EVENT_FIELDS}),
                 'timestamp': event.timestamp.isoformat()}
+    if adapter_turn is not None:
+        envelope['adapter_turn'] = adapter_turn
     if event.source.platform.value == 'webhook':
         from gateway.platforms.webhook_delivery import route_digest, snapshot_destination
         adapter = runner._adapter_for_source(event.source)
@@ -281,6 +287,8 @@ def restore_native(payload, runner=None):
         from gateway.session_automation import automation_display_metadata, automation_notification_metadata
         event.metadata.update(automation_notification_metadata(envelope['automation']))
         event.metadata.update(automation_display_metadata(envelope['automation']))
+    from gateway.native_adapter_turns import restore_adapter_turn
+    restore_adapter_turn(runner, event, envelope.get('adapter_turn'))
     return event
 
 

@@ -12,6 +12,20 @@ platforms:
       group_reply_without_mention: []
       group_reply_gate:
         assistant_names: [Hermes]
+      memes:
+        enabled: false
+        mode: expression
+        # Supply absolute local root_dir/catalog_path privately after GIF review.
+        groups: []
+        all_groups: false
+        dm_users: []
+        intimacy_users: []
+        probability: 0.2
+        cooldown_seconds: 180
+        recent_exclude: 3
+        max_per_chat_per_day: 30
+        min_confidence: 0.75
+        selector_timeout_seconds: 6
       role_policy:
         # Keep the actor gate ON, even while the platform itself is disabled.
         enabled: true

@@ -98,6 +98,16 @@
       "incremental_update": "isolated-office-and-browser-repair"
     },
     {
+      "path": "agent/required_reply.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "8e017b2ed7f81c1f4a4c138ee503f28e2987d746df02c7b50677c76471197238",
+      "source_sha256": "8e017b2ed7f81c1f4a4c138ee503f28e2987d746df02c7b50677c76471197238",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
       "path": "agent/system_prompt.py",
       "sha256": "66054c9f2ff565b8106093e362c6ab8ff87c72aed99104a5df2480c892d52c0a",
       "base_sha256": "f804c92ddc7197ad2483960f07d7c2545c163644085b1821ce22bdad8c7f8597",
@@ -147,6 +157,23 @@
           "@@ -716,0 +747,8 @@ def _dispatch_authorized_once(",
           "@@ -717,0 +756,2 @@ def _dispatch_authorized_once(",
           "@@ -754 +794,6 @@ def _dispatch_authorized_once("
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
+      "path": "agent/turn_final_response.py",
+      "base_sha256": "f9d045b2e6cb377add3f4328b0494d9d164c3fb5960eeb96534db89d5c4312a8",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [],
+      "sha256": "b4a861d1af76c137352c98e6b5177d099ce16e39074a0b9e6df3db715aeb197d",
+      "source_sha256": "b4a861d1af76c137352c98e6b5177d099ce16e39074a0b9e6df3db715aeb197d",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -128,0 +129,7 @@"
         ],
         "excluded_hunks": []
       }
@@ -219,6 +246,16 @@
       "redaction_rationale": []
     },
     {
+      "path": "gateway/native_adapter_turns.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "12160689d96920a718b48d3681f90f8fe0604ccb5b826e27e03b5babcb09d085",
+      "source_sha256": "12160689d96920a718b48d3681f90f8fe0604ccb5b826e27e03b5babcb09d085",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
       "path": "gateway/platforms/base.py",
       "sha256": "62959b10fc76ebfec412d507856c8a72c3992077d14568038acedcb7417dbc47",
       "base_sha256": "de845c825424aa55fb2b081c6cf5a5eba1c185a5275798bc28e100d3b0ce6b78",
@@ -263,6 +300,16 @@
       "status_at_base": "new",
       "redaction_rationale": [],
       "incremental_update": "isolated-office-and-browser-repair"
+    },
+    {
+      "path": "gateway/run_adapter_turns.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "94f00feb0a6cd03d19825d7c0f9166f1cb9dbd04c424750a0b5ceeeba0dbdc7d",
+      "source_sha256": "94f00feb0a6cd03d19825d7c0f9166f1cb9dbd04c424750a0b5ceeeba0dbdc7d",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "gateway/run_busy.py",
@@ -314,28 +361,28 @@
       }
     },
     {
-      "path": "gateway/run_turn.py",
-      "sha256": "ac98020eedfa4beee28b7dd0cbcd1ad8cae0ac6e9673173a19005e5694c32343",
-      "base_sha256": "df1f57156f63b6d5649fae280eb7fad9dc39aefe7e6ee62bf743adc582fc639e",
-      "source_sha256": "ac98020eedfa4beee28b7dd0cbcd1ad8cae0ac6e9673173a19005e5694c32343",
+      "path": "gateway/run_notifications.py",
+      "base_sha256": "9209c033bb834ec9b3355d4b84d74ae29f899bf5abcbfaf112a1d43116b47490",
       "source_kind": "live_source",
       "status_at_base": "modified",
-      "redaction_rationale": [
-        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
-      ],
+      "redaction_rationale": [],
+      "sha256": "9606d0706d92172766502aae28942b1d1848e1c95c7d67a9d742fdb31776a2d9",
+      "source_sha256": "9606d0706d92172766502aae28942b1d1848e1c95c7d67a9d742fdb31776a2d9",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
         "included_hunks": [
-          "@@ -530 +530,9 @@ class GatewayTurnMixin(GatewayTurnPrepareMixin, GatewayTurnHygieneMixin, Gateway"
+          "@@ -281,0 +282 @@",
+          "@@ -295,0 +297,5 @@"
         ],
         "excluded_hunks": []
       }
     },
     {
-      "path": "gateway/run_turn_prepare.py",
-      "sha256": "b1311003e7d4957a09e1ff8b4b9a219f25f0607a548c341b72eca9a0c5fbf964",
-      "base_sha256": "7debb42ae2b7607d8e3e1d75e8590b1f2b49f663461036bf2b32113562c7acf6",
-      "source_sha256": "b1311003e7d4957a09e1ff8b4b9a219f25f0607a548c341b72eca9a0c5fbf964",
+      "path": "gateway/run_turn.py",
+      "sha256": "c93c2236efbbcba67ce9ec69319cdb1a6bd03022f1a839cc98e75dbddd89b781",
+      "base_sha256": "df1f57156f63b6d5649fae280eb7fad9dc39aefe7e6ee62bf743adc582fc639e",
+      "source_sha256": "c93c2236efbbcba67ce9ec69319cdb1a6bd03022f1a839cc98e75dbddd89b781",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -344,19 +391,27 @@
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
         "included_hunks": [
-          "@@ -611,0 +612,9 @@ class GatewayTurnPrepareMixin:",
-          "@@ -671 +680 @@ class GatewayTurnPrepareMixin:",
-          "@@ -695,0 +705,8 @@ class GatewayTurnPrepareMixin:"
+          "@@ -269,0 +270 @@",
+          "@@ -290,0 +292 @@",
+          "@@ -530 +532,9 @@",
+          "@@ -1813,0 +1824 @@",
+          "@@ -1843,0 +1855 @@",
+          "@@ -1845 +1857 @@",
+          "@@ -1927,0 +1940 @@",
+          "@@ -1969,0 +1983 @@",
+          "@@ -1977,0 +1992,2 @@",
+          "@@ -2304,0 +2321 @@",
+          "@@ -2342,0 +2360 @@"
         ],
         "excluded_hunks": []
       },
-      "incremental_update": "isolated-office-and-browser-repair"
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
-      "path": "gateway/run_turn_runner.py",
-      "sha256": "e35736bdde493480adafd65f42d982c1ea07489d6cc490f58c7f505431132214",
-      "base_sha256": "66f4e768959343e4dd52a0b9d7f5937f9b8a5ef292fd78659cc8aae79e44fcc1",
-      "source_sha256": "e35736bdde493480adafd65f42d982c1ea07489d6cc490f58c7f505431132214",
+      "path": "gateway/run_turn_prepare.py",
+      "sha256": "246eab0965f3bb1646ee23abe9b609ddd02abe7217fd70b975c1e87cddde95ec",
+      "base_sha256": "7debb42ae2b7607d8e3e1d75e8590b1f2b49f663461036bf2b32113562c7acf6",
+      "source_sha256": "246eab0965f3bb1646ee23abe9b609ddd02abe7217fd70b975c1e87cddde95ec",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -365,19 +420,43 @@
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
         "included_hunks": [
-          "@@ -652,0 +653,4 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -659 +663 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -718,0 +723,7 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -741,0 +753,3 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -746 +760 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -753 +767,2 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -780 +795,2 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -782,0 +799,2 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -1115 +1133,6 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):",
-          "@@ -1117,0 +1141,3 @@ class TurnRunner(GatewayTurnProgressMixin, GatewaySessionAgentMixin):"
+          "@@ -611,0 +612,22 @@",
+          "@@ -671 +693 @@",
+          "@@ -679,0 +702,2 @@",
+          "@@ -694,0 +719,6 @@"
         ],
         "excluded_hunks": []
-      }
+      },
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "gateway/run_turn_runner.py",
+      "sha256": "d7de17aece761d27f272b54cf112e2efda978d52232abf4ae2d82b94eaac3325",
+      "base_sha256": "66f4e768959343e4dd52a0b9d7f5937f9b8a5ef292fd78659cc8aae79e44fcc1",
+      "source_sha256": "d7de17aece761d27f272b54cf112e2efda978d52232abf4ae2d82b94eaac3325",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+      ],
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -652,0 +653,4 @@",
+          "@@ -659 +663 @@",
+          "@@ -718,0 +723,7 @@",
+          "@@ -741,0 +753,3 @@",
+          "@@ -746 +760 @@",
+          "@@ -753 +767,2 @@",
+          "@@ -780 +795,2 @@",
+          "@@ -782,0 +799,2 @@",
+          "@@ -935 +953,7 @@",
+          "@@ -1115 +1139,6 @@",
+          "@@ -1117,0 +1147,3 @@"
+        ],
+        "excluded_hunks": []
+      },
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "gateway/session_context_refs.py",
@@ -400,9 +479,9 @@
     },
     {
       "path": "gateway/session_envelope.py",
-      "sha256": "136e9e8248ff4efdce053b072397320dc326f073ced0f43779562a4f7c95983b",
+      "sha256": "e86ac9627be9faf3cf509e470b9adab76774972a33d65f1265c470743d39a160",
       "base_sha256": "948d26349e3fb6ea865af33e18dafd2e4177e5fd887afb271de89363f4a0d68a",
-      "source_sha256": "136e9e8248ff4efdce053b072397320dc326f073ced0f43779562a4f7c95983b",
+      "source_sha256": "e86ac9627be9faf3cf509e470b9adab76774972a33d65f1265c470743d39a160",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -411,12 +490,20 @@
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
         "included_hunks": [
-          "@@ -66 +66,4 @@ def _adapter_event(event, **changes):",
-          "@@ -215,0 +219,5 @@ def _snapshot_native(runner, event, provenance, fresh_roles=False, encoded_sourc",
-          "@@ -264,0 +273,2 @@ def restore_native(payload, runner=None):"
+          "@@ -66 +66,4 @@",
+          "@@ -165,0 +169 @@",
+          "@@ -167 +171,2 @@",
+          "@@ -171,0 +177 @@",
+          "@@ -172,0 +179 @@",
+          "@@ -182,4 +189,4 @@",
+          "@@ -191,0 +199,2 @@",
+          "@@ -215,0 +225,5 @@",
+          "@@ -264,0 +279,2 @@",
+          "@@ -273,0 +290,2 @@"
         ],
         "excluded_hunks": []
-      }
+      },
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "gateway/session_execution.py",
@@ -441,9 +528,9 @@
     },
     {
       "path": "gateway/session_ingress.py",
-      "sha256": "bbf07cb59ec0d6fd1c8efe007ddddd88e9036848617e329c1f082f356f01b914",
+      "sha256": "13ac248153ee858a86833e4fc09203dd1b41e7c11565dfee8a45743da3c20dc2",
       "base_sha256": "d498954d3867337e3beda70adfbef0f581671e72e73e0526ae0eefe37101127f",
-      "source_sha256": "bbf07cb59ec0d6fd1c8efe007ddddd88e9036848617e329c1f082f356f01b914",
+      "source_sha256": "13ac248153ee858a86833e4fc09203dd1b41e7c11565dfee8a45743da3c20dc2",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -452,17 +539,18 @@
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
         "included_hunks": [
-          "@@ -52,0 +53 @@ async def admit_message(authority, event):",
-          "@@ -63,0 +65 @@ async def admit_message(authority, event):",
-          "@@ -76,0 +79 @@ async def admit_message(authority, event):",
-          "@@ -271,0 +275,4 @@ async def execute_admission(authority, ref, row):",
-          "@@ -360,2 +367,2 @@ async def deliver_settled(authority, admission_id):",
-          "@@ -362,0 +370,2 @@ async def deliver_settled(authority, admission_id):",
-          "@@ -382,0 +392 @@ async def deliver_response(adapter, event, session_key, response):",
-          "@@ -398,0 +409,4 @@ async def dispatch_shared_busy(adapter, event, session_key):"
+          "@@ -52,0 +53 @@",
+          "@@ -63,0 +65 @@",
+          "@@ -76,0 +79 @@",
+          "@@ -271,0 +275,6 @@",
+          "@@ -360,2 +369,2 @@",
+          "@@ -362,0 +372,2 @@",
+          "@@ -382,0 +394 @@",
+          "@@ -398,0 +411,6 @@"
         ],
         "excluded_hunks": []
-      }
+      },
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "gateway/session_transcript.py",
@@ -506,6 +594,23 @@
       }
     },
     {
+      "path": "gateway/turn_context.py",
+      "base_sha256": "ecc51204cec64b35c1670ba83d6e6765be9829bf991d2ac6921409c42c6fb9b4",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [],
+      "sha256": "57fba3530e616e104f21dad78c4e7fe826708cef23b157cad925419fe8fb8b9a",
+      "source_sha256": "57fba3530e616e104f21dad78c4e7fe826708cef23b157cad925419fe8fb8b9a",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -60,0 +61 @@"
+        ],
+        "excluded_hunks": []
+      }
+    },
+    {
       "path": "plugins/platforms/qqbot/__init__.py",
       "sha256": "0d246d551dc397fc2944196d4f9368a30fadebdebf39eccd2e523521dc7605c0",
       "base_sha256": "0d246d551dc397fc2944196d4f9368a30fadebdebf39eccd2e523521dc7605c0",
@@ -516,16 +621,16 @@
     },
     {
       "path": "plugins/platforms/qqbot/adapter.py",
-      "sha256": "a572e6f5e9cd890ab2838ff4c2ebb52166141c082774dc56fded3043b27ace2c",
+      "sha256": "d943c97559349ede377b48a7ef1062e863f435942de15fb90c0ff978cc59d8b7",
       "base_sha256": "276be678419ca0dc444c95d1b0bf427de109b1a989ea80e70fc83abbe9630e4e",
-      "source_sha256": "4ee6874146ea8003875502afbea40a341c71e9cc6bf4fb13ba7824f724c26297",
+      "source_sha256": "b1de69a8bb8557c55acc22b3b9f63a2f100e6af76a8363efe2be2ff626a77258",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
         "Generic assistant label replaces private deployment persona in source/fixtures (1 occurrences); configurable assistant_names retained.",
         "Retain upstream gateway.trust_env=False proxy opt-out while keeping QQ proxy/direct retry; no deployment network setting exported."
       ],
-      "incremental_update": "markdown-punctuation-boundaries"
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "plugins/platforms/qqbot/chunked_upload.py",
@@ -634,6 +739,118 @@
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": []
+    },
+    {
+      "path": "plugins/platforms/qqbot/long_reply.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "35f008b024b1edb06d64adbad6e00e91b5fc93c6e3719bcf2eb88bf87778338c",
+      "source_sha256": "35f008b024b1edb06d64adbad6e00e91b5fc93c6e3719bcf2eb88bf87778338c",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/markdown.py",
+      "sha256": "2b01ac82edbab5fda0da8df99d0a1878f3f6f3afa21281172580b5a7a6fdd987",
+      "base_sha256": null,
+      "source_sha256": "2b01ac82edbab5fda0da8df99d0a1878f3f6f3afa21281172580b5a7a6fdd987",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "incremental_update": "markdown-punctuation-boundaries"
+    },
+    {
+      "path": "plugins/platforms/qqbot/meme_catalog.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "c15a6949de038643ed3df12e18dd64fda12aad348a65eaf1d5b4522effc2782c",
+      "source_sha256": "c15a6949de038643ed3df12e18dd64fda12aad348a65eaf1d5b4522effc2782c",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/meme_delivery.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "dd0bc1975acb753f2cbc937ec1d46bbedf177e279d7b296ffe99fbc0bebf6f59",
+      "source_sha256": "dd0bc1975acb753f2cbc937ec1d46bbedf177e279d7b296ffe99fbc0bebf6f59",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/meme_expression.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Use catalog-scoped neutral usage guidance rather than private cute-style gallery and blanket all-context approval claims; retain expression directives, frequency and delivery semantics."
+      ],
+      "sha256": "32aeb17f5180d67c94a893d4b8be7b16aab4d6f0b0eb418e6616f4be16487145",
+      "source_sha256": "6d094c9c369cc3b44018f3db41247d3c16685301de7fb9fe58ef2e367ea08cf7",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/meme_expression_delivery.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "9230c400fa2391db6d80235f65e48747a792727c3564e275bd08a6a3a76dac3a",
+      "source_sha256": "9230c400fa2391db6d80235f65e48747a792727c3564e275bd08a6a3a76dac3a",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/meme_expression_state.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "91c31a26ea236c9cf0a409c0a0cb385b8a4dc38ff8761c56e8d152c396b63b52",
+      "source_sha256": "91c31a26ea236c9cf0a409c0a0cb385b8a4dc38ff8761c56e8d152c396b63b52",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/meme_native.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "94e5edad902132afb06e24c05ed9c35bb44c2dae597d98c2869eff55114354af",
+      "source_sha256": "94e5edad902132afb06e24c05ed9c35bb44c2dae597d98c2869eff55114354af",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/meme_selector.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "ab2408ec42ea25aacc207b2379499bfa91aa656bf2db98a38c6f18d0f98d812f",
+      "source_sha256": "ab2408ec42ea25aacc207b2379499bfa91aa656bf2db98a38c6f18d0f98d812f",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/meme_state.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "089d989dd2574a08bc32bb005f451e9405b243c1a5098eede2f92448fecd67f1",
+      "source_sha256": "089d989dd2574a08bc32bb005f451e9405b243c1a5098eede2f92448fecd67f1",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "plugins/platforms/qqbot/memes.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "b50816c83bf93890089e7c405fb52c4d74cce781a2eafc412b06f0ab9b6dfd1c",
+      "source_sha256": "b50816c83bf93890089e7c405fb52c4d74cce781a2eafc412b06f0ab9b6dfd1c",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "plugins/platforms/qqbot/onboard.py",
@@ -765,6 +982,16 @@
       "redaction_rationale": []
     },
     {
+      "path": "tests/agent/test_required_reply_loop.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "934d61ea6be8d06917162ed7a414ab7ccb97a3a2bb731b18f5793204849e200a",
+      "source_sha256": "934d61ea6be8d06917162ed7a414ab7ccb97a3a2bb731b18f5793204849e200a",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
       "path": "tests/cron/test_public_admin_cron_context.py",
       "sha256": "0f7c39087c2800eb7d1634d09f0bb18460d3ced9f04957a4b36137de8d163085",
       "base_sha256": null,
@@ -783,13 +1010,26 @@
       "redaction_rationale": []
     },
     {
+      "path": "tests/gateway/test_adapter_turn_notes.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "dcad46494a991e628f2ad111dbbba1fdf750e3c04bbb42b7d122ab8836c40b67",
+      "source_sha256": "dcad46494a991e628f2ad111dbbba1fdf750e3c04bbb42b7d122ab8836c40b67",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
       "path": "tests/gateway/test_guest_export_delivery.py",
-      "sha256": "d71dcb5596725544f41bd6f029a550c162fc0465498e4c5653010780b859c73b",
+      "sha256": "10f1d770ea4f9f6b05f18a63027f4470bc92656228ca6461179e755a942a8eee",
       "base_sha256": null,
       "source_sha256": "d71dcb5596725544f41bd6f029a550c162fc0465498e4c5653010780b859c73b",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [
+        "Initialize the real QQAdapter in export fixtures so disabled meme integration is exercised without incomplete __new__ state; transport remains mocked."
+      ],
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "tests/gateway/test_qqbot.py",
@@ -835,6 +1075,16 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": []
+    },
+    {
+      "path": "tests/gateway/test_qqbot_expression_native.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "fe260164805032f04f31a7e9b0d3dca0e14bee25a29f37bc6707f8339058a2fb",
+      "source_sha256": "fe260164805032f04f31a7e9b0d3dca0e14bee25a29f37bc6707f8339058a2fb",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "tests/gateway/test_qqbot_group_event_upgrade.py",
@@ -908,6 +1158,16 @@
       ]
     },
     {
+      "path": "tests/gateway/test_qqbot_markdown.py",
+      "sha256": "29fafab89b033195ec8068338c798892f4ac2521ac686d51b9937b39be683e8a",
+      "base_sha256": null,
+      "source_sha256": "29fafab89b033195ec8068338c798892f4ac2521ac686d51b9937b39be683e8a",
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "incremental_update": "markdown-punctuation-boundaries"
+    },
+    {
       "path": "tests/gateway/test_qqbot_public_reference_security.py",
       "sha256": "4476d6129f1601b887382bec5f354698c0a91a8b4cecc23d218332a3ba0cebfa",
       "base_sha256": null,
@@ -944,6 +1204,16 @@
       "redaction_rationale": [
         "Generic assistant label replaces private deployment persona in source/fixtures (4 occurrences); configurable assistant_names retained."
       ]
+    },
+    {
+      "path": "tests/gateway/test_qqbot_required_reply.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "20f5e8be4dded2a8e1ba9258fdc76b407b2eb1c150c7ee5df517914c48a90299",
+      "source_sha256": "20f5e8be4dded2a8e1ba9258fdc76b407b2eb1c150c7ee5df517914c48a90299",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "tests/gateway/test_qqbot_scope_paths.py",
@@ -992,6 +1262,88 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": []
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_expression_edges.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "0c81f61475c1af728e9ebd0fad42857f7f1ed696da221d6b754e93899d3edf89",
+      "source_sha256": "0c81f61475c1af728e9ebd0fad42857f7f1ed696da221d6b754e93899d3edf89",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_expression_silence.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "70ed806708cc1bc091b33e674150ba63311b29bc31baa064ffcc2c2c77e49dcf",
+      "source_sha256": "70ed806708cc1bc091b33e674150ba63311b29bc31baa064ffcc2c2c77e49dcf",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_long_reply.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "b95fe0acdcef8e57fcc191a434503980a594f63fcb89ae86178149209c96693f",
+      "source_sha256": "b95fe0acdcef8e57fcc191a434503980a594f63fcb89ae86178149209c96693f",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_meme_catalog.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "0893e88c62f362d6bd77dc886aa671b84bad6d9ca160afdb57932ae23ed5f7c0",
+      "source_sha256": "0893e88c62f362d6bd77dc886aa671b84bad6d9ca160afdb57932ae23ed5f7c0",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_meme_expression.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [
+        "Generic Hermes label replaces deployment persona in synthetic fixtures."
+      ],
+      "sha256": "f6681d5de31c8433c3a53b66def885fca8dd5437cf3d4237570163af39709792",
+      "source_sha256": "1efd4df86d988a71fcb8ffa9cf0a4c4738c0438bfbb38730a545335e855da13a",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_meme_prd.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "c3e78933080ea4135800637c74c64877b574240974782777390679af615f7769",
+      "source_sha256": "c3e78933080ea4135800637c74c64877b574240974782777390679af615f7769",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_meme_selector.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "9ceb89801a9b86794b4b6e4659cc0b92b8e2ca4da5f8717f72444005158eeefd",
+      "source_sha256": "9ceb89801a9b86794b4b6e4659cc0b92b8e2ca4da5f8717f72444005158eeefd",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_memes.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "19640634e5d3fbd021b4b8df4e8183b60b1e27d5606d1fb5653a842e3703d9bf",
+      "source_sha256": "19640634e5d3fbd021b4b8df4e8183b60b1e27d5606d1fb5653a842e3703d9bf",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
       "path": "tests/plugins/platforms/test_qqbot_plugin.py",
@@ -1350,26 +1702,6 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": []
-    },
-    {
-      "path": "plugins/platforms/qqbot/markdown.py",
-      "sha256": "2b01ac82edbab5fda0da8df99d0a1878f3f6f3afa21281172580b5a7a6fdd987",
-      "base_sha256": null,
-      "source_sha256": "2b01ac82edbab5fda0da8df99d0a1878f3f6f3afa21281172580b5a7a6fdd987",
-      "source_kind": "live_source",
-      "status_at_base": "new",
-      "redaction_rationale": [],
-      "incremental_update": "markdown-punctuation-boundaries"
-    },
-    {
-      "path": "tests/gateway/test_qqbot_markdown.py",
-      "sha256": "29fafab89b033195ec8068338c798892f4ac2521ac686d51b9937b39be683e8a",
-      "base_sha256": null,
-      "source_sha256": "29fafab89b033195ec8068338c798892f4ac2521ac686d51b9937b39be683e8a",
-      "source_kind": "live_source",
-      "status_at_base": "new",
-      "redaction_rationale": [],
-      "incremental_update": "markdown-punctuation-boundaries"
     }
   ],
   "plugins": [
@@ -1402,14 +1734,17 @@
     "tests/agent/test_guest_workspace_surface.py",
     "tests/agent/test_request_security.py",
     "tests/agent/test_request_security_direct_and_restore.py",
+    "tests/agent/test_required_reply_loop.py",
     "tests/cron/test_public_admin_cron_context.py",
     "tests/cron/test_public_cron_policy.py",
+    "tests/gateway/test_adapter_turn_notes.py",
     "tests/gateway/test_guest_export_delivery.py",
     "tests/gateway/test_qqbot.py",
     "tests/gateway/test_qqbot_agent_security.py",
     "tests/gateway/test_qqbot_control_security.py",
     "tests/gateway/test_qqbot_credential_isolation.py",
     "tests/gateway/test_qqbot_delivery_receipts.py",
+    "tests/gateway/test_qqbot_expression_native.py",
     "tests/gateway/test_qqbot_group_event_upgrade.py",
     "tests/gateway/test_qqbot_group_identity.py",
     "tests/gateway/test_qqbot_group_images.py",
@@ -1422,11 +1757,20 @@
     "tests/gateway/test_qqbot_real_message_ids.py",
     "tests/gateway/test_qqbot_receipt_integration.py",
     "tests/gateway/test_qqbot_reply_gate.py",
+    "tests/gateway/test_qqbot_required_reply.py",
     "tests/gateway/test_qqbot_scope_paths.py",
     "tests/gateway/test_qqbot_security_delivery_binding.py",
     "tests/gateway/test_qqbot_update_prompt_key.py",
     "tests/gateway/test_quoted_attachment_workspace_guidance.py",
     "tests/gateway/test_request_security_policy_resolution.py",
+    "tests/plugins/platforms/test_qqbot_expression_edges.py",
+    "tests/plugins/platforms/test_qqbot_expression_silence.py",
+    "tests/plugins/platforms/test_qqbot_long_reply.py",
+    "tests/plugins/platforms/test_qqbot_meme_catalog.py",
+    "tests/plugins/platforms/test_qqbot_meme_expression.py",
+    "tests/plugins/platforms/test_qqbot_meme_prd.py",
+    "tests/plugins/platforms/test_qqbot_meme_selector.py",
+    "tests/plugins/platforms/test_qqbot_memes.py",
     "tests/plugins/platforms/test_qqbot_plugin.py",
     "tests/plugins/platforms/test_qqbot_send_targets.py",
     "tests/tools/test_guest_browser_diagnostics.py",
@@ -1452,7 +1796,8 @@
   "public_differences": [
     "Default assistant display alias and associated fixtures use Hermes; assistant_names remains configurable.",
     "Live Python Docker integration uses QQBOT_TEST_PYTHON_IMAGE rather than a private deployment image fingerprint.",
-    "Workspace browser prompt example uses example.com."
+    "Workspace browser prompt example uses example.com.",
+    "Expression capability text follows each reviewed catalog entry; no private gallery style or blanket usage approval is claimed."
   ],
   "prerequisites": [
     "Apply overlay to the exact pinned upstream commit; this is a core integration overlay, not a standalone plugin.",
@@ -1494,7 +1839,11 @@
       "seconds": 46.4,
       "live_model_or_QQ_actions_performed": false
     },
-    "latest_focused_test_summary": {
+    "release_tool_tests_passed": 8,
+    "disposable_docker_tests_run": true,
+    "live_deployment_or_QQ_actions_performed": false,
+    "public_recipe_images_rebuilt": false,
+    "previous_markdown_focused_test_summary": {
       "scope": "Markdown punctuation and quotation-mark fix on disposable pinned public host; remaining suites not rerun",
       "files": 6,
       "passed": 173,
@@ -1504,21 +1853,46 @@
       "live_model_or_QQ_actions_performed": false,
       "QQ_client_rendering_verified": false
     },
-    "release_tool_tests_passed": 8,
-    "disposable_docker_tests_run": true,
-    "live_deployment_or_QQ_actions_performed": false,
-    "public_recipe_images_rebuilt": false
+    "latest_focused_test_summary": {
+      "scope": "Contextual meme expression and required QQ turn integration on a freshly applied exact pinned public host; 60 of 64 manifest test files plus 16 upstream queue/receipt/prompt-cache regression files",
+      "files": 76,
+      "passed": 1504,
+      "failed": 0,
+      "skipped": 1,
+      "skip_reason": "One POSIX-only case on Windows",
+      "seconds": 355.9,
+      "workers": 3,
+      "file_retries": 0,
+      "manifest_test_files_run": 60,
+      "additional_upstream_test_files": 16,
+      "real_home_guard_retained": true,
+      "all_overlay_files_read_back": 141,
+      "scoped_ruff_passed": true,
+      "release_tool_unittests_passed": 8,
+      "release_hygiene_files_checked": 178,
+      "release_hygiene_findings": 0,
+      "live_model_or_QQ_actions_performed": false,
+      "docker_or_live_browser_tests_run": false,
+      "QQ_client_rendering_verified": false,
+      "excluded_test_files": [
+        "tests/tools/test_guest_browser_docker.py",
+        "tests/tools/test_guest_browser_live_integration.py",
+        "tests/tools/test_guest_office_live.py",
+        "tests/tools/test_guest_workspace_live_docker.py"
+      ],
+      "validation_repair": "The export delivery fixture bypassed QQAdapter initialization via __new__, causing 23 failures after the new delivery mixin was added. It now uses the real constructor with synthetic credentials and mocked transport; all original assertions remain."
+    }
   },
   "counts": {
-    "overlay_files": 113,
-    "complete_qq_package_files": 22,
-    "core_reconstructed_files": 20,
-    "regression_test_files": 52,
+    "overlay_files": 141,
+    "complete_qq_package_files": 32,
+    "core_reconstructed_files": 23,
+    "regression_test_files": 64,
     "bootstrap_files": 1,
     "external_plugin_files": 14,
-    "new_at_base": 74,
-    "modified_at_base": 27,
+    "new_at_base": 99,
+    "modified_at_base": 30,
     "unchanged_at_base": 12
   },
-  "patch_sha256": "a8304ef2bab36bab94235e36554082e3fdff9ff9242b8bb40f9e42efaae0f095"
+  "patch_sha256": "efc5e8648db76c2f2a90d5ede1a9f0f486ddd8a02c87dbd0344c494b347cb41b"
 }

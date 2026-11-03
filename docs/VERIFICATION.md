@@ -1,6 +1,20 @@
 # Verification ledger — sanitized public candidate
 
-## Current Markdown punctuation / quotation-mark update
+## Current contextual GIF expression update
+
+The current local implementation was migrated as reviewed QQ-only hunks plus its required source/test dependency closure. This includes primary-model reviewed-ID selection, pure-GIF and text-then-GIF delivery, persistent intent/receipt feedback, native queue stamps and handoff, queued follow-up delivery, compression continuity and bounded required-reply recovery. The public neutral assistant name and `gateway.trust_env` opt-out remain intact; unrelated provider/fallback changes, private GIF collections, runtime configuration and chat data are excluded. Public capability prose follows the reviewed catalog rather than asserting that an unseen deployment's entire collection is approved for every context. Long-reply preview is included as an existing dependency but remains disabled by default; it is not client-local folding.
+
+Patch SHA256: `efc5e8648db76c2f2a90d5ede1a9f0f486ddd8a02c87dbd0344c494b347cb41b`.
+
+The final patch was applied to a fresh disposable checkout of exact upstream commit `ab44d8acf7bca230aea8574f2f2ab4666ca293ce`. After testing, `prepare_host.py` read back **all 141 overlay files** as `already_matches`. The complete manifest contains **64 regression files**; this run selected 60 offline manifest files and 16 additional upstream queue/receipt/refusal, busy follow-up, streaming/TTS and prompt-cache files.
+
+Final canonical Windows / PM Python 3.14.7 runner: **76 files, 1504 passed, 0 failed, 1 skipped**, 355.9 seconds, three workers, zero file retries, explicit QQ bootstrap and real-home I/O protection retained. The sole skip is POSIX-only. This is one final runner Summary, not a sum of overlapping attempts. An initial integration failure exposed an export fixture bypassing the QQ constructor: it now uses the real constructor with synthetic credentials and mocked transport, retaining the original assertions. The final public candidate, not the private runtime, produced the passing result.
+
+The four external environment files not run this time are `tests/tools/test_guest_browser_docker.py`, `test_guest_browser_live_integration.py`, `test_guest_office_live.py`, and `test_guest_workspace_live_docker.py`. No Docker image build, live browser/model request, real QQ send, gateway restart or client animation check was performed for this update. Earlier actual Docker results below remain historical, not current acceptance evidence. Linux/macOS execution and real-platform delivery are not claimed.
+
+Scoped Ruff passed and eight separate release-tool unittest cases passed. Release hygiene and relative documentation links were checked before publication; these bounded checks are not comprehensive secret/security certification. Raw host logs and deployment data remain outside this repository. Source/test success does not prove installed, enabled, loaded, sent or visible in a QQ client.
+
+## Previous Markdown punctuation / quotation-mark update
 
 Only the reviewed Markdown import/formatting hunks were migrated into the neutral public adapter; its assistant label and `gateway.trust_env` proxy opt-out were retained. The new sibling module and regression file are included in the overlay, manifest test list and regenerated patch. The patch applied to a fresh disposable checkout of the exact pinned upstream commit, and `prepare_host.py` read back **all 113 overlay files** as `already_matches`. This checkout shares immutable Git objects, not working files, with the local source tree. No live configuration or service was changed.
 

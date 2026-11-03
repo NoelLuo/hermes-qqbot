@@ -72,6 +72,9 @@ from .markdown import normalize_qq_markdown
 from .reply_gate import GroupReplyGate
 from .group_images import QuietGroupImages
 from .group_events import GroupEventDispatcher
+from .long_reply import LongReplyPreview
+from .meme_delivery import MemeDeliveryMixin
+from .memes import capture_turn as _capture_meme_turn
 from .chunked_upload import (
     ChunkedUploader, UploadDailyLimitExceededError, UploadFileTooLargeError)
 from .keyboards import (
@@ -101,7 +104,7 @@ _STT_PROVIDER_BASE_URLS = {
 _AUDIO_URL_EXTENSIONS = {".silk", ".amr", ".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"}
 
 
-class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
+class QQAdapter(MemeDeliveryMixin, OwnAccessPolicyMixin, BasePlatformAdapter):
     """QQ Bot adapter backed by the official QQ Bot WebSocket Gateway + REST API."""
 
     # QQ Bot API does not support editing sent messages.
@@ -161,6 +164,7 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
         self._group_reply_gate = GroupReplyGate(extra)
         self._group_images = QuietGroupImages()
         self._group_events = GroupEventDispatcher()
+        self._long_reply_preview = LongReplyPreview(extra)
         from hermes_constants import get_hermes_home
         try:
             self._receipt_home = get_hermes_home()
@@ -574,7 +578,7 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
             elif t in self._INBOUND_HANDLERS:
                 asyncio.create_task(self._on_message(t, d))
             elif t == "INTERACTION_CREATE":
-                self._create_task(self._on_interaction(d))
+                self._create_task(self._on_interaction(d, event_id=payload.get("id")))
             else:
                 logger.debug("[%s] Unhandled dispatch: %s", self._log_tag, t)
         elif op == 11:  # Heartbeat ACK
@@ -641,7 +645,7 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
         """Register (or clear) the callback invoked per ACKed INTERACTION_CREATE."""
         self._interaction_callback = callback
 
-    async def _on_interaction(self, d: Any) -> None:
+    async def _on_interaction(self, d: Any, *, event_id: Optional[str] = None) -> None:
         """Parse INTERACTION_CREATE, ACK it promptly (else the client shows an error
         icon on the button), then dispatch to the registered callback."""
         if not isinstance(d, dict):
@@ -653,6 +657,10 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
             return
         if not event.id:
             logger.warning("[%s] INTERACTION_CREATE missing id, skipping ACK", self._log_tag)
+            return
+
+        if self._long_reply_preview.owns(event):
+            await self._long_reply_preview.on_interaction(self, event, event_id=event_id)
             return
 
         try:
@@ -905,7 +913,11 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
 
         await self._ingest(
             d, msg_id, "\n".join(context_lines), d.get("attachments"), timestamp,
-            chat_id=group_openid, qq_chat_type="group", user_id=member, chat_type="group")
+            chat_id=group_openid, qq_chat_type="group", user_id=member, chat_type="group",
+            event_options={"reply_expected": True, "channel_context": (
+                "[QQ 平台路由] 当前消息已可信 @ 本机器人；即使同时 @ 其他人或机器人，"
+                "本机器人也是对话对象，应正常处理并回答，不能因其他 @ 而静默。"
+                if (isinstance(mentions, list) and len(mentions) > 1) or "<@" in text else None)})
 
     async def _handle_plain_group_message(self, d, msg_id, content, author, timestamp) -> bool | None:
         """GROUP_MESSAGE_CREATE: plain (non-@) group chat. If the bot is @mentioned,
@@ -1112,6 +1124,7 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
             if receipt:
                 event._inbound_attachment_receipts.append((receipt, index))
         event.reply_to_message_id = quoted_message_id(d)
+        _capture_meme_turn(event)
         if qq_chat_type == "group":
             from gateway.platforms.base import resolve_channel_prompt
             event.channel_prompt = event.channel_prompt or resolve_channel_prompt(self.config.extra, chat_id)
@@ -1651,25 +1664,7 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
         """True when connected now or after waiting for the listener to reconnect."""
         return self.is_connected or await self._wait_for_reconnection()
 
-    async def send_final_ledgered(self, event, session_key, text_content, metadata, *,
-                                  reply_to, is_ephemeral_response=False):
-        from .delivery_binding import bind_delivery, turn_context
-        with bind_delivery(event.source.chat_id, turn_context(event, session_key)):
-            return await super().send_final_ledgered(
-                event, session_key, text_content, metadata,
-                reply_to=reply_to, is_ephemeral_response=is_ephemeral_response)
 
-    async def _deliver_attachments(self, event, extracted, metadata, *, anything_sent, record_delivery):
-        from .delivery_binding import bind_delivery, turn_context
-        with bind_delivery(event.source.chat_id, turn_context(event, self._source_session_key(event.source))):
-            return await super()._deliver_attachments(
-                event, extracted, metadata, anything_sent=anything_sent, record_delivery=record_delivery)
-
-    async def send(self, chat_id: str, content: str, reply_to: Optional[str] = None,
-                   metadata: Optional[dict[str, Any]] = None) -> SendResult:
-        from .delivery_binding import bind_delivery
-        with bind_delivery(chat_id):
-            return await self._send_text_impl(chat_id, content, reply_to, metadata)
 
     async def _send_text_impl(
         self, chat_id: str, content: str, reply_to: Optional[str] = None, metadata: Optional[dict[str, Any]] = None,
@@ -1708,6 +1703,11 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
         return last_result
 
     _PERMANENT_SEND_ERRORS = ("invalid", "forbidden", "not found")
+
+    def _send_retry_is_final(self, result: SendResult) -> bool:
+        """Journaled refusals/unknown outcomes must not re-enter the plain-text fallback."""
+        raw = result.raw_response
+        return isinstance(raw, dict) and raw.get("delivery_status") in {"error", "unknown"}
 
     async def _send_chunk(self, chat_id: str, content: str, reply_to: Optional[str] = None) -> SendResult:
         sender = self._text_sender(self._guess_chat_type(chat_id))

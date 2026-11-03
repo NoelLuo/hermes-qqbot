@@ -275,7 +275,9 @@ async def execute_admission(authority, ref, row):
             waiting = _registry(authority, 'export_delivery_waiters').get(row['admission_id'])
             if waiting is not None:
                 from gateway.guest_export_delivery import bridge_export_turn
+                from gateway.native_adapter_turns import bridge_adapter_turn
                 bridge_export_turn(event, waiting)
+                bridge_adapter_turn(authority.runner, event, waiting)
             result = captured.get('terminal_result', captured.get('result'))
             if result is None:
                 # No TurnRunner result means the handler answered without executing the turn.
@@ -407,9 +409,11 @@ async def dispatch_shared_busy(adapter, event, session_key):
             # The ledgered send releases the marker off the event it sends.
             _move_marker(event, delivery_event)
             from gateway.guest_export_delivery import bridge_export_turn
+            from gateway.native_adapter_turns import bridge_adapter_turn
             from gateway.request_security import policy_for_adapter
             policy_for_adapter(adapter, delivery_event.source)
             bridge_export_turn(event, delivery_event)
+            bridge_adapter_turn(getattr(adapter, 'gateway_runner', None), event, delivery_event)
             delivery_event._turn_marker_handoff = event._turn_marker_handoff
             await deliver_response(adapter, delivery_event, session_key, response)
         except Exception as exc:

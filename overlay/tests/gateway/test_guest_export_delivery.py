@@ -14,7 +14,7 @@ import pytest
 from agent.request_security import RequestSecurityPolicy, policy_scope
 from gateway.config import Platform
 from gateway.guest_export_delivery import begin_export_turn, bridge_export_turn
-from gateway.platforms.base import BasePlatformAdapter, SendResult
+from gateway.platforms.base import SendResult
 from gateway.platforms.event import MessageEvent
 from gateway.request_security import policy_for_adapter
 from gateway.session import SessionSource
@@ -44,8 +44,9 @@ def setup(tmp_path, monkeypatch):
     previous = registry.snapshot_registration('guest_workspace', scope=scope)
     register(NS(register_tool=lambda **kw: registry.register(**kw, scope=scope)))
     current = registry.snapshot_registration('guest_workspace', scope=scope)
-    adapter = QQAdapter.__new__(QQAdapter)
-    BasePlatformAdapter.__init__(adapter, NS(extra=EXTRA, typing_indicator=False), Platform.QQBOT)
+    # Exercise QQ's real initialized delivery mixins, including disabled meme state.
+    adapter = QQAdapter(NS(extra={**EXTRA, 'app_id': 'test-app', 'client_secret': 'test-secret'},
+                           typing_indicator=False))
     adapter._get_human_delay = lambda: 0
     adapter._bounded_history_media_paths_for_session = AsyncMock(return_value=set())
     adapter.send_document = AsyncMock(return_value=SendResult(success=True, message_id='file-ack'))

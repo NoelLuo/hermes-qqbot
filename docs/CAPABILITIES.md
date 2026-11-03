@@ -14,6 +14,10 @@ With `markdown_support` enabled, `QQAdapter.format_message()` performs a conserv
 
 Group, C2C and inline-keyboard sends share this formatting path. Code fences (including unclosed/list/quote fences), inline/multiline backtick code, escapes, URL/link destinations and existing valid bold are protected by focused regressions. This is not a general Markdown parser or a repair for every malformed/nested/cross-line span. Plain-text mode retains its existing stripping behavior; the separate standalone sender still sends plain text (`msg_type: 0`). Source changes require a human-controlled gateway reload; previous messages do not re-render. Real QQ client appearance remains a separate deployment check.
 
+## Contextual GIF expressions
+
+The optional `memes` configuration supports `expression` (primary-model reviewed-ID selection) and legacy `auto` (post-text auxiliary selection). It is disabled by default and ships no private GIFs. Expression mode supports GIF-only replies, text followed by a separate text-free GIF, explicit/optional/none verdicts, scoped snapshots, durable delivery facts, native queue handoff and compression continuation. Selected or unknown is not sent; failed/unknown transport does not authorize automatic replay. Explicit selection skips random rejection, not authorization/cooldown/limits. See the [configuration, catalog and acceptance guide](MEMES.md) for source defaults, audience opt-in, PRD behavior, failure semantics and real-QQ validation boundaries.
+
 ## Requester files
 
 Partitioning is by owning profile, chat and trusted requester, not by a caller-selected root. Supported actions: `info`, `list`, `search`, `read`, `write`, `mkdir`, `copy`, `move`, `organize_csv`, `import_attachment`, `export`, `run_python`, `run_office`, `delete`, `cleanup`. Write uses `text`; copy/move use `path` and `destination`; CSV uses `sort_by`/`dedupe_by` lists and writes a UTF-8 target. Overwrite is explicit. Deletion needs an explicit user request plus `confirm=true`, only for named files/empty directories; no wildcard/recursive wipe. Cleanup does not delete ordinary persistent work to make space.

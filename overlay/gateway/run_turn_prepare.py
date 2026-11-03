@@ -618,6 +618,19 @@ class GatewayTurnPrepareMixin:
                 return await prepare(self.async_session_store, session_id, event)
         return await self.async_session_store.load_transcript(session_id)
 
+    async def _hmwa_adapter_turn_notes(self, event, session_id, session_key, history):
+        """Optional adapter context on the NEW user sidecar; never rewrite a prompt/history."""
+        adapter = self._delivery_adapter_for(event.source)
+        prepare = getattr(adapter, 'prepare_turn_notes', None)
+        if not callable(prepare):
+            return []
+        try:
+            notes = await prepare(event, session_id, session_key, history)
+            return [note for note in notes if isinstance(note, str) and note] if isinstance(notes, (list, tuple)) else []
+        except Exception as exc:
+            logger.warning('Adapter turn notes unavailable: %s', type(exc).__name__)
+            return []
+
     async def _hmwa_prepare_turn(self, event, source, session_entry, session_key, _quick_key, run_generation):
         """Everything between session resolution and the agent run: session open, task-local env,
         context prompt, sidecar notes, turn lease, transcript load + hygiene, inbound text. Returns
@@ -686,6 +699,8 @@ class GatewayTurnPrepareMixin:
             from gateway.session_results import record_unexecuted_failure
             return record_unexecuted_failure(t("gateway.errors.history_unavailable")), _session_env_tokens
 
+        turn_sidecar_notes.extend(await self._hmwa_adapter_turn_notes(
+            event, session_entry.session_id, session_key, history))
         await self._hmwa_first_contact_notes(source, history, turn_sidecar_notes, internal=event.internal)
 
         # Voice channel state rides the user message ONLY when changed (in the system prompt it
