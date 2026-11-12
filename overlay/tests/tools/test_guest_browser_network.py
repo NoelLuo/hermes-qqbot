@@ -128,7 +128,7 @@ def test_pins_numeric_ipv4_no_second_resolution_and_no_proxy(transport, monkeypa
 def test_hostname_verified_default_tls_over_pinned_connection(transport, monkeypatch):
     sockets, _, _ = transport
     contexts = []
-    real_context = ssl.create_default_context()
+    real_context = net.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
     class Context:
         def wrap_socket(self, sock, server_hostname):
@@ -137,7 +137,11 @@ def test_hostname_verified_default_tls_over_pinned_connection(transport, monkeyp
             contexts.append(server_hostname)
             return sock
 
-    monkeypatch.setattr(net.ssl, "create_default_context", lambda: Context())
+    def context_factory(protocol):
+        assert protocol == ssl.PROTOCOL_TLS_CLIENT
+        return Context()
+
+    monkeypatch.setattr(net, "SSLContext", context_factory)
     assert net.fetch_public("https://example.com/")["body"] == b"ok"
     assert contexts == ["example.com"]
     assert sockets[0].targets == [(PUBLIC, 443)]
@@ -318,7 +322,7 @@ def test_tls_verification_failure_is_not_downgraded(transport, monkeypatch):
         def wrap_socket(self, sock, server_hostname):
             raise ssl.SSLCertVerificationError("secret upstream certificate detail")
 
-    monkeypatch.setattr(net.ssl, "create_default_context", lambda: BadCertificate())
+    monkeypatch.setattr(net, "SSLContext", lambda protocol: BadCertificate())
     with pytest.raises(net.PublicNetworkError, match="Public transport failed") as caught:
         net.fetch_public("https://example.com/")
     assert caught.value.error_code == "network_tls_error"

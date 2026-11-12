@@ -729,6 +729,8 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)
         must NOT also be admitted as its own turn; False when the caller should admit it (queue mode,
         a demotion, or an interrupt — the ended turn lets the FIFO run the follow-up next)."""
         from gateway.run import _AGENT_PENDING_SENTINEL
+        if self._ordinary_qq_input_queues(event):
+            return False
         mode = self._effective_busy_input_mode(source)
         state = self._peek_session_state(_quick_key)
         running_agent = state.turn.agent if state else None
@@ -755,13 +757,9 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)
         denial = self._request_command_denial(event)
         if denial is not None:
             return denial
-        if not event.get_command():
-            isolation = self._request_busy_isolation(event, _quick_key)
-            if isolation == "reject":
-                return EphemeralReply("正在处理其他请求，请稍后重试。")
-            if isolation == "queue":
-                self._queue_or_replace_pending_event(_quick_key, event)
-                return None
+        if self._ordinary_qq_input_queues(event):
+            self._queue_or_replace_pending_event(_quick_key, event)
+            return None
         _handled, _result = await self._hm_busy_slash_or_photo(event, source, _quick_key)
         if _handled:
             return _result
@@ -1145,6 +1143,11 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)
         Only events that may control the gateway (``allow_gateway_control``) can answer them."""
         if not event.allow_gateway_control:
             return None
+        from gateway.session_ingress import executing_admission
+        # A QQ FIFO turn is a new request, never an answer to a prior actor's prompt.
+        if self._ordinary_qq_input_queues(event) and (
+                getattr(event, "_fifo_only", False) or executing_admission.get()):
+            return None
         _reply = self._hm_update_prompt_reply(event, _quick_key)
         if _reply is None:
             _reply = await self._hm_clarify_reply(event, source, _quick_key)
@@ -1217,12 +1220,8 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)
         if authority is not None and not event.get_command() and not is_internal:
             from gateway.session_ingress import admit_message, executing_admission
             if not executing_admission.get():
-                if self._is_session_running(_quick_key):
-                    isolation = self._request_busy_isolation(event, _quick_key)
-                    if isolation == "reject":
-                        return True, EphemeralReply("正在处理其他请求，请稍后重试。")
-                    if isolation == "queue":
-                        return True, await admit_message(authority, event)
+                if self._is_session_running(_quick_key) and self._ordinary_qq_input_queues(event):
+                    return True, await admit_message(authority, event)
                 # The durable FIFO only orders turns; busy_input_mode still decides what a follow-up
                 # does to the RUNNING one (steer into it, redirect it, or end it so the FIFO advances).
                 # Without this, ``interrupt`` degrades to ``queue`` behind a turn that may hang for
@@ -1272,13 +1271,13 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)
             return _paused_notice
 
         _quick_key = self._session_key_for_source(source)
-        if not is_internal and not event.get_command() and self._is_session_running(_quick_key):
-            isolation = self._request_busy_isolation(event, _quick_key)
-            if isolation == "reject":
-                return EphemeralReply("正在处理其他请求，请稍后重试。")
-            if isolation == "queue":
-                self._queue_or_replace_pending_event(_quick_key, event)
-                return None
+        if self._ordinary_qq_input_queues(event) and self._is_session_running(_quick_key):
+            # Admission owns the durable FIFO, not the legacy follow-up slot.
+            owned, reply = await self._hm_authority_admission(event, source, _quick_key, is_internal)
+            if owned:
+                return reply
+            self._queue_or_replace_pending_event(_quick_key, event)
+            return None
         _reply = None if is_internal else await self._hm_pending_reply_intercepts(event, source, _quick_key)
         if _reply is not None:
             return _reply

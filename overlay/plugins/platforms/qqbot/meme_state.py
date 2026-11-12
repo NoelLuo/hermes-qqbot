@@ -60,7 +60,7 @@ class MemeState:
         finally:
             db.close()
 
-    def claim(self, turn_id, chat, now, *, probability, cooldown, daily_limit) -> bool:
+    def claim(self, turn_id, chat, now, *, probability, cooldown, daily_limit, sole_reply=False) -> bool:
         with self._db() as db:
             db.execute("BEGIN IMMEDIATE")
             db.execute("DELETE FROM decisions WHERE created < ?", (now - 30 * 86400,))
@@ -85,7 +85,7 @@ class MemeState:
                 AND created >= ? AND state IN ('deciding','ready','attempting') LIMIT 1""",
                 (self.transport, chat, now - 30)).fetchone()
             under_cap = daily_limit <= 0 or count < daily_limit
-            selected = not cooling and not busy and under_cap and probability > 0
+            selected = (sole_reply or not cooling) and not busy and under_cap and probability > 0
             db.execute("INSERT INTO decisions VALUES (?,?,?,?,?,?,?)",
                        (self.transport, turn_id, chat, "deciding" if selected else "skip", now, None, None))
             db.commit()

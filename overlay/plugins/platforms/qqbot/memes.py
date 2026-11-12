@@ -12,6 +12,8 @@ from pathlib import Path
 
 from .meme_catalog import MemeCatalog
 from .meme_state import MemeState
+from .delivery_binding import current_delivery
+from .meme_selector import MemeSelection, select_meme
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +152,6 @@ class MemeController:
         # This version declines multiplexed routes with a different runtime home.
         if get_hermes_home().resolve() != self.home.resolve():
             return
-        from .delivery_binding import current_delivery
         delivery = current_delivery(event.source.chat_id)
         turn_id = delivery.logical_id
         if not turn_id.startswith('turn-') or delivery.session_key != session_key:
@@ -173,13 +174,11 @@ class MemeController:
                     self.state.finish(turn_id, 'none')
                     return
                 if self.selector is None:
-                    from .meme_selector import select_meme
                     self.selector = select_meme
                 plain = adapter._strip_reasoning_block(text)
                 async with asyncio.timeout(self.settings.selector_timeout):
                     chosen = await self.selector(event._qq_meme_turn.input_text, plain[:3000], candidates,
                         timeout=self.settings.selector_timeout, min_confidence=self.settings.confidence)
-                from .meme_selector import MemeSelection
                 entry = (next((entry for entry in candidates if entry.id == chosen.meme_id), None)
                          if isinstance(chosen, MemeSelection) else None)
                 if entry is None:

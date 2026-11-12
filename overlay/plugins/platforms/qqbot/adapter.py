@@ -75,6 +75,8 @@ from .group_events import GroupEventDispatcher
 from .long_reply import LongReplyPreview
 from .meme_delivery import MemeDeliveryMixin
 from .memes import capture_turn as _capture_meme_turn
+from .delivery_binding import current_delivery, quoted_message_id
+from .receipt_adapter import QQAPIRejection, recorded_post, receipt_metadata, recall_message
 from .chunked_upload import (
     ChunkedUploader, UploadDailyLimitExceededError, UploadFileTooLargeError)
 from .keyboards import (
@@ -1116,7 +1118,6 @@ class QQAdapter(MemeDeliveryMixin, OwnAccessPolicyMixin, BasePlatformAdapter):
             timestamp=self._parse_qq_timestamp(timestamp),
             **(event_options or {}),
         )
-        from .delivery_binding import quoted_message_id
         from gateway.inbound_attachment_proofs import record_attachment
         event._inbound_attachment_receipts = []
         for index, (path, mime) in enumerate(zip(att["image_urls"], att["image_media_types"])):
@@ -1600,13 +1601,11 @@ class QQAdapter(MemeDeliveryMixin, OwnAccessPolicyMixin, BasePlatformAdapter):
             if method.upper() == "DELETE" and resp.status_code == 200 and not resp.content:
                 return {}
             if resp.status_code >= 400:
-                from .receipt_adapter import QQAPIRejection
                 raise QQAPIRejection(f"QQ Bot API error [{resp.status_code}]")
             data = resp.json()
             if not isinstance(data, dict):
                 raise RuntimeError("QQ Bot API returned a non-object response")
             if data.get("code") not in (None, 0, "0"):
-                from .receipt_adapter import QQAPIRejection
                 raise QQAPIRejection("QQ Bot API returned a business error")
             return data
         except httpx.TimeoutException as exc:
@@ -1716,8 +1715,6 @@ class QQAdapter(MemeDeliveryMixin, OwnAccessPolicyMixin, BasePlatformAdapter):
         try:
             return await sender(chat_id, content, reply_to)
         except Exception as exc:
-            from .delivery_binding import current_delivery
-            from .receipt_adapter import QQAPIRejection
             status = "error" if isinstance(exc, QQAPIRejection) else "unknown"
             return SendResult(success=False, error=f"QQ send {status}: {type(exc).__name__}", retryable=False,
                               raw_response={"qq_logical_id": current_delivery(chat_id).logical_id,
@@ -1735,7 +1732,6 @@ class QQAdapter(MemeDeliveryMixin, OwnAccessPolicyMixin, BasePlatformAdapter):
 
     async def _post_message(self, path: str, body: dict[str, Any]) -> SendResult:
         """POST a message body and wrap the response as a successful SendResult."""
-        from .receipt_adapter import recorded_post, receipt_metadata
         _, receipt = await recorded_post(self, API_BASE, path, body)
         return SendResult(success=True, message_id=receipt.message_id,
                           raw_response={"qq_receipt": receipt_metadata(receipt)})
@@ -1743,7 +1739,6 @@ class QQAdapter(MemeDeliveryMixin, OwnAccessPolicyMixin, BasePlatformAdapter):
     async def recall_own_group_message(self, *, logical_id: str, group_id: str,
                                        message_id: str, retry_unknown: bool = False):
         """Trusted-call API only; caller authorizes the action before invoking."""
-        from .receipt_adapter import recall_message
         return await recall_message(self, API_BASE, logical_id=logical_id, group_id=group_id,
                                     message_id=message_id, retry_unknown=retry_unknown)
 

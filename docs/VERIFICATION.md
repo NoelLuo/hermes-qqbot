@@ -1,6 +1,22 @@
 # Verification ledger — sanitized public candidate
 
-## Current contextual GIF expression update
+## Current full-source audit / 本轮全量来源审计
+
+This update audits the complete previous 141-file source manifest, the QQ package and discovered related tests, not only the latest conversation's fixes. Forty previous source hashes changed; 21 reviewed source/test files were ported, including six additions. The overlay now has 147 files and 69 manifest test files. The pinned host remains `ab44d8acf7bca230aea8574f2f2ab4666ca293ce`; newer upstream interfaces are not merged. See [the audit](SOURCE_SYNC_AUDIT.md) and [per-file decisions](SOURCE_SYNC_AUDIT.json).
+
+本轮逐项核对旧版全部来源、QQ 包及相关测试，不把上游漂移误认成遗漏功能。公开中性称呼、审核目录边界、禁用默认值及独立演进保留；私人配置、表情素材、聊天数据和无关核心改动不发布。完整候选在独立固定基线宿主上 `prepare_host.py --apply` 后，通过官方 Windows runner 验证，不修改现用运行树、不重启网关。
+
+Final independent canonical runner: **108 files, 1663 passed, 0 failed, 12 skipped**, 547.5 seconds, three workers and zero file retries. This one final Summary covers 65 offline manifest files and 43 additional upstream files; the exact list is in `source-manifest.json`. The 12 skips are Linux/POSIX-only guards. All **147 overlay files** read back as `already_matches`. Scoped Ruff on 21 changed source/test files and eight separate release-tool unittests passed. A bounded 186-file release scan including an external private deny list had no findings; this is not comprehensive secret/security certification. Patch SHA256: `c63019828baa49c27852b7555e4bd8b8a7292c94beee3d0fee831a89b60dbbf7`.
+
+最终独立整批 **108 文件、1663 通过、0 失败、12 平台跳过**；保留真实 home 读写保护，没有隐藏重试。该结果不与之前轮次累计，亦不等于实时 QQ 投递或生产部署验收。
+
+Validation history is retained rather than hidden by retries: the initial focused run exposed a missing pinned-host admitted-QQ-turn clarification guard, which was backported without unrelated upstream changes. An initial 108-file run had two missing-ACP-package failures; a separate PM test environment with `messaging` and `acp` extras resolved that dependency (Python 3.14.7, `agent-client-protocol==0.9.0`, `truststore==0.10.4`). The next parallel run reported a busy-requeue pending-message lookup `KeyError` and a mocked selector request timeout. Both files subsequently passed together with one worker: **2 files, 42 passed, 0 failed**, 23.9 seconds, zero file retries. Five one-file control runs each on the pristine pinned host and the previous public candidate passed the busy-requeue file; therefore an inherited defect is **not** claimed as proven. The parallel-only failures remain disclosed even if the final independent full run passes.
+
+测试中出现过的失败均保留记录：旧宿主 QQ 澄清拦截缺口已修复；可选 ACP 依赖已在独立测试环境补齐；并行运行的待处理消息索引异常与模拟请求超时在串行复核中通过，但尚未证明其根因，不能伪称已修复生产代码。最后整批结果另行记录，不将重叠轮次相加。
+
+The four Docker/live manifest files remain excluded from this offline batch. No live QQ send, real auxiliary-model request, gateway restart, Docker rebuild, Linux/macOS execution or client animation check is claimed. OS-backed browser TLS requires `truststore`; older Python environments were not validated. Existing Docker and real-delivery entries below are historical evidence only.
+
+## Previous contextual GIF expression update
 
 The current local implementation was migrated as reviewed QQ-only hunks plus its required source/test dependency closure. This includes primary-model reviewed-ID selection, pure-GIF and text-then-GIF delivery, persistent intent/receipt feedback, native queue stamps and handoff, queued follow-up delivery, compression continuity and bounded required-reply recovery. The public neutral assistant name and `gateway.trust_env` opt-out remain intact; unrelated provider/fallback changes, private GIF collections, runtime configuration and chat data are excluded. Public capability prose follows the reviewed catalog rather than asserting that an unseen deployment's entire collection is approved for every context. Long-reply preview is included as an existing dependency but remains disabled by default; it is not client-local folding.
 

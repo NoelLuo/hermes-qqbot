@@ -1497,22 +1497,25 @@
          expected_session_key = str((event.metadata or {}).get("gateway_session_key") or "").strip()
          # Explicitly routed events already name their destination; recovering a
          # different topic would redirect them and yield before the session claim.
-@@ -4064,7 +4082,14 @@
+@@ -4064,6 +4082,8 @@
      async def _handle_message_while_active(self, event: MessageEvent, session_key: str) -> None:
          """Route a message that arrived while ``session_key`` is busy: bypass
          commands / clarify replies dispatch inline, everything else is queued."""
 +        if await self._reject_role_command(event):
 +            return
          # The shared runtime's durable FIFO replaces the adapter's busy-message slot.
-+        from gateway.request_security import policy_for_adapter
-+        policy = policy_for_adapter(self, event.source)
-+        if policy is not None and not policy.is_admin and not event.get_command():
-+            await self.send(event.source.chat_id, "正在处理其他请求，请稍后重试。", reply_to=event.message_id)
-+            return
          if self._shared_runtime_owns_input(event):
              from gateway.session_ingress_burst import dispatch_busy_burst
-             await dispatch_busy_burst(self, event, session_key)  # main's photo/text burst merge
-@@ -4284,6 +4309,27 @@
+@@ -4098,7 +4118,7 @@
+         # discarded.  Same shape as the /approve deadlock fix (PR #4926): agent thread
+         # blocked on Event.wait, message must reach the resolver before being a new turn.
+         # See #4926.
+-        if not cmd and event.allow_gateway_control:
++        if not cmd and event.allow_gateway_control and event.source.platform != Platform.QQBOT:
+             try:
+                 from tools import clarify_gateway as _clarify_mod
+                 _has_text_clarify = _clarify_mod.get_pending_for_session(
+@@ -4284,6 +4304,27 @@
          except Exception:
              logger.debug("delivery ledger update failed", exc_info=True)
  
@@ -1540,7 +1543,7 @@
      async def _deliver_media_attachments(
          self, event: MessageEvent, media_files: list, local_files: list, *,
          force_document_attachments: bool, human_delay: float, metadata: dict[str, Any],
-@@ -4292,7 +4338,8 @@
+@@ -4292,7 +4333,8 @@
          ``send_multiple_images`` unless ``[[as_document]]``; otherwise audio → send_voice (MEDIA
          tags only, never bare local files), video → send_video, else send_document. Every failure is
          reported. Each send feeds ``record_delivery`` so media-only turns report SUCCESS."""
@@ -1550,7 +1553,7 @@
  
          def _as_image(path: str) -> bool:
              return Path(path).suffix.lower() in _IMAGE_EXTS and not force_document_attachments
-@@ -4300,7 +4347,7 @@
+@@ -4300,7 +4342,7 @@
          _image_paths += [p for p in local_files if _as_image(p)]
          if _image_paths:
              await self._send_image_batch(
@@ -1559,7 +1562,7 @@
                  record_delivery)
          chat_id = event.source.chat_id
  
-@@ -4308,6 +4355,8 @@
+@@ -4308,6 +4350,8 @@
              """MEDIA-tag files (``media_tag``) may route to send_voice; bare local files never
              do."""
              ext = Path(path).suffix.lower()
@@ -1568,7 +1571,7 @@
              if media_tag and should_send_media_as_audio(self.platform, ext, is_voice=is_voice):
                  result = await self.send_voice(chat_id=chat_id, audio_path=path, metadata=metadata, is_voice=is_voice)
              elif ext in _VIDEO_EXTS:
-@@ -4329,7 +4378,10 @@
+@@ -4329,7 +4373,10 @@
              if human_delay > 0:
                  await asyncio.sleep(human_delay)
              try:
@@ -1580,7 +1583,7 @@
              except Exception as err:
                  record_delivery(SendResult(success=False, error=str(err)))
                  if media_tag:
-@@ -4343,9 +4395,15 @@
+@@ -4343,9 +4390,15 @@
          """Batch-send images; a failure is logged (never raised) so other attachments still go.
          The batch result feeds ``record_delivery`` so media-only turns report their real
          outcome instead of FAILURE."""
@@ -1598,7 +1601,7 @@
          except Exception as batch_err:
              logger.warning("[%s] Error batching images: %s", self.name, batch_err, exc_info=True)
              record_delivery(SendResult(success=False, error=str(batch_err)))
-@@ -4425,6 +4483,13 @@
+@@ -4425,6 +4478,13 @@
          then fail loudly if a non-empty response produced nothing deliverable. Attachment
          results feed ``record_delivery`` so the turn outcome reflects them."""
          human_delay = self._get_human_delay()
@@ -1612,7 +1615,7 @@
          images, media_files, local_files = extracted.images, extracted.media_files, extracted.local_files
          if images:
              logger.info("[%s] Extracted %d image(s) to send as attachments", self.name, len(images))
-@@ -4433,6 +4498,8 @@
+@@ -4433,6 +4493,8 @@
              event, media_files, local_files,
              force_document_attachments=extracted.force_document_attachments,
              human_delay=human_delay, metadata=metadata, record_delivery=record_delivery)
@@ -1621,7 +1624,7 @@
          if not (anything_sent or images or local_files or media_files) and extracted.pre_extract.strip():
              logger.error("[%s] response_delivery_dropped: non-empty response "
                           "(%d chars) produced no delivered message or attachment "
-@@ -4463,7 +4530,12 @@
+@@ -4463,7 +4525,12 @@
          # The handler's routed profile scope is gone by now; Docker MEDIA translation and the
          # bare-path validator infer the sandbox from the ACTIVE profile (#109024).
          with self._media_delivery_scope(event.source):
@@ -1819,7 +1822,7 @@
 +    return result
 --- a/gateway/run_busy.py
 +++ b/gateway/run_busy.py
-@@ -102,6 +102,29 @@
+@@ -102,6 +102,20 @@
  
  class GatewayBusySessionMixin:
      """Busy-session queueing, slot claims, slash dispatch tables, destructive-slash confirmation."""
@@ -1833,23 +1836,14 @@
 +            return EphemeralReply("此操作仅限管理员。")
 +        return None
 +
-+    def _request_busy_isolation(self, event, session_key):
-+        """Different actors never steer or interrupt a privileged running turn."""
-+        from gateway.request_security import policy_for_source
-+        policy = policy_for_source(self, event.source)
-+        if policy is None:
-+            return None
-+        if not policy.is_admin:
-+            return "reject"
-+        state = self._peek_session_state(session_key)
-+        owner = getattr(getattr(state, "turn", None), "event", None)
-+        if owner is None or str(owner.source.user_id) != str(event.source.user_id):
-+            return "queue"
-+        return None
++    @staticmethod
++    def _ordinary_qq_input_queues(event):
++        """Every QQ conversation uses FIFO for ordinary input, regardless of actor."""
++        return event.source.platform == Platform.QQBOT and not event.internal and not event.get_command()
  
      def _queue_during_drain_enabled(self, busy_input_mode: Optional[str] = None) -> bool:
          # "queue"/"steer" mean messages survive a restart (queued for the new process); "interrupt" drops.
-@@ -465,7 +488,11 @@
+@@ -465,7 +479,11 @@
          # ``merge_text=False``, which silently OVERWROTE the single pending slot when consecutive text
          # messages arrived in ``busy_input_mode: queue``.
          existing = pending_slot.get(session_key) if isinstance(pending_slot, dict) else None
@@ -1861,7 +1855,15 @@
              getattr(existing, "internal", False) == getattr(event, "internal", False)
              and getattr(existing, "inherit_channel_pin", False) == getattr(event, "inherit_channel_pin", False)
              and getattr(existing, "allow_gateway_control", True)
-@@ -884,6 +911,10 @@
+@@ -487,6 +505,7 @@
+         }
+         if (
+             same_security_context
++            and event.source.platform != Platform.QQBOT
+             and MessageType.PHOTO in merge_types
+             and merge_types <= {MessageType.TEXT, MessageType.PHOTO}
+         ):
+@@ -884,6 +903,10 @@
              logger.debug("Failed to send busy-ack: %s", e)
  
      async def _handle_active_session_busy_message(self, event: MessageEvent, session_key: str) -> bool:
@@ -1872,21 +1874,17 @@
          # Gateway wakes have no external user identity. Admit them before auth/drain/approval
          # handling, without merging their text into an already queued human message.
          if event.internal and event.allow_gateway_control:
-@@ -915,6 +946,13 @@
+@@ -913,6 +936,9 @@
+         effective_mode = self._effective_busy_input_mode(event.source)
+         if self._draining:  # gateway restarting/stopping
              await self._send_busy_drain_notice(event, session_key, effective_mode)
-             return True
-         if await self._route_plaintext_approval_while_busy(event, session_key):
 +            return True
-+        isolation = self._request_busy_isolation(event, session_key)
-+        if isolation == "reject":
-+            await self._send_busy_reply(event, self._delivery_adapter_for(event.source), "正在处理其他请求，请稍后重试。")
-+            return True
-+        if isolation == "queue":
++        if self._ordinary_qq_input_queues(event):
 +            self._queue_or_replace_pending_event(session_key, event)
              return True
-         adapter = self._delivery_adapter_for(event.source)
-         if not adapter:
-@@ -1056,6 +1094,9 @@
+         if await self._route_plaintext_approval_while_busy(event, session_key):
+             return True
+@@ -1056,6 +1082,9 @@
          1. ``busy_handler`` — special mid-run variant (e.g. /goal's control-verb whitelist, /queue's FIFO
          enqueue, /model's custom reject text). 2. 3. See #5057, #6252, #10370.
          """
@@ -1896,25 +1894,16 @@
          kind, target = self._busy_slash_route(cmd_def)
          if kind == "special":
              return await getattr(self, target)(event, quick_key, source)
-@@ -1169,6 +1210,9 @@
+@@ -1169,6 +1198,9 @@
          # /steer lands BETWEEN tool-call iterations of the same run (appended to the last tool
          # result) — no interrupt, no new user turn, no role-alternation violation.
          from gateway.run import _AGENT_PENDING_SENTINEL
-+        isolation = self._request_busy_isolation(event, quick_key)
-+        if isolation == "reject":
-+            return EphemeralReply("此操作仅限管理员。")
++        denial = self._request_command_denial(event)
++        if denial is not None:
++            return denial
          steer_text = event.get_command_args().strip()
          if not steer_text:
              return t("gateway.steer.usage")
-@@ -1187,6 +1231,8 @@
-                 ), adapter)
-             return reply
- 
-+        if isolation == "queue":
-+            return _queue_fallback(t("gateway.steer.queued_starting"))
-         if running_agent is _AGENT_PENDING_SENTINEL:
-             return _queue_fallback(t("gateway.steer.queued_starting"))
-         if not running_agent or not hasattr(running_agent, "steer"):
 --- a/gateway/run_inbound.py
 +++ b/gateway/run_inbound.py
 @@ -311,6 +311,10 @@
@@ -1954,37 +1943,50 @@
          return None
  
      def _hm_evict_idle_stale_agent(self, _quick_key: str) -> None:
-@@ -737,6 +752,16 @@
+@@ -714,6 +729,8 @@
+         must NOT also be admitted as its own turn; False when the caller should admit it (queue mode,
+         a demotion, or an interrupt — the ended turn lets the FIFO run the follow-up next)."""
+         from gateway.run import _AGENT_PENDING_SENTINEL
++        if self._ordinary_qq_input_queues(event):
++            return False
+         mode = self._effective_busy_input_mode(source)
+         state = self._peek_session_state(_quick_key)
+         running_agent = state.turn.agent if state else None
+@@ -735,6 +752,12 @@
+         if getattr(event, "internal", False) and not event.get_command():
+             # Main's rule (run_busy's busy handler, which the shared runtime's busy dispatch skips):
              # an internal synthetic event never interrupts or steers the running turn.
-             self._queue_or_replace_pending_event(_quick_key, event)
-             return None
++            self._queue_or_replace_pending_event(_quick_key, event)
++            return None
 +        denial = self._request_command_denial(event)
 +        if denial is not None:
 +            return denial
-+        if not event.get_command():
-+            isolation = self._request_busy_isolation(event, _quick_key)
-+            if isolation == "reject":
-+                return EphemeralReply("正在处理其他请求，请稍后重试。")
-+            if isolation == "queue":
-+                self._queue_or_replace_pending_event(_quick_key, event)
-+                return None
++        if self._ordinary_qq_input_queues(event):
+             self._queue_or_replace_pending_event(_quick_key, event)
+             return None
          _handled, _result = await self._hm_busy_slash_or_photo(event, source, _quick_key)
-         if _handled:
-             return _result
-@@ -1192,6 +1217,12 @@
+@@ -1120,6 +1143,11 @@
+         Only events that may control the gateway (``allow_gateway_control``) can answer them."""
+         if not event.allow_gateway_control:
+             return None
++        from gateway.session_ingress import executing_admission
++        # A QQ FIFO turn is a new request, never an answer to a prior actor's prompt.
++        if self._ordinary_qq_input_queues(event) and (
++                getattr(event, "_fifo_only", False) or executing_admission.get()):
++            return None
+         _reply = self._hm_update_prompt_reply(event, _quick_key)
+         if _reply is None:
+             _reply = await self._hm_clarify_reply(event, source, _quick_key)
+@@ -1192,6 +1220,8 @@
          if authority is not None and not event.get_command() and not is_internal:
              from gateway.session_ingress import admit_message, executing_admission
              if not executing_admission.get():
-+                if self._is_session_running(_quick_key):
-+                    isolation = self._request_busy_isolation(event, _quick_key)
-+                    if isolation == "reject":
-+                        return True, EphemeralReply("正在处理其他请求，请稍后重试。")
-+                    if isolation == "queue":
-+                        return True, await admit_message(authority, event)
++                if self._is_session_running(_quick_key) and self._ordinary_qq_input_queues(event):
++                    return True, await admit_message(authority, event)
                  # The durable FIFO only orders turns; busy_input_mode still decides what a follow-up
                  # does to the RUNNING one (steer into it, redirect it, or end it so the FIFO advances).
                  # Without this, ``interrupt`` degrades to ``queue`` behind a turn that may hang for
-@@ -1221,6 +1252,9 @@
+@@ -1221,6 +1251,9 @@
          if _admitted is None:
              return None
          event, source, is_internal = _admitted
@@ -1994,17 +1996,17 @@
          if not is_internal:
              from hermes_cli.observability.shared_metrics_events import record_gateway_slash_command
              record_gateway_slash_command(event)
-@@ -1238,6 +1272,13 @@
+@@ -1238,6 +1271,13 @@
              return _paused_notice
  
          _quick_key = self._session_key_for_source(source)
-+        if not is_internal and not event.get_command() and self._is_session_running(_quick_key):
-+            isolation = self._request_busy_isolation(event, _quick_key)
-+            if isolation == "reject":
-+                return EphemeralReply("正在处理其他请求，请稍后重试。")
-+            if isolation == "queue":
-+                self._queue_or_replace_pending_event(_quick_key, event)
-+                return None
++        if self._ordinary_qq_input_queues(event) and self._is_session_running(_quick_key):
++            # Admission owns the durable FIFO, not the legacy follow-up slot.
++            owned, reply = await self._hm_authority_admission(event, source, _quick_key, is_internal)
++            if owned:
++                return reply
++            self._queue_or_replace_pending_event(_quick_key, event)
++            return None
          _reply = None if is_internal else await self._hm_pending_reply_intercepts(event, source, _quick_key)
          if _reply is not None:
              return _reply
@@ -2558,6 +2560,26 @@
              delivery_event._turn_marker_handoff = event._turn_marker_handoff
              await deliver_response(adapter, delivery_event, session_key, response)
          except Exception as exc:
+--- a/gateway/session_ingress_burst.py
++++ b/gateway/session_ingress_burst.py
+@@ -12,6 +12,7 @@
+ from functools import partial
+ import time
+ 
++from gateway.config import Platform
+ from gateway.platforms.event import MessageEvent, MessageType
+ 
+ 
+@@ -27,6 +28,9 @@
+ 
+ 
+ def _kind(adapter, event):
++    # QQ inputs own independent requester policies and FIFO positions.
++    if event.source.platform == Platform.QQBOT:
++        return None
+     if event.message_type == MessageType.PHOTO and not event.internal:
+         return 'photo'
+     return 'text' if adapter._is_queue_text_debounce_candidate(event) else None
 --- a/gateway/session_transcript.py
 +++ b/gateway/session_transcript.py
 @@ -628,7 +628,7 @@
@@ -2665,7 +2687,7 @@
  from urllib.parse import urlparse
  
  try:
-@@ -68,6 +68,13 @@
+@@ -68,6 +68,15 @@
      DEDUP_WINDOW_SECONDS, DEDUP_MAX_SIZE, MSG_TYPE_TEXT, MSG_TYPE_MARKDOWN, MSG_TYPE_MEDIA,
      MSG_TYPE_INPUT_NOTIFY, MEDIA_TYPE_IMAGE, MEDIA_TYPE_VIDEO, MEDIA_TYPE_VOICE, MEDIA_TYPE_FILE)
  from .utils import coerce_list as _coerce_list, build_user_agent
@@ -2676,10 +2698,12 @@
 +from .long_reply import LongReplyPreview
 +from .meme_delivery import MemeDeliveryMixin
 +from .memes import capture_turn as _capture_meme_turn
++from .delivery_binding import current_delivery, quoted_message_id
++from .receipt_adapter import QQAPIRejection, recorded_post, receipt_metadata, recall_message
  from .chunked_upload import (
      ChunkedUploader, UploadDailyLimitExceededError, UploadFileTooLargeError)
  from .keyboards import (
-@@ -97,7 +104,7 @@
+@@ -97,7 +106,7 @@
  _AUDIO_URL_EXTENSIONS = {".silk", ".amr", ".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"}
  
  
@@ -2688,7 +2712,7 @@
      """QQ Bot adapter backed by the official QQ Bot WebSocket Gateway + REST API."""
  
      # QQ Bot API does not support editing sent messages.
-@@ -153,6 +160,23 @@
+@@ -153,6 +162,23 @@
          self._allow_from = _coerce_list(extra.get("allow_from") or extra.get("allowFrom"))
          self._group_policy = str(extra.get("group_policy", "pairing")).strip().lower()
          self._group_allow_from = _coerce_list(extra.get("group_allow_from") or extra.get("groupAllowFrom"))
@@ -2712,7 +2736,7 @@
  
          self._session: Optional[aiohttp.ClientSession] = None
          self._ws: Optional[aiohttp.ClientWebSocketResponse] = None
-@@ -310,14 +334,35 @@
+@@ -310,14 +336,35 @@
  
      async def _open_ws(self, gateway_url: str) -> None:
          await self._close_ws()
@@ -2755,7 +2779,7 @@
  
      async def _listen_loop(self) -> None:
          """Read WebSocket events and reconnect on errors. Close codes: 4004 → refresh
-@@ -474,11 +519,11 @@
+@@ -474,11 +521,11 @@
  
      async def _send_identify(self) -> None:
          """Send op 2 Identify (reply to Hello); server answers with READY. Intents:
@@ -2769,7 +2793,7 @@
              "shard": [0, 1],
              "properties": {"$os": "macOS", "$browser": "hermes-agent", "$device": "hermes-agent"}}}
          await self._send_ws_auth("Identify", payload, "Identify sent")
-@@ -525,13 +570,15 @@
+@@ -525,13 +572,15 @@
              if t == "READY":
                  if isinstance(d, dict):  # store session_id for resume
                      self._session_id = d.get("session_id")
@@ -2786,7 +2810,7 @@
              else:
                  logger.debug("[%s] Unhandled dispatch: %s", self._log_tag, t)
          elif op == 11:  # Heartbeat ACK
-@@ -579,6 +626,9 @@
+@@ -579,6 +628,9 @@
      async def _on_message(self, event_type: str, d: Any) -> None:
          if not isinstance(d, dict):
              return
@@ -2796,7 +2820,7 @@
          msg_id = str(d.get("id", ""))
          if not msg_id or self._dedup.is_duplicate(msg_id):
              logger.debug("[%s] Duplicate or missing message id: %s", self._log_tag, msg_id)
-@@ -595,7 +645,7 @@
+@@ -595,7 +647,7 @@
          """Register (or clear) the callback invoked per ACKed INTERACTION_CREATE."""
          self._interaction_callback = callback
  
@@ -2805,7 +2829,7 @@
          """Parse INTERACTION_CREATE, ACK it promptly (else the client shows an error
          icon on the button), then dispatch to the registered callback."""
          if not isinstance(d, dict):
-@@ -607,6 +657,10 @@
+@@ -607,6 +659,10 @@
              return
          if not event.id:
              logger.warning("[%s] INTERACTION_CREATE missing id, skipping ACK", self._log_tag)
@@ -2816,7 +2840,7 @@
              return
  
          try:
-@@ -666,13 +720,24 @@
+@@ -666,13 +722,24 @@
  
          chat_type = parsed.get("chat_type", "")
          chat_id = parsed.get("chat_id", "")
@@ -2842,7 +2866,7 @@
              session_user = str(parsed.get("user_id", "")).strip()
              return bool(session_user) and operator == session_user
          return False
-@@ -690,7 +755,12 @@
+@@ -690,7 +757,12 @@
          button_data = event.button_data
          if not button_data:
              return
@@ -2856,7 +2880,7 @@
          approval = parse_approval_button_data(button_data)
          if approval is not None:
              session_key, decision = approval
-@@ -703,9 +773,15 @@
+@@ -703,9 +775,15 @@
                      "[%s] Rejected unauthorized approval click for session %s (operator=%s)",
                      self._log_tag, session_key, event.operator_openid)
                  return
@@ -2873,7 +2897,7 @@
                  logger.info(
                      "[%s] Button resolved %d approval(s) for session %s (choice=%s, operator=%s)",
                      self._log_tag, count, session_key, choice, event.operator_openid)
-@@ -713,6 +789,13 @@
+@@ -713,6 +791,13 @@
                  logger.error("[%s] resolve_gateway_approval failed for session %s: %s", self._log_tag, session_key, exc)
              return
  
@@ -2887,7 +2911,7 @@
          update_answer = parse_update_prompt_button_data(button_data)
          if update_answer is not None:
              chat = event.group_openid or event.guild_id or event.user_openid
-@@ -721,6 +804,13 @@
+@@ -721,6 +806,13 @@
                      "[%s] Rejected unauthorized update prompt click (operator=%s)", self._log_tag, event.operator_openid
                  )
                  return
@@ -2901,7 +2925,7 @@
              self._write_update_response(update_answer, event.operator_openid)
              return
  
-@@ -742,9 +832,17 @@
+@@ -742,9 +834,17 @@
  
      async def _handle_c2c_message(self, d, msg_id, content, author, timestamp) -> None:
          user_openid = str(author.get("user_openid", ""))
@@ -2922,7 +2946,7 @@
          attachments_raw = d.get("attachments")
          logger.info(
              "[%s] C2C message: id=%s content=%r attachments=%s",
-@@ -768,9 +866,81 @@
+@@ -768,9 +868,81 @@
          member = str(author.get("member_openid", ""))
          if not group_openid or not self._is_group_allowed(group_openid, member):
              return
@@ -3006,7 +3030,7 @@
  
      async def _handle_guild_message(self, d, msg_id, content, author, timestamp) -> None:
          channel_id = str(d.get("channel_id", ""))
-@@ -803,9 +973,104 @@
+@@ -803,9 +975,104 @@
              d, msg_id, content, d.get("attachments"), timestamp,
              chat_id=guild_id, qq_chat_type="dm", user_id=author_id, chat_type="dm")
  
@@ -3111,7 +3135,7 @@
          "GUILD_MESSAGE_CREATE": "_handle_guild_message",
          "GUILD_AT_MESSAGE_CREATE": "_handle_guild_message",
          "DIRECT_MESSAGE_CREATE": "_handle_dm_message"}
-@@ -819,7 +1084,8 @@
+@@ -819,7 +1086,8 @@
  
      async def _ingest(
          self, d: dict[str, Any], msg_id: str, content: str, attachments: Any, timestamp: str, *,
@@ -3121,7 +3145,7 @@
          """Shared inbound tail: fold attachment transcripts/file info and quoted context
          into the text, drop empty events, remember the QQ chat kind and dispatch."""
          att = await self._process_attachments(attachments)
-@@ -846,8 +1112,22 @@
+@@ -846,8 +1114,21 @@
              source=self.build_source(chat_id=chat_id,** source_kwargs), text=text,
              message_type=self._detect_message_type(image_urls, image_media_types), raw_message=d,
              message_id=msg_id, media_urls=image_urls, media_types=image_media_types,
@@ -3129,7 +3153,6 @@
              timestamp=self._parse_qq_timestamp(timestamp),
 +            **(event_options or {}),
          )
-+        from .delivery_binding import quoted_message_id
 +        from gateway.inbound_attachment_proofs import record_attachment
 +        event._inbound_attachment_receipts = []
 +        for index, (path, mime) in enumerate(zip(att["image_urls"], att["image_media_types"])):
@@ -3144,7 +3167,7 @@
          await self.handle_message(event)
  
      # ── Quoted-message handling ──
-@@ -920,13 +1200,14 @@
+@@ -920,13 +1201,14 @@
          voice_transcripts: list[str] = []
          other_attachments: list[str] = []
  
@@ -3160,7 +3183,7 @@
                  continue
              if url.startswith("//"):
                  url = f"https:{url}"
-@@ -948,7 +1229,7 @@
+@@ -948,7 +1230,7 @@
  
              is_image = ct.startswith("image/")
              try:
@@ -3169,7 +3192,7 @@
              except Exception as exc:
                  logger.debug("[%s] Failed to cache %s: %s", self._log_tag, "image" if is_image else "attachment", exc)
                  continue
-@@ -956,7 +1237,9 @@
+@@ -956,7 +1238,9 @@
                  continue
              if not is_image:
                  label = "video" if ct.startswith("video/") else "file"
@@ -3180,7 +3203,7 @@
              elif os.path.isfile(cached_path):
                  image_urls.append(cached_path)
                  image_media_types.append(ct or "image/jpeg")
-@@ -973,7 +1256,9 @@
+@@ -973,7 +1257,9 @@
      def _opt_str(value: Any) -> Optional[str]:
          return (value.strip() if isinstance(value, str) else "") or None
  
@@ -3191,7 +3214,7 @@
          """Download a URL and cache it locally (``original_name`` falls back to the URL basename)."""
          from tools.url_safety import is_safe_url
  
-@@ -982,9 +1267,24 @@
+@@ -982,9 +1268,24 @@
          if not self._http_client:
              return None
          try:
@@ -3219,14 +3242,13 @@
          except Exception as exc:
              logger.debug("[%s] Download failed for %s: %s", self._log_tag, url[:80], exc)
              return None
-@@ -1297,9 +1597,17 @@
+@@ -1297,9 +1598,15 @@
          headers = await self._auth_headers()
          try:
              resp = await client.request(method, f"{API_BASE}{path}", headers=headers, json=body, timeout=timeout)
 +            if method.upper() == "DELETE" and resp.status_code == 200 and not resp.content:
 +                return {}
 +            if resp.status_code >= 400:
-+                from .receipt_adapter import QQAPIRejection
 +                raise QQAPIRejection(f"QQ Bot API error [{resp.status_code}]")
              data = resp.json()
 -            if resp.status_code >= 400:
@@ -3234,12 +3256,11 @@
 +            if not isinstance(data, dict):
 +                raise RuntimeError("QQ Bot API returned a non-object response")
 +            if data.get("code") not in (None, 0, "0"):
-+                from .receipt_adapter import QQAPIRejection
 +                raise QQAPIRejection("QQ Bot API returned a business error")
              return data
          except httpx.TimeoutException as exc:
              raise RuntimeError(f"QQ Bot API timeout [{path}]: {exc}") from exc
-@@ -1356,11 +1664,15 @@
+@@ -1356,11 +1663,15 @@
          """True when connected now or after waiting for the listener to reconnect."""
          return self.is_connected or await self._wait_for_reconnection()
  
@@ -3256,7 +3277,7 @@
          if not await self._ensure_connected():
              return self._NOT_CONNECTED
          if not content or not content.strip():
-@@ -1368,36 +1680,48 @@
+@@ -1368,36 +1679,46 @@
  
          chunks = self.truncate_message(self.format_message(content), self.MAX_MESSAGE_LENGTH)
          last_result = SendResult(success=False, error="No chunks")
@@ -3314,8 +3335,6 @@
 +        try:
 +            return await sender(chat_id, content, reply_to)
 +        except Exception as exc:
-+            from .delivery_binding import current_delivery
-+            from .receipt_adapter import QQAPIRejection
 +            status = "error" if isinstance(exc, QQAPIRejection) else "unknown"
 +            return SendResult(success=False, error=f"QQ send {status}: {type(exc).__name__}", retryable=False,
 +                              raw_response={"qq_logical_id": current_delivery(chat_id).logical_id,
@@ -3323,13 +3342,12 @@
  
      @staticmethod
      def _rest_path(chat_type: str, target_id: str, endpoint: str) -> str:
-@@ -1411,8 +1735,17 @@
+@@ -1411,8 +1732,15 @@
  
      async def _post_message(self, path: str, body: dict[str, Any]) -> SendResult:
          """POST a message body and wrap the response as a successful SendResult."""
 -        data = await self._api_request("POST", path, body)
 -        return SendResult(success=True, message_id=str(data.get("id", uuid.uuid4().hex[:12])), raw_response=data)
-+        from .receipt_adapter import recorded_post, receipt_metadata
 +        _, receipt = await recorded_post(self, API_BASE, path, body)
 +        return SendResult(success=True, message_id=receipt.message_id,
 +                          raw_response={"qq_receipt": receipt_metadata(receipt)})
@@ -3337,13 +3355,12 @@
 +    async def recall_own_group_message(self, *, logical_id: str, group_id: str,
 +                                       message_id: str, retry_unknown: bool = False):
 +        """Trusted-call API only; caller authorizes the action before invoking."""
-+        from .receipt_adapter import recall_message
 +        return await recall_message(self, API_BASE, logical_id=logical_id, group_id=group_id,
 +                                    message_id=message_id, retry_unknown=retry_unknown)
  
      async def _send_text_to(
          self, chat_type: str, target_id: str, content: str, reply_to: Optional[str] = None,
-@@ -1473,7 +1806,8 @@
+@@ -1473,7 +1801,8 @@
          """Send a 3-button approval request (allow-once / allow-always / deny);
          clicks come back as INTERACTION_CREATE decoded by parse_approval_button_data."""
          from .keyboards import build_approval_text
@@ -3353,7 +3370,7 @@
          return await self.send_with_keyboard(chat_id, build_approval_text(req), keyboard, reply_to=reply_to)
  
      # Cross-adapter gateway contract: gateway/run.py detects send_exec_approval /
-@@ -1486,11 +1820,20 @@
+@@ -1486,11 +1815,20 @@
          _default_interaction_dispatch. QQ's 3-button keyboard has no session tier and no thread /
          DM targeting, so only the ``always`` choice and the raw command/reason are used."""
          description = prompt.description
@@ -3374,7 +3391,7 @@
              allow_permanent="always" in prompt.choices)
          # QQ requires a msg_id for passive replies; the last inbound id is the natural one.
          return await self.send_approval_request(
-@@ -1504,8 +1847,22 @@
+@@ -1504,8 +1842,22 @@
          del session_key, metadata  # present for contract parity only.
          default_hint = f" (default: {default})" if default else ""
          content = f"☤ **Update Needs Your Input**\n\n{prompt}{default_hint}"
@@ -3398,7 +3415,7 @@
          )
  
      def _build_text_body(self, content: str, reply_to: Optional[str] = None) -> dict[str, Any]:
-@@ -1553,6 +1910,17 @@
+@@ -1553,6 +1905,17 @@
          """Upload media and send as a native message. HTTP(S) URLs → single ``POST
          .../files`` with ``url=`` (QQ fetches it). Local files → chunked upload
          (prepare / PUT parts / complete), up to the platform's ~100 MB per-file limit."""
@@ -3416,7 +3433,7 @@
          if not await self._ensure_connected():
              return self._NOT_CONNECTED
          chat_type = self._guess_chat_type(chat_id)
-@@ -1641,8 +2009,8 @@
+@@ -1641,8 +2004,8 @@
      # ── Format / chat info / helpers ──
  
      def format_message(self, content: str) -> str:
@@ -3427,7 +3444,7 @@
  
      async def get_chat_info(self, chat_id: str) -> dict[str, Any]:
          chat_type = self._guess_chat_type(chat_id)
-@@ -1658,7 +2026,18 @@
+@@ -1658,7 +2021,18 @@
  
      @staticmethod
      def _strip_at_mention(content: str) -> str:
@@ -4813,7 +4830,7 @@
 +        return Path(name)
 --- /dev/null
 +++ b/plugins/platforms/qqbot/meme_delivery.py
-@@ -0,0 +1,159 @@
+@@ -0,0 +1,152 @@
 +"""QQ final-delivery overrides, with optional memes outside the text obligation."""
 +from __future__ import annotations
 +
@@ -4821,27 +4838,28 @@
 +
 +from .delivery_binding import bind_delivery, turn_context
 +from .long_reply import FINAL_METADATA_KEY
-+from .memes import controller_for, mark_response
++from .memes import controller_for, eligible, mark_response
++# A connected adapter outlives discovery: pin marker types and ContextVars to
++# its own module generation, rather than importing replacements mid-turn.
++from .meme_expression import parse_expression
++from .meme_expression_delivery import engine_for
++from .meme_native import snapshot, restore, bridge
 +
 +logger = logging.getLogger(__name__)
 +
 +
 +class MemeDeliveryMixin:
 +    def snapshot_native_turn(self, event):
-+        from .meme_native import snapshot
 +        return snapshot(self, event)
 +
 +    def restore_native_turn(self, event, state):
-+        from .meme_native import restore
 +        restore(self, event, state)
 +
 +    def bridge_native_turn(self, executed, waiting):
-+        from .meme_native import bridge
 +        bridge(self, executed, waiting)
 +
 +    async def send(self, chat_id, content, reply_to=None, metadata=None):
 +        from gateway.platforms.base import SendResult
-+        from .meme_expression import parse_expression
 +        if controller_for(self).settings.mode == 'expression' and parse_expression(content).judged:
 +            return SendResult(success=False, error='Expression directive requires final delivery')
 +        with bind_delivery(chat_id):
@@ -4852,8 +4870,6 @@
 +
 +    async def deliver_queued_response(self, response, event, session_key, metadata=None, *,
 +                                       text_already_delivered=False, deliver_media=True):
-+        from .meme_expression import parse_expression
-+        from .meme_expression_delivery import engine_for
 +        if controller_for(self).settings.mode != 'expression' or not parse_expression(response).judged:
 +            return None
 +        if text_already_delivered:
@@ -4882,12 +4898,10 @@
 +                engine_for(self)._stop(delivery, 'error', 'queued_turn_ended_before_send')
 +
 +    async def prepare_turn_notes(self, event, session_id, session_key, history):
-+        from .meme_expression_delivery import engine_for
 +        with self._media_delivery_scope(event.source):
 +            return await engine_for(self).prepare_turn_notes(self, event, session_id, session_key, history)
 +
 +    async def _process_message_background(self, event, session_key):
-+        from .meme_expression_delivery import engine_for
 +        try:
 +            return await super()._process_message_background(event, session_key)
 +        finally:
@@ -4905,14 +4919,11 @@
 +            event, session_key, text_content, delivery_adapter, is_ephemeral_response)
 +
 +    async def _extract_response_content(self, response, event, session_key, *, is_ephemeral_response):
-+        from .meme_expression import parse_expression
-+        from .meme_expression_delivery import engine_for
 +        expression = parse_expression(response) if controller_for(self).settings.mode == 'expression' else None
 +        extracted = await super()._extract_response_content(
 +            expression.text if expression else response, event, session_key, is_ephemeral_response=is_ephemeral_response)
 +        mark_response(event, extracted, is_ephemeral_response)
 +        if expression is not None and not expression.judged:
-+            from .memes import eligible
 +            if eligible(self, event, extracted.text_content or 'x', is_ephemeral_response,
 +                        controller_for(self).settings):
 +                # Coverage, not a gate: an eligible turn that never gave a verdict is measurable.
@@ -4956,7 +4967,6 @@
 +            return result, delivery_adapter
 +
 +    async def _deliver_attachments(self, event, extracted, metadata, *, anything_sent, record_delivery):
-+        from .meme_expression_delivery import engine_for
 +        with bind_delivery(event.source.chat_id, turn_context(event, self._source_session_key(event.source))):
 +            delivery = getattr(event, '_qq_expression_delivery', None)
 +            if delivery is not None:
@@ -4975,12 +4985,13 @@
 +                event, extracted, metadata, anything_sent=anything_sent, record_delivery=record_delivery)
 --- /dev/null
 +++ b/plugins/platforms/qqbot/meme_expression.py
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,169 @@
 +"""Model-authored reaction IDs: intent is not a platform delivery receipt."""
 +from __future__ import annotations
 +
 +import json
 +import re
++from collections import Counter
 +from dataclasses import dataclass
 +from pathlib import Path
 +
@@ -4992,6 +5003,9 @@
 +_EXACT = re.compile(r'\[\[qq_meme(?P<optional>_optional)?:(?P<id>[a-z0-9][a-z0-9_-]{0,63})\]\]\Z')
 +# A required per-turn verdict: the model looked, and this turn sends nothing.
 +_SKIP = re.compile(r'\[\[qq_meme_none\]\]\Z')
++
++# A soft choice hint only; this does not change hard exclusions or send probability.
++RECENT_SENT_WINDOW = 50
 +
 +
 +@dataclass(frozen=True)
@@ -5011,6 +5025,7 @@
 +    home: Path
 +    transport: str
 +    entries: tuple[MemeEntry, ...]
++    notes: tuple[str, ...] = ()
 +
 +
 +@dataclass
@@ -5084,22 +5099,65 @@
 +            '群友和管理员适用同一套目录规则；目录审核不代表所有图片已获所有语境的使用批准。\n'
 +            '每轮回复都必须给出一个表情结论，写在最后独立一行：'
 +            '默认挑一张最接近的，写 [[qq_meme_optional:完整ID]]，由频率算法决定发不发；'
-+            '确实想保证发出时才用 [[qq_meme:完整ID]]。'
-+            '图片风格和适用场景以当前目录为准；'
-+            '没有合适图片、语境不符或只需纯数据/代码/工具结果时，写 [[qq_meme_none]]。'
++            '日常聊天可以从任意已审核候选中挑一张单独回复，不限于吃薯片，不必硬配文字；'
++            '只回复GIF时可写 [[qq_meme:完整ID]]。'
++            '图片风格、使用语境和受众以当前审核目录为准；'
++            '可用时从本轮候选中选最贴近回复态度的一张；科普、排查、纠错等正常对话也要选，'
++            '不要把“并非必须发图”误写为 none，optional 就是允许不发送的选择。'
++            '状态不可用、候选为空、没有符合审核范围的合适图片或用户明确不要表情时写 [[qq_meme_none]]。'
 +            '[[qq_meme_none]] 只表示判断过、本轮不配图，不会发送任何东西，也不会出现在正文里。'
 +            '漏掉结论的回合会被本机记录。至多一个标记，不写进代码块或引用，不调用文件工具，不输出本地路径。\n'
-+            '单独成行的 [[qq_meme:ID]] 可以只回复GIF；optional 必须另有正文，正文不能指着图或承诺发送。'
-+            '明确选图不会再被概率否决，但仍须服从当前可用性、冷却和去重。\n'
-+            '发送前只可表达意图（如“这张给管理员”），不可声称已经送达。'
++            '两种选图标记都按有无正文处理：有正文的附加表情统一经过概率控制，正文不能指着图或承诺发送；'
++            '没有正文、仅一张GIF时跳过概率、装饰冷却和最近图片排除，使用本轮纯GIF候选；'
++            '权限、硬关闭、每日额度和同一事件防重发仍然有效，网络失败不保证送达。\n'
++            '发送前不可声称已经送达。'
 +            '历史指令只代表你选过图，不证明发送成功；以本机发送事实为准，失败/unknown不能说已发。'
 +            '对方说“刚才那张”时，结合发送事实中的ID和含义回应，不必要求重发。'
 +            '除非被问，不向对方解释这些控制指令。\n'
 +            + json.dumps(catalog, ensure_ascii=False, separators=(',', ':'))
 +            + '\n[/QQ表情能力/v1]')
++
++
++def turn_choice_note(entries, availability, excluded, *, recent_sent=(), pure_availability=None):
++    """Refresh actionable IDs/meaning, not the cached catalog or old verdicts."""
++    recent_sent = recent_sent[:RECENT_SENT_WINDOW]
++    counts = Counter(recent_sent)
++    candidates = [{'id': entry.id, 'description': entry.description,
++                   'use_when': list(entry.use_when), 'recent_sent_count': counts[entry.id]}
++                  for entry in entries if entry.id not in excluded]
++    if availability == 'available' and not candidates:
++        availability = 'no_candidates'
++    if availability == 'available':
++        instruction = (
++            '本轮从下列候选中选最贴近回复态度的一张，末行独立写 [[qq_meme_optional:完整ID]]；'
++            '先确定自己想表达的态度和对象，再结合use_when理解表情的对话用途，不只按画面动作匹配关键词。'
++            '多张同样贴切时优先recent_sent_count较低的；常用图仍可选，不为轮换硬塞冷门图，'
++            '不为了配图改变正文原意，也不要求所有表情平均使用。'
++            f'recent_sent_count仅统计本聊天留存记录最近{len(recent_sent)}次成功发送'
++            f'（上限{RECENT_SENT_WINDOW}次）；仅选中、概率未中、失败和unknown都不计入，'
++            '0不代表从未使用。'
++            '频率算法负责决定实际发不发，不要用 none 代替概率判断。'
++            '科普、排查、纠错、严肃回答也照常选；不要照抄历史的 none 或最近排除ID。'
++            '仅用GIF回复时写 [[qq_meme:完整ID]]；两种标记在无正文时均跳过概率抽取，'
++            '带正文时均经过概率控制，不承诺附图一定送出；'
++            '用户明确不要表情或没有符合审核范围的合适图片时写 [[qq_meme_none]]。不向用户展示或解释控制标记。')
++    else:
++        candidates = []
++        instruction = '本轮带正文的附加表情不可用；若纯GIF也不可用，写 [[qq_meme_none]] 并正常回复文字。'
++    pure_note = ''
++    if pure_availability is not None:
++        pure_candidates = [entry.prompt_data() for entry in entries] if pure_availability == 'available' else []
++        pure_note = ('\n纯GIF状态=' + pure_availability + '；无正文时可单独使用任意纯GIF候选，不限吃薯片，'
++                     '不必为了其他表情硬配文字。两种标记均跳过概率、装饰冷却与最近图片排除；'
++                     '带正文时仍按上面的status及候选执行。权限、硬关闭、每日额度及事件防重发不变；'
++                     '用户要求不要表情时仍写 [[qq_meme_none]]。'
++                     '\n纯GIF候选=' + json.dumps(pure_candidates, ensure_ascii=False, separators=(',', ':')))
++    return ('[本轮QQ表情可用性] status=' + availability + '；附图最近排除ID=' + ','.join(excluded)
++            + '（以上status及排除仅约束带正文的附图）。' + instruction + pure_note + '\n候选='
++            + json.dumps(candidates, ensure_ascii=False, separators=(',', ':')))
 --- /dev/null
 +++ b/plugins/platforms/qqbot/meme_expression_delivery.py
-@@ -0,0 +1,250 @@
+@@ -0,0 +1,267 @@
 +"""QQ-owned expression lifecycle, independent of the assistant's text obligation."""
 +from __future__ import annotations
 +
@@ -5107,9 +5165,12 @@
 +import logging
 +
 +from .meme_catalog import MemeCatalog
-+from .meme_expression import ExpressionContext, ExpressionDelivery, capability_note
++from .meme_expression import (
++    RECENT_SENT_WINDOW, ExpressionContext, ExpressionDelivery, capability_note, turn_choice_note,
++)
 +from .meme_expression_state import ExpressionJournal
-+from .memes import eligible, eligible_source
++from .memes import controller_for, eligible, eligible_source
++from .delivery_binding import turn_context
 +
 +logger = logging.getLogger(__name__)
 +
@@ -5135,6 +5196,13 @@
 +    return MemeCatalog.load(settings.root, path)
 +
 +
++def _notes_with_fact(context, fact):
++    notes = list(context.notes)
++    if fact:
++        notes.insert(len(notes) if context.entries else 0, fact)
++    return notes
++
++
 +class ExpressionEngine:
 +    def __init__(self, controller):
 +        self.controller = controller
@@ -5146,8 +5214,14 @@
 +                or not isinstance(session_id, str) or not session_id or not _same_home(ctrl)
 +                or not eligible_source(adapter, event, settings)):
 +            return []
-+        # Historical receipts do not depend on the current catalog remaining readable/enabled.
++        # Receipts stay live even when the same event reuses its choice snapshot.
 +        fact = self.journal.recent_note(_chat(event), session_id)
++        previous = getattr(event, '_qq_expression_context', None)
++        if (isinstance(previous, ExpressionContext) and previous.session_id == session_id
++                and previous.session_key == session_key and previous.home == ctrl.home
++                and previous.transport == ctrl.state.transport and previous.notes):
++            # Preparation reentry keeps one prompt snapshot; sending still rechecks live gates.
++            return _notes_with_fact(previous, fact)
 +        try:
 +            audiences = _audiences(event, settings)
 +            entries = tuple(entry for entry in _catalog(ctrl).entries
@@ -5155,31 +5229,29 @@
 +        except Exception as exc:
 +            logger.warning('QQ expression catalog unavailable: %s', type(exc).__name__)
 +            entries = ()
-+        event._qq_expression_context = ExpressionContext(
-+            session_id, session_key, ctrl.home, ctrl.state.transport, entries)
 +        if not entries:
-+            return ([fact] if fact else []) + [
++            notes = [
 +                '[本轮QQ表情可用性] status=unavailable；本轮在末行写 [[qq_meme_none]]，正常回复文字，不发送新图。']
-+        note = capability_note(entries)
-+        # The one-time catalog rides a NEW user sidecar, never rewrites a cached system prefix.
-+        # Exact full-text matching is safe: a pasted identical catalog carries no extra authority.
-+        present = any(note in str(row.get('api_content') or row.get('content') or '')
-+                      for row in history if isinstance(row, dict))
-+        notes = [] if present else [note]
-+        availability = self.journal.availability(_chat(event), ctrl.clock(), settings)
-+        excluded = ctrl.state.recent(_chat(event), settings.recent)
-+        notes.append('[本轮QQ表情可用性] status=' + availability
-+                     + '；最近排除ID=' + ','.join(excluded)
-+                     + '。本轮必须给出表情结论：末行写 [[qq_meme:ID]] 或 [[qq_meme_optional:ID]]，'
-+                     '都不合适写 [[qq_meme_none]]；漏掉会被本机记录。'
-+                     'status 不可用时只写 none，正常回复文字，不承诺发图。')
-+        if fact:
-+            notes.append(fact)
-+        return notes
++        else:
++            note = capability_note(entries)
++            # The one-time catalog rides a NEW user sidecar, never rewrites a cached system prefix.
++            # Exact full-text matching is safe: a pasted identical catalog carries no extra authority.
++            present = any(note in str(row.get('api_content') or row.get('content') or '')
++                          for row in history if isinstance(row, dict))
++            notes = [] if present else [note]
++            availability = self.journal.availability(_chat(event), ctrl.clock(), settings)
++            # One scoped snapshot keeps the hard exclusions and soft usage hints consistent.
++            recent_sent = ctrl.state.recent(_chat(event), max(settings.recent, RECENT_SENT_WINDOW))
++            excluded = recent_sent[:settings.recent]
++            pure_availability = self.journal.availability(_chat(event), ctrl.clock(), settings, sole_reply=True)
++            notes.append(turn_choice_note(entries, availability, excluded, recent_sent=recent_sent,
++                                          pure_availability=pure_availability))
++        event._qq_expression_context = ExpressionContext(
++            session_id, session_key, ctrl.home, ctrl.state.transport, entries, tuple(notes))
++        return _notes_with_fact(event._qq_expression_context, fact)
 +
 +    def prepare(self, adapter, event, session_key, expression, extracted, ephemeral):
 +        """Resolve an already-selected ID to exact granted bytes, before any network I/O."""
-+        from .delivery_binding import turn_context
 +        from gateway.platforms.base import SendResult
 +        ctrl, context = self.controller, getattr(event, '_qq_expression_context', None)
 +        if not expression.marked:
@@ -5219,13 +5291,13 @@
 +                or not eligible(adapter, event, plan.text or 'GIF', ephemeral, settings)):
 +            self._stop(delivery, 'blocked', 'ineligible')
 +            return
-+        if plan.error or entry is None or (plan.optional and not plan.text):
++        if plan.error or entry is None:
 +            self._stop(delivery, 'blocked', plan.error or 'invalid_selection')
 +            return
-+        if entry.id in ctrl.state.recent(delivery.chat, settings.recent):
++        if plan.text and entry.id in ctrl.state.recent(delivery.chat, settings.recent):
 +            self._stop(delivery, 'blocked', 'recent')
 +            return
-+        available = self.journal.availability(delivery.chat, ctrl.clock(), settings)
++        available = self.journal.availability(delivery.chat, ctrl.clock(), settings, sole_reply=not plan.text)
 +        if available != 'available':
 +            self._stop(delivery, 'blocked', available)
 +            return
@@ -5288,19 +5360,23 @@
 +            async with asyncio.timeout(15):
 +                # Text delivery can take arbitrarily long. Admit only NOW: no stale ready
 +                # reservation may outlive the busy window and leapfrog another conversation.
-+                available = self.journal.availability(delivery.chat, ctrl.clock(), ctrl.settings)
-+                if delivery.expression.meme_id in ctrl.state.recent(delivery.chat, ctrl.settings.recent):
++                sole_reply = not delivery.expression.text
++                available = self.journal.availability(delivery.chat, ctrl.clock(), ctrl.settings,
++                                                      sole_reply=sole_reply)
++                if not sole_reply and delivery.expression.meme_id in ctrl.state.recent(delivery.chat, ctrl.settings.recent):
 +                    available = 'recent'
 +                if available != 'available':
 +                    self._stop(delivery, 'blocked', available)
 +                    return SendResult(success=False, error='Expression limit changed before send')
 +                if not ctrl.state.claim(delivery.turn_id, delivery.chat, ctrl.clock(),
 +                        probability=ctrl.settings.probability, cooldown=ctrl.settings.cooldown,
-+                        daily_limit=ctrl.settings.daily_limit):
++                        daily_limit=ctrl.settings.daily_limit, sole_reply=sole_reply):
 +                    self._stop(delivery, 'blocked', 'already_claimed')
 +                    return SendResult(success=False, error='Expression not admitted')
++                # Probability controls attached decoration, never the sole reply.
++                # Both marker spellings obey the same content-based rule.
 +                if not ctrl.state.choose(delivery.turn_id,
-+                        'natural' if delivery.expression.optional else 'strong', ctrl.clock(),
++                        'natural' if delivery.expression.text else 'strong', ctrl.clock(),
 +                        probability=ctrl.settings.probability, draw=ctrl.draw):
 +                    self._stop(delivery, 'not_selected', 'optional_prd')
 +                    return None
@@ -5344,7 +5420,6 @@
 +
 +
 +def engine_for(adapter):
-+    from .memes import controller_for
 +    controller = controller_for(adapter)
 +    engine = getattr(controller, '_expression_engine', None)
 +    if engine is None:
@@ -5408,7 +5483,7 @@
 +            db.commit()
 +            return changed == 1
 +
-+    def availability(self, chat, now, settings):
++    def availability(self, chat, now, settings, *, sole_reply=False):
 +        with self.state._db() as db:
 +            last = db.execute('''SELECT MAX(created) FROM decisions WHERE transport=? AND chat=?
 +                AND state IN ('deciding','ready','attempting','sent','unknown','error')''',
@@ -5421,7 +5496,7 @@
 +                (self.state.transport, chat, now - 86400)).fetchone()[0]
 +        if settings.probability == 0:
 +            return 'disabled'
-+        if busy or (last is not None and now - last < settings.cooldown):
++        if busy or (not sole_reply and last is not None and now - last < settings.cooldown):
 +            return 'cooldown'
 +        if settings.daily_limit > 0 and count >= settings.daily_limit:
 +            return 'daily_limit'
@@ -5805,7 +5880,7 @@
 +        finally:
 +            db.close()
 +
-+    def claim(self, turn_id, chat, now, *, probability, cooldown, daily_limit) -> bool:
++    def claim(self, turn_id, chat, now, *, probability, cooldown, daily_limit, sole_reply=False) -> bool:
 +        with self._db() as db:
 +            db.execute("BEGIN IMMEDIATE")
 +            db.execute("DELETE FROM decisions WHERE created < ?", (now - 30 * 86400,))
@@ -5830,7 +5905,7 @@
 +                AND created >= ? AND state IN ('deciding','ready','attempting') LIMIT 1""",
 +                (self.transport, chat, now - 30)).fetchone()
 +            under_cap = daily_limit <= 0 or count < daily_limit
-+            selected = not cooling and not busy and under_cap and probability > 0
++            selected = (sole_reply or not cooling) and not busy and under_cap and probability > 0
 +            db.execute("INSERT INTO decisions VALUES (?,?,?,?,?,?,?)",
 +                       (self.transport, turn_id, chat, "deciding" if selected else "skip", now, None, None))
 +            db.commit()
@@ -5904,7 +5979,7 @@
 +            db.commit()
 --- /dev/null
 +++ b/plugins/platforms/qqbot/memes.py
-@@ -0,0 +1,237 @@
+@@ -0,0 +1,236 @@
 +"""Optional, code-gated GIF replies. No model output grants paths or destinations."""
 +from __future__ import annotations
 +
@@ -5919,6 +5994,8 @@
 +
 +from .meme_catalog import MemeCatalog
 +from .meme_state import MemeState
++from .delivery_binding import current_delivery
++from .meme_selector import MemeSelection, select_meme
 +
 +logger = logging.getLogger(__name__)
 +
@@ -6057,7 +6134,6 @@
 +        # This version declines multiplexed routes with a different runtime home.
 +        if get_hermes_home().resolve() != self.home.resolve():
 +            return
-+        from .delivery_binding import current_delivery
 +        delivery = current_delivery(event.source.chat_id)
 +        turn_id = delivery.logical_id
 +        if not turn_id.startswith('turn-') or delivery.session_key != session_key:
@@ -6080,13 +6156,11 @@
 +                    self.state.finish(turn_id, 'none')
 +                    return
 +                if self.selector is None:
-+                    from .meme_selector import select_meme
 +                    self.selector = select_meme
 +                plain = adapter._strip_reasoning_block(text)
 +                async with asyncio.timeout(self.settings.selector_timeout):
 +                    chosen = await self.selector(event._qq_meme_turn.input_text, plain[:3000], candidates,
 +                        timeout=self.settings.selector_timeout, min_confidence=self.settings.confidence)
-+                from .meme_selector import MemeSelection
 +                entry = (next((entry for entry in candidates if entry.id == chosen.meme_id), None)
 +                         if isinstance(chosen, MemeSelection) else None)
 +                if entry is None:
@@ -7436,10 +7510,12 @@
 +    assert kwargs['prefill_messages'] == ['legacy']
 --- /dev/null
 +++ b/tests/gateway/test_adapter_turn_notes.py
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,127 @@
 +"""Adapter notes reach real model input/persistence without changing the cached prefix."""
 +from copy import deepcopy
++from dataclasses import replace
 +from datetime import datetime
++import json
 +from types import SimpleNamespace
 +from unittest.mock import AsyncMock
 +
@@ -7453,6 +7529,7 @@
 +from gateway.session_surface import arm_surface_turn
 +from hermes_state import SessionDB
 +from run_agent import AIAgent
++from plugins.platforms.qqbot.memes import controller_for
 +from tests.plugins.platforms.test_qqbot_memes import bot, wire, make_event
 +from tests.plugins.platforms.test_qqbot_meme_expression import expression_bot, emit, TAG
 +from gateway.session_envelope import prepare_native, restore_native
@@ -7468,10 +7545,11 @@
 +async def test_real_prepare_and_agent_sidecar_persistence_keep_old_prefix_stable(
 +        expression_bot, wire, tmp_path, monkeypatch, durable):
 +    bot = expression_bot
++    ctrl = controller_for(bot)
++    ctrl.settings = replace(ctrl.settings, cooldown=0, recent=0)
 +    bot._chat_type_map['owner'] = 'c2c'
 +    event = make_event(bot, chat='owner', user='owner', kind='dm')
 +    if durable:
-+        import json
 +        native = native_runner(bot)
 +        payload = json.loads(json.dumps(await prepare_native(native, event)))
 +        event = restore_native(payload, native)
@@ -7549,6 +7627,11 @@
 +                                   persist_user_message=second.persist_user_message)
 +        assert inputs[0][0] == inputs[1][0]  # exact system message, not merely its hash
 +        assert inputs[0][-1]['content'] == inputs[1][1]['content']  # previous user API bytes unchanged
++        for payload, count in zip(inputs, [0, 1]):
++            choice_json = payload[-1]['content'].split('\n候选=', 1)[1]
++            candidates, _ = json.JSONDecoder().raw_decode(choice_json)
++            assert candidates[0]['use_when'] == ['agree']
++            assert candidates[0]['recent_sent_count'] == count
 +        assert '本机QQ表情发送事实/v1' in inputs[1][-1]['content']
 +        assert db.get_messages(session_id)[:len(old_rows)] == old_rows
 +        assert runner._consume_pending_turn_sidecar_notes(key) == []
@@ -8111,15 +8194,271 @@
 +    assert history == original
 +    assert runner._ctx.session_key == 'shared-group'
 --- /dev/null
++++ b/tests/gateway/test_qqbot_busy_fifo.py
+@@ -0,0 +1,253 @@
++"""QQ busy inputs are independent FIFO turns, never another actor's live input.
++
++Exercise the real adapter -> runner -> SQLite admission -> restored turn path;
++only model execution and outbound network delivery are replaced.
++"""
++import asyncio
++from pathlib import Path
++from unittest.mock import AsyncMock, Mock
++
++import pytest
++
++from gateway.config import GatewayConfig, Platform, PlatformConfig
++from gateway.platforms.base import SendResult
++from gateway.platforms.event import MessageEvent, MessageType
++from gateway.request_security import policy_for_source
++from gateway.run import GatewayRunner
++from gateway.run import _AGENT_PENDING_SENTINEL
++from gateway.session_authority import initialize_session_authority
++from gateway.session_results import execution_result
++from hermes_constants import get_hermes_home
++from hermes_state_runtime import list_session_admissions
++from plugins.platforms.qqbot.adapter import QQAdapter
++from tests.waiting import async_wait_until
++
++
++def make_pair(monkeypatch, *, role_policy=True):
++    monkeypatch.setenv('QQ_ALLOW_ALL_USERS', 'true')
++    config = PlatformConfig(enabled=True, extra={
++        'app_id': 'synthetic-app', 'client_secret': 'synthetic-secret',
++        'group_policy': 'open', 'dm_policy': 'open',
++        'group_sessions_per_user': False,
++        'role_policy': {'enabled': role_policy},
++        'group_allow_admin_from': ['admin'], 'allow_admin_from': ['admin'],
++    })
++    adapter = QQAdapter(config)
++    runner = GatewayRunner(GatewayConfig(platforms={Platform.QQBOT: config}, group_sessions_per_user=False))
++    adapter.gateway_runner = runner
++    runner.adapters = {Platform.QQBOT: adapter}
++    adapter.send = AsyncMock(return_value=SendResult(success=True, message_id='synthetic-sent'))
++    adapter.send_typing = AsyncMock()
++    return runner, adapter
++
++
++def message(adapter, text, user='guest', *, kind=MessageType.TEXT, chat_type='group'):
++    return MessageEvent(text=text, message_type=kind, message_id=text,
++                        source=adapter.build_source(chat_id='room', chat_type=chat_type, user_id=user))
++
++
++def rows(authority):
++    return [row for sid in authority.sessions
++            for row in list_session_admissions(authority.db, session_id=sid, pending_only=False)]
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('mode', ['queue', 'interrupt', 'steer'])
++@pytest.mark.parametrize('chat_type', ['group', 'dm'])
++async def test_real_busy_admission_drains_fifo_with_each_request_identity(monkeypatch, mode, chat_type):
++    runner, adapter = make_pair(monkeypatch)
++    runner._busy_input_mode = mode
++    authority = await initialize_session_authority(runner, profile_id='default', instance_id='qq-fifo')
++    assert Path(authority.db.db_path).parent == get_hermes_home()
++    runner._wire_adapter_handlers(adapter, busy_text_mode='queue')
++    started, finish = asyncio.Event(), asyncio.Event()
++    agent = Mock()
++    executed = []
++
++    async def turn(event, source, quick_key, run_generation):
++        policy = policy_for_source(runner, source)
++        executed.append((event.text, policy.subject_id, policy.is_admin, event.message_id))
++        runner._session_state(quick_key).turn.agent = agent
++        if event.text == 'first':
++            started.set()
++            await finish.wait()
++        execution_result.get()['result'] = {'final_response': 'reply-' + event.text, 'messages': []}
++        return 'reply-' + event.text
++
++    monkeypatch.setattr(runner, '_handle_message_with_agent', turn)
++    first = message(adapter, 'first', 'admin', chat_type=chat_type)
++    key = adapter._event_session_key(first)
++    # Group members differ; a DM has one trusted sender. Same-author follow-ups
++    # must also remain separate turns, not be debounced into one request.
++    users = ['guest', 'other', 'other', 'admin'] if chat_type == 'group' else ['admin'] * 4
++    followups = [message(adapter, text, user, chat_type=chat_type)
++                 for text, user in zip(['second', 'third', 'fourth', 'fifth'], users)]
++    assert all(adapter._event_session_key(event) == key for event in followups)
++    try:
++        await adapter.handle_message(first)
++        await asyncio.wait_for(started.wait(), 10)
++        for event in followups:
++            await asyncio.wait_for(adapter.handle_message(event), 10)
++            assert event._gateway_accepted is True
++        assert [row['request_id'] for row in rows(authority)] == ['first', 'second', 'third', 'fourth', 'fifth']
++        assert [row['status'] for row in rows(authority)] == ['started'] + ['queued'] * 4
++        assert executed == [('first', 'admin', True, 'first')]
++        assert not adapter._pending_messages, 'durable turns must not leak into the legacy slot'
++        agent.interrupt.assert_not_called()
++        agent.steer.assert_not_called()
++        adapter.send.assert_not_awaited()
++        finish.set()
++        await async_wait_until(lambda: len(executed) == 5 and not adapter._background_tasks,
++                               timeout=20, what='all QQ FIFO replies')
++        assert executed == [('first', 'admin', True, 'first')] + [
++            (event.text, user, user == 'admin', event.message_id) for event, user in zip(followups, users)]
++        assert [row['status'] for row in rows(authority)] == ['terminal'] * 5
++        assert [call.args[1] if len(call.args) > 1 else call.kwargs['content']
++                for call in adapter.send.call_args_list] == ['reply-' + text for text in
++                                                            ['first', 'second', 'third', 'fourth', 'fifth']]
++    finally:
++        finish.set()
++        tasks = list(adapter._background_tasks) + [live.task for live in authority.sessions.values() if live.task]
++        for task in tasks:
++            if not task.done():
++                task.cancel()
++        await asyncio.gather(*tasks, return_exceptions=True)
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('entry', ['runner_busy', 'running_fast_path', 'message_handler'])
++@pytest.mark.parametrize('role_policy', [True, False])
++@pytest.mark.parametrize('starting', [False, True])
++async def test_legacy_entrypoints_queue_without_intercepts_or_cross_sender_media_merge(monkeypatch, entry, role_policy, starting):
++    runner, adapter = make_pair(monkeypatch, role_policy=role_policy)
++    runner._wire_adapter_handlers(adapter)
++    first = message(adapter, 'first', 'admin')
++    key = runner._session_key_for_source(first.source)
++    state = runner._session_state(key)
++    state.turn.agent = _AGENT_PENDING_SENTINEL if starting else Mock()
++    state.turn.event = first
++    runner._hm_pending_reply_intercepts = AsyncMock(side_effect=AssertionError('must not consume live reply'))
++    runner._route_plaintext_approval_while_busy = AsyncMock(side_effect=AssertionError('must not answer live approval'))
++    incoming = [message(adapter, 'photo-a', 'guest', kind=MessageType.PHOTO),
++                message(adapter, 'text-b', 'other'), message(adapter, 'photo-c', 'guest', kind=MessageType.PHOTO),
++                message(adapter, 'text-d', 'admin')]
++    for event in incoming:
++        if entry == 'runner_busy':
++            assert await runner._handle_active_session_busy_message(event, key)
++        elif entry == 'running_fast_path':
++            assert await runner._hm_handle_running_session_message(event, event.source, key) is None
++        else:
++            assert await runner._handle_message(event) is None
++    actual = []
++    while pending := adapter.get_pending_message(key):
++        actual.append(runner._promote_queued_event(key, adapter, pending))
++    assert actual == incoming
++    assert [event.source.user_id for event in actual] == ['guest', 'other', 'guest', 'admin']
++    if not starting:
++        state.turn.agent.interrupt.assert_not_called()
++        state.turn.agent.steer.assert_not_called()
++    adapter.send.assert_not_awaited()
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('command', ['stop', 'new', 'reset', 'steer', 'approve', 'deny'])
++async def test_guest_control_commands_still_cannot_mutate_busy_turn(monkeypatch, command):
++    runner, adapter = make_pair(monkeypatch)
++    runner._wire_adapter_handlers(adapter)
++    event = message(adapter, '/' + command)
++    key = adapter._event_session_key(event)
++    guard = asyncio.Event()
++    adapter._active_sessions[key] = guard
++    adapter.cancel_session_processing = AsyncMock()
++    adapter._drain_pending_after_session_command = AsyncMock()
++    await adapter._handle_message_while_active(event, key)
++    assert adapter._active_sessions[key] is guard
++    assert not adapter._pending_messages
++    adapter.cancel_session_processing.assert_not_awaited()
++    adapter._drain_pending_after_session_command.assert_not_awaited()
++    assert '仅限管理员' in adapter.send.call_args.args[1]
++
++
++@pytest.mark.asyncio
++async def test_unauthorized_sender_is_not_queued(monkeypatch):
++    runner, adapter = make_pair(monkeypatch)
++    runner._wire_adapter_handlers(adapter)
++    runner._is_user_authorized_for_source = Mock(return_value=False)
++    event = message(adapter, 'blocked')
++    key = adapter._event_session_key(event)
++    assert await runner._handle_active_session_busy_message(event, key)
++    assert not adapter._pending_messages
++    assert not runner._overflow_queue(key)
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('owner', ['admin', 'other'])
++async def test_authorized_explicit_steer_does_not_depend_on_running_owner(monkeypatch, owner):
++    runner, adapter = make_pair(monkeypatch)
++    runner._wire_adapter_handlers(adapter)
++    event = message(adapter, '/steer next-task', 'admin')
++    key = adapter._event_session_key(event)
++    runner._session_state(key).turn.event = message(adapter, 'owner-task', owner)
++    agent = runner._session_state(key).turn.agent = Mock()
++    agent.steer.return_value = True
++    reply = await runner._busy_steer_command(event, key, event.source)
++    assert reply is None or isinstance(reply, str), 'must not leak an unawaited queue coroutine'
++    assert adapter.get_pending_message(key) is None
++    agent.steer.assert_called_once()
++    assert 'next-task' in agent.steer.call_args.args[0]
++
++
++@pytest.mark.asyncio
++async def test_qq_callbacks_keep_group_authors_and_do_not_consume_live_clarification(monkeypatch):
++    runner, adapter = make_pair(monkeypatch)
++    authority = await initialize_session_authority(runner, profile_id='default', instance_id='qq-callback-fifo')
++    runner._wire_adapter_handlers(adapter)
++    started, finish = asyncio.Event(), asyncio.Event()
++    executed = []
++    agent = Mock()
++
++    async def turn(event, source, quick_key, run_generation):
++        policy = policy_for_source(runner, source)
++        executed.append((event.message_id, source.user_id, policy.is_admin))
++        runner._session_state(quick_key).turn.agent = agent
++        if event.message_id == 'first':
++            started.set()
++            await finish.wait()
++        execution_result.get()['result'] = {'final_response': 'answer-' + event.message_id, 'messages': []}
++        return 'answer-' + event.message_id
++
++    monkeypatch.setattr(runner, '_handle_message_with_agent', turn)
++    # Public transport callback, including group-event dedup, labels and native provenance.
++    async def receive(mid, sender, text):
++        await adapter._on_message('GROUP_AT_MESSAGE_CREATE', {
++            'id': mid, 'group_openid': 'room', 'author': {'member_openid': sender}, 'content': text,
++        })
++
++    try:
++        await receive('first', 'admin', 'start')
++        await asyncio.wait_for(started.wait(), 10)
++        # A shared pending clarify must not turn another sender's "yes" into
++        # the owner's tool answer; queued admission execution also skips it.
++        from tools import clarify_gateway
++        lookup = Mock(return_value={'prompt': 'owner question'})
++        monkeypatch.setattr(clarify_gateway, 'get_pending_for_session', lookup)
++        await receive('second', 'guest', 'yes')
++        await receive('third', 'other', 'next')
++        await receive('second', 'guest', 'yes')  # duplicate transport event
++        assert [row['request_id'] for row in rows(authority)] == ['first', 'second', 'third']
++        assert executed == [('first', 'admin', True)]
++        lookup.assert_not_called()
++        agent.interrupt.assert_not_called()
++        agent.steer.assert_not_called()
++        finish.set()
++        await async_wait_until(lambda: len(executed) == 3 and not adapter._background_tasks,
++                               timeout=20, what='callback FIFO drain')
++        assert executed == [('first', 'admin', True), ('second', 'guest', False), ('third', 'other', False)]
++        assert [row['status'] for row in rows(authority)] == ['terminal'] * 3
++    finally:
++        finish.set()
++        tasks = list(adapter._background_tasks) + [live.task for live in authority.sessions.values() if live.task]
++        for task in tasks:
++            if not task.done():
++                task.cancel()
++        await asyncio.gather(*tasks, return_exceptions=True)
+--- /dev/null
 +++ b/tests/gateway/test_qqbot_control_security.py
-@@ -0,0 +1,215 @@
+@@ -0,0 +1,234 @@
 +"""QQ opt-in control gates reject before mutating busy sessions or pending approvals."""
 +from types import SimpleNamespace
 +from unittest.mock import AsyncMock, Mock
 +
 +import pytest
 +
-+from gateway.config import Platform
++from gateway.config import GatewayConfig, Platform, PlatformConfig
 +from gateway.platforms.base import SendResult
 +from gateway.platforms.event import MessageEvent, MessageType
 +from gateway.request_security import policy_from_extra
@@ -8190,13 +8529,32 @@
 +
 +
 +@pytest.mark.asyncio
-+async def test_guest_busy_text_does_not_clarify_queue_or_steer():
-+    obj = adapter()
-+    obj._busy_session_handler = AsyncMock()
-+    obj._pending_messages = {}
-+    await obj._handle_message_while_active(event("yes"), KEY)
-+    assert not obj._pending_messages
-+    obj._busy_session_handler.assert_not_awaited()
++async def test_guest_busy_text_queues_without_clarifying_or_steering(monkeypatch):
++    config = PlatformConfig(enabled=True, extra=dict(EXTRA, group_sessions_per_user=False))
++    obj = QQAdapter(config)
++    obj.send = AsyncMock(return_value=SendResult(success=True))
++    gateway = GatewayRunner(GatewayConfig(platforms={Platform.QQBOT: config}, group_sessions_per_user=False))
++    gateway.adapters = {Platform.QQBOT: obj}
++    gateway._is_user_authorized_for_source = Mock(return_value=True)
++    gateway._wire_adapter_handlers(obj)
++    incoming = event("yes")
++    key = obj._event_session_key(incoming)
++    guard = object()
++    obj._active_sessions[key] = guard
++    state = gateway._session_state(key)
++    state.turn.event = event(user="admin")
++    state.turn.agent = Mock()
++    from tools import clarify_gateway
++    lookup = Mock(side_effect=AssertionError("must not answer another actor's clarification"))
++    monkeypatch.setattr(clarify_gateway, "get_pending_for_session", lookup)
++    await obj._handle_message_while_active(incoming, key)
++    assert obj.get_pending_message(key) is incoming
++    assert incoming.source.user_id == "guest"
++    assert obj._active_sessions[key] is guard
++    state.turn.agent.steer.assert_not_called()
++    state.turn.agent.interrupt.assert_not_called()
++    lookup.assert_not_called()
++    obj.send.assert_not_awaited()
 +
 +
 +@pytest.mark.asyncio
@@ -8222,14 +8580,14 @@
 +    resolve.assert_not_awaited()
 +
 +
-+def test_busy_actor_isolation_keeps_sender_and_legacy_semantics():
++@pytest.mark.parametrize("user", ["guest", "admin", "other"])
++def test_ordinary_qq_fifo_does_not_consult_roles_or_running_owner(user):
 +    obj = runner()
-+    assert obj._request_busy_isolation(event(), KEY) == "reject"
-+    assert obj._request_busy_isolation(event(user="admin"), KEY) is None
-+    obj._peek_session_state.return_value.turn.event = event(user="other")
-+    assert obj._request_busy_isolation(event(user="admin"), KEY) == "queue"
++    obj._peek_session_state.side_effect = AssertionError("FIFO must not depend on the running owner")
++    assert obj._ordinary_qq_input_queues(event(user=user))
++    assert not obj._ordinary_qq_input_queues(event("/steer next", user=user))
 +    obj.config.platforms[Platform.QQBOT].extra = {}
-+    assert obj._request_busy_isolation(event(), KEY) is None
++    assert obj._ordinary_qq_input_queues(event(user=user))
 +
 +
 +@pytest.mark.asyncio
@@ -8612,6 +8970,125 @@
 +    receipt = await service(reopen(journal), transport).recall(logical, group_id="group", message_id="wire-id")
 +    assert receipt.recall_status == "api_acknowledged"
 +    transport.assert_awaited_once()
+--- /dev/null
++++ b/tests/gateway/test_qqbot_expression_ingress.py
+@@ -0,0 +1,116 @@
++"""Expression stamps survive the real QQ callback and cold native admission."""
++import asyncio
++from copy import deepcopy
++import importlib
++from pathlib import Path
++from types import SimpleNamespace as NS
++from unittest.mock import AsyncMock
++
++import httpx
++import pytest
++
++from gateway.config import GatewayConfig, Platform, PlatformConfig
++from gateway.run import GatewayRunner
++from gateway.session_authority import SessionAuthority, initialize_session_authority
++from hermes_state_runtime import list_session_admissions
++from tests.plugins.platforms.test_qqbot_memes import bot, wire
++from tests.plugins.platforms.test_qqbot_meme_expression import expression_bot
++from tests.waiting import async_wait_until
++
++
++@pytest.mark.asyncio
++async def test_real_c2c_callback_keeps_expression_stamp(expression_bot, monkeypatch):
++    adapter = expression_bot
++    monkeypatch.setattr(SessionAuthority, '_schedule', lambda self, ref: None)
++    monkeypatch.setenv('QQ_ALLOW_ALL_USERS', 'true')
++    runner = GatewayRunner(GatewayConfig(platforms={Platform.QQBOT: adapter.config}))
++    runner.adapters = {Platform.QQBOT: adapter}
++    authority = await initialize_session_authority(runner, profile_id='default', instance_id='expression-ingress')
++    runner._wire_adapter_handlers(adapter)
++    raw = {'id': 'cold-expression', 'content': 'a GIF please', 'author': {'user_openid': 'owner'}}
++
++    def admissions():
++        session_key = adapter._source_session_key(adapter.build_source(
++            chat_id='owner', user_id='owner', chat_type='dm'))
++        entry = runner.session_store.lookup_by_session_key(session_key)
++        return list_session_admissions(authority.db, session_id=entry.session_id, pending_only=False) if entry else []
++
++    try:
++        await adapter._on_message('C2C_MESSAGE_CREATE', raw)
++        rows = await async_wait_until(admissions, what='QQ callback native admission')
++        payload = rows[0]['payload']
++        assert payload['native_text_v1'].get('adapter_turn'), payload['native_text_v1'].keys()
++    finally:
++        tasks = list(adapter._background_tasks)
++        for task in tasks:
++            task.cancel()
++        await asyncio.gather(*tasks, return_exceptions=True)
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('kind', ['dm', 'group'])
++@pytest.mark.parametrize('response', ['[[qq_meme:yes]]', 'hello\n[[qq_meme:yes]]'])
++async def test_live_adapter_keeps_its_expression_generation_after_plugin_reload(expression_bot, wire, kind, response):
++    from hermes_cli.plugins import PluginManager, PluginManifest
++    from hermes_cli.plugins_loader import _evict_modules
++    from gateway.session_envelope import snapshot_native, restore_native
++    from gateway.native_adapter_turns import bridge_adapter_turn
++
++    prefix = 'hermes_plugins.qq_expression_reload_probe'
++    package = Path(importlib.import_module(type(expression_bot).__module__).__file__).parent
++    manager = PluginManager()
++    manifest = PluginManifest(name='qqbot', key='platforms/qqbot', source='bundled', path=package)
++    try:
++        manager._load_directory_module(manifest, module_name=prefix)
++        old_module = importlib.import_module(prefix + '.adapter')
++        old_receipts = importlib.import_module(prefix + '.receipt_adapter')
++        extra = deepcopy(expression_bot.config.extra)
++        extra['memes'].update(mode='expression', cooldown_seconds=0, recent_exclude=0)
++        adapter = old_module.QQAdapter(PlatformConfig(enabled=True, extra=extra))
++        events = []
++        adapter.handle_message = AsyncMock(side_effect=events.append)
++        adapter._ensure_connected = AsyncMock(return_value=True)
++        adapter._auth_headers = AsyncMock(return_value={})
++        adapter._upload_local_file = AsyncMock(return_value={'file_info': 'synthetic-upload'})
++        raw = {'id': 'before-reload', 'content': 'a GIF please'}
++        chat = 'owner' if kind == 'dm' else extra['memes']['groups'][0]
++        await adapter._ingest(raw, raw['id'], raw['content'], [], '',
++                              chat_id=chat, qq_chat_type='c2c' if kind == 'dm' else 'group',
++                              user_id='owner', chat_type=kind)
++        event = events[0]
++        runner = NS(config=NS(multiplex_profiles=False),
++                    session_store=NS(_generate_session_key=adapter._source_session_key),
++                    _adapter_for_source=lambda source: adapter,
++                    _adapter_profile_for_source=lambda source: None,
++                    _is_user_authorized_for_source=lambda *args, **kwargs: True,
++                    _adapter_flag=lambda *args: False)
++        # This is the real loader eviction: the connected adapter must not import
++        # the replacement generation's marker classes or delivery ContextVars.
++        manager._load_directory_module(manifest, module_name=prefix)
++        payload = snapshot_native(runner, event)
++        assert payload['native_text_v1'].get('adapter_turn')
++        restored = restore_native(payload, runner)
++        key = adapter._source_session_key(restored.source)
++        notes = await adapter.prepare_turn_notes(restored, 'reload-session', key, [])
++        assert any('QQ表情能力/v1' in note for note in notes)
++        bridge_adapter_turn(runner, restored, event)
++        extracted = await adapter._extract_response_content(response, event, key,
++                                                           is_ephemeral_response=False)
++        requests, transport = wire
++        async with httpx.AsyncClient(transport=transport) as client:
++            adapter._http_client = client
++            if extracted.text_content:
++                result, _ = await adapter.send_final_ledgered(event, key, extracted.text_content, {},
++                                                             reply_to=event.message_id)
++                assert result.success
++            await adapter._deliver_attachments(event, extracted, {}, anything_sent=bool(extracted.text_content),
++                                               record_delivery=lambda result: None)
++        assert [body['msg_type'] for _, body in requests] == ([2, 7] if extracted.text_content else [7])
++        assert not {'content', 'markdown', 'caption'} & requests[-1][1].keys()
++        receipts = old_receipts.receipt_journal(adapter, old_module.API_BASE).lookup_source(
++            chat_id=chat, source_session_key=key, source_message_id=event.message_id)
++        assert len(receipts) == len(requests)
++        notes = await adapter.prepare_turn_notes(restored, 'reload-session', key, [])
++        assert any('"outcome":"sent"' in note for note in notes)
++    finally:
++        _evict_modules(prefix)
 --- /dev/null
 +++ b/tests/gateway/test_qqbot_expression_native.py
 @@ -0,0 +1,185 @@
@@ -11805,8 +12282,196 @@
 +    with pytest.raises(ValueError, match='real message ID'):
 +        state.finish('turn', 'sent', '')
 --- /dev/null
++++ b/tests/plugins/platforms/test_qqbot_meme_diversity.py
+@@ -0,0 +1,185 @@
++"""Conversational uses and scoped successful-send counts inform, never replace, the model's choice."""
++from dataclasses import replace
++
++import httpx
++import pytest
++
++from plugins.platforms.qqbot import meme_expression
++from plugins.platforms.qqbot.meme_catalog import MemeCatalog
++from plugins.platforms.qqbot.meme_expression_delivery import engine_for
++from plugins.platforms.qqbot.meme_state import MemeState
++from plugins.platforms.qqbot.memes import controller_for
++from tests.plugins.platforms.test_qqbot_memes import GROUP, bot, make_event, wire
++from tests.plugins.platforms.test_qqbot_meme_expression import expression_bot, prepare, emit
++from tests.plugins.platforms.test_qqbot_meme_turn_choices import choices
++
++
++def record_send(state, identifier, chat, meme_id, now, outcome='sent'):
++    assert state.claim(identifier, chat, now, probability=1, cooldown=0, daily_limit=0)
++    assert state.choose(identifier, 'strong', now, probability=1, draw=lambda: 0)
++    state.attempting(identifier, meme_id)
++    state.finish(identifier, outcome, 'test-receipt-' + identifier if outcome == 'sent' else None)
++
++
++def entry_for(adapter):
++    settings = controller_for(adapter).settings
++    return MemeCatalog.load(settings.root, settings.catalog).entries[0]
++
++
++def test_uses_and_frequency_are_soft_hints_not_a_replacement_selector(expression_bot):
++    entry = entry_for(expression_bot)
++    rare = replace(entry, id='rare', description='another suitable reaction',
++                   use_when=('encouragement', 'patient support'))
++    recent = ('yes',) * 40 + ('rare',)
++    note = meme_expression.turn_choice_note((entry, rare), 'available', (), recent_sent=recent)
++    _, candidates = choices([note])
++    assert [item['id'] for item in candidates] == ['yes', 'rare']
++    assert candidates[0]['recent_sent_count'] == 40
++    assert candidates[1]['recent_sent_count'] == 1
++    assert candidates[1]['use_when'] == list(rare.use_when)
++    assert 'relative_path' not in note and 'sha256' not in note
++    assert '同样贴切' in note and '不代表从未使用' in note
++    assert entry_for(expression_bot) == entry
++
++
++@pytest.mark.asyncio
++async def test_usage_counts_only_confirmed_sends_not_intents_misses_or_unknown(expression_bot):
++    ctrl = controller_for(expression_bot)
++    ctrl.settings = replace(ctrl.settings, recent=0, cooldown=0)
++    chat = 'group:' + GROUP
++    record_send(ctrl.state, 'confirmed', chat, 'yes', 1000)
++    record_send(ctrl.state, 'unknown', chat, 'yes', 1040, 'unknown')
++    assert ctrl.state.claim('missed', chat, 1080, probability=.2, cooldown=0, daily_limit=0)
++    assert not ctrl.state.choose('missed', 'natural', 1080, probability=.2, draw=lambda: .99)
++    journal = engine_for(expression_bot).journal
++    journal.add('selected-only', chat, 'session-one', 'yes', 'affirmation', 1120)
++    journal.add('missed', chat, 'session-one', 'yes', 'affirmation', 1080)
++    journal.finish('missed', 'not_selected', 'optional_prd')
++    ctrl.clock = lambda: 2000
++    _, notes = await prepare(expression_bot, make_event(expression_bot))
++    _, candidates = choices(notes)
++    assert candidates[0]['recent_sent_count'] == 1
++    assert candidates[0]['use_when'] == ['agree']
++    ctrl.selector.assert_not_awaited()
++
++
++@pytest.mark.asyncio
++async def test_usage_window_rolls_over_successful_sends_not_all_decisions(expression_bot):
++    ctrl = controller_for(expression_bot)
++    ctrl.settings = replace(ctrl.settings, recent=0, cooldown=0, daily_limit=0)
++    chat = 'group:' + GROUP
++    window = meme_expression.RECENT_SENT_WINDOW
++    for index in range(window + 5):
++        meme_id = 'yes' if index < 5 or index == window + 4 else 'retired-reaction'
++        record_send(ctrl.state, f'confirmed-{index}', chat, meme_id, 1000 + index * 40)
++    for index in range(3):
++        record_send(ctrl.state, f'unknown-{index}', chat, 'yes', 5000 + index * 40, 'unknown')
++    ctrl.clock = lambda: 6000
++    _, notes = await prepare(expression_bot, make_event(expression_bot))
++    note, candidates = choices(notes)
++    assert candidates[0]['recent_sent_count'] == 1
++    assert 'retired-reaction' not in note
++    assert f'最近{window}次成功发送' in note
++
++
++@pytest.mark.asyncio
++async def test_usage_is_scoped_by_profile_transport_chat_type_and_chat_id(expression_bot, tmp_path):
++    ctrl = controller_for(expression_bot)
++    ctrl.settings = replace(ctrl.settings, recent=0, cooldown=0, all_groups=True)
++    chat = 'group:' + GROUP
++    record_send(ctrl.state, 'local', chat, 'yes', 1000)
++    record_send(ctrl.state, 'other-group', 'group:other-group', 'yes', 1040)
++    record_send(ctrl.state, 'same-id-private', 'dm:' + GROUP, 'yes', 1080)
++    record_send(MemeState(ctrl.home, 'another-transport'), 'other-transport', chat, 'yes', 1120)
++    record_send(MemeState(tmp_path / 'another-profile', ctrl.state.transport),
++                'other-profile', chat, 'yes', 1160)
++    ctrl.clock = lambda: 2000
++    _, notes = await prepare(expression_bot, make_event(expression_bot))
++    assert choices(notes)[1][0]['recent_sent_count'] == 1
++    _, new_session_notes = await prepare(expression_bot, make_event(expression_bot, identifier='new'),
++                                         session='new-session')
++    assert choices(new_session_notes)[1][0]['recent_sent_count'] == 1
++    expression_bot._chat_type_map['fresh-group'] = 'group'
++    _, fresh_notes = await prepare(expression_bot, make_event(expression_bot, chat='fresh-group'))
++    assert choices(fresh_notes)[1][0]['recent_sent_count'] == 0
++
++
++@pytest.mark.asyncio
++async def test_reentrant_preparation_keeps_one_snapshot_until_the_next_event(expression_bot):
++    ctrl = controller_for(expression_bot)
++    ctrl.settings = replace(ctrl.settings, recent=0, cooldown=0)
++    event = make_event(expression_bot)
++    ctrl.clock = lambda: 1000
++    _, first = await prepare(expression_bot, event)
++    context = event._qq_expression_context
++    record_send(ctrl.state, 'intervening', 'group:' + GROUP, 'yes', 1040)
++    ctrl.clock = lambda: 2000
++    _, repeated = await prepare(expression_bot, event)
++    assert repeated == first
++    assert event._qq_expression_context is context
++    repeated.clear()  # A caller cannot mutate the saved snapshot through its return value.
++    _, repeated = await prepare(expression_bot, event)
++    assert repeated == first
++    _, next_notes = await prepare(expression_bot, make_event(expression_bot, identifier='next'))
++    assert choices(first)[1][0]['recent_sent_count'] == 0
++    assert choices(next_notes)[1][0]['recent_sent_count'] == 1
++
++
++@pytest.mark.asyncio
++async def test_reentrant_snapshot_is_bound_to_session_and_still_checks_eligibility(expression_bot):
++    ctrl = controller_for(expression_bot)
++    ctrl.settings = replace(ctrl.settings, recent=0, cooldown=0)
++    event = make_event(expression_bot)
++    _, first = await prepare(expression_bot, event)
++    record_send(ctrl.state, 'intervening', 'group:' + GROUP, 'yes', 1040)
++    ctrl.clock = lambda: 2000
++    _, next_session = await prepare(expression_bot, event, session='another-session')
++    assert choices(first)[1][0]['recent_sent_count'] == 0
++    assert choices(next_session)[1][0]['recent_sent_count'] == 1
++    ctrl.settings = replace(ctrl.settings, enabled=False)
++    _, disabled = await prepare(expression_bot, event, session='another-session')
++    assert disabled == []
++
++
++@pytest.mark.asyncio
++async def test_hard_recent_exclusion_remains_separate_from_usage_hints(expression_bot):
++    ctrl = controller_for(expression_bot)
++    ctrl.settings = replace(ctrl.settings, recent=1, cooldown=0)
++    record_send(ctrl.state, 'latest', 'group:' + GROUP, 'yes', 1000)
++    ctrl.clock = lambda: 2000
++    _, notes = await prepare(expression_bot, make_event(expression_bot))
++    note, candidates = choices(notes)
++    assert 'status=no_candidates' in note and candidates == []
++    ctrl.settings = replace(ctrl.settings, recent=0)
++    _, allowed = await prepare(expression_bot, make_event(expression_bot, identifier='next'))
++    assert choices(allowed)[1][0]['recent_sent_count'] == 1
++
++
++@pytest.mark.parametrize('availability', ['disabled', 'cooldown', 'daily_limit'])
++def test_unavailable_turns_expose_no_candidates_or_usage_hints(expression_bot, availability):
++    note = meme_expression.turn_choice_note((entry_for(expression_bot),), availability, (),
++                                            recent_sent=('yes',))
++    _, candidates = choices([note])
++    assert candidates == [] and 'recent_sent_count' not in note
++    assert '[[qq_meme_none]]' in note
++
++
++@pytest.mark.asyncio
++async def test_popular_model_choice_is_not_reranked_or_dropped_by_diversity(expression_bot, wire):
++    ctrl = controller_for(expression_bot)
++    original = ctrl.settings
++    ctrl.settings = replace(original, recent=0, cooldown=0)
++    for index in range(4):
++        record_send(ctrl.state, f'old-{index}', 'group:' + GROUP, 'yes', 1000 + index * 40)
++    ctrl.clock = lambda: 2000
++    ctrl.draw = lambda: pytest.fail('Diversity must not add random draws to GIF-only replies')
++    requests, transport = wire
++    async with httpx.AsyncClient(transport=transport) as client:
++        expression_bot._http_client = client
++        notes, results = await emit(expression_bot, make_event(expression_bot), '[[qq_meme:yes]]')
++    assert choices(notes)[1][0]['recent_sent_count'] == 4
++    assert [body['msg_type'] for _, body in requests] == [7]
++    assert all(result.success for result in results)
++    assert ctrl.settings.probability == original.probability
++    assert ctrl.state.recent('group:' + GROUP, 1) == ('yes',)
++    ctrl.selector.assert_not_awaited()
+--- /dev/null
 +++ b/tests/plugins/platforms/test_qqbot_meme_expression.py
-@@ -0,0 +1,429 @@
+@@ -0,0 +1,448 @@
 +"""The assistant chooses; the real QQ boundary sends and supplies durable feedback."""
 +import asyncio
 +import json
@@ -11902,11 +12567,11 @@
 +
 +
 +@pytest.mark.asyncio
-+@pytest.mark.parametrize('text,types', [(TAG, [7]), ('这张给管理员。\n' + TAG, [2, 7])])
-+async def test_explicit_choices_bypass_rng_and_use_separate_native_gif(expression_bot, wire, text, types):
++@pytest.mark.parametrize('text,types', [(TAG, [7]), (' \n[[qq_meme_optional:yes]]\n ', [7])])
++async def test_gif_only_choices_bypass_rng_and_use_native_gif(expression_bot, wire, text, types):
 +    bot = expression_bot
 +    ctrl = controller_for(bot)
-+    ctrl.draw = lambda: pytest.fail('An explicit choice must not be randomly dropped')
++    ctrl.draw = lambda: pytest.fail('A GIF-only reply must not be randomly dropped')
 +    requests, transport = wire
 +    async with httpx.AsyncClient(transport=transport) as client:
 +        bot._http_client = client
@@ -11975,8 +12640,8 @@
 +
 +
 +@pytest.mark.asyncio
-+@pytest.mark.parametrize('text', ['[[qq_meme:unknown]]', '[[qq_meme:../secret.gif]]', '[[qq_meme_optional:yes]]'])
-+async def test_invalid_or_optional_only_choices_do_not_send_images(expression_bot, wire, text):
++@pytest.mark.parametrize('text', ['[[qq_meme:unknown]]', '[[qq_meme:../secret.gif]]'])
++async def test_invalid_choices_do_not_send_images(expression_bot, wire, text):
 +    bot = expression_bot
 +    requests, transport = wire
 +    async with httpx.AsyncClient(transport=transport) as client:
@@ -12101,19 +12766,38 @@
 +
 +
 +@pytest.mark.asyncio
-+async def test_optional_miss_is_persisted_without_pulling_another_model(expression_bot, wire):
++@pytest.mark.parametrize('marker', [TAG, '[[qq_meme_optional:yes]]'])
++async def test_attached_miss_is_persisted_without_pulling_another_model(expression_bot, wire, marker):
 +    bot = expression_bot
 +    ctrl = controller_for(bot)
 +    ctrl.draw = lambda: .99
 +    requests, transport = wire
 +    async with httpx.AsyncClient(transport=transport) as client:
 +        bot._http_client = client
-+        await emit(bot, make_event(bot), '普通文字，不承诺图。\n[[qq_meme_optional:yes]]')
++        await emit(bot, make_event(bot), '普通文字，不承诺图。\n' + marker)
 +    assert [body['msg_type'] for _, body in requests] == [2]
 +    with sqlite3.connect(ctrl.state.path) as db:
 +        assert db.execute('SELECT outcome FROM expressions').fetchone() == ('not_selected',)
 +        assert db.execute('SELECT misses FROM meme_prd').fetchone() == (1,)
 +    ctrl.selector.assert_not_awaited()
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('marker', [TAG, '[[qq_meme_optional:yes]]'])
++async def test_attached_hit_sends_text_then_pure_gif(expression_bot, wire, marker):
++    bot = expression_bot
++    draws = []
++    def draw():
++        draws.append(True)
++        return 0
++    controller_for(bot).draw = draw
++    requests, transport = wire
++    async with httpx.AsyncClient(transport=transport) as client:
++        bot._http_client = client
++        await emit(bot, make_event(bot), '普通文字。\n' + marker)
++    assert draws == [True]
++    assert [body['msg_type'] for _, body in requests] == [2, 7]
++    assert not {'content', 'markdown', 'caption'} & requests[-1][1].keys()
 +
 +
 +@pytest.mark.asyncio
@@ -12650,6 +13334,86 @@
 +    assert await selector.select_meme('', '', [ENTRY], timeout=3, min_confidence=.75) is None
 +    assert not requests and client.is_closed()
 --- /dev/null
++++ b/tests/plugins/platforms/test_qqbot_meme_turn_choices.py
+@@ -0,0 +1,77 @@
++"""Fresh per-turn choices survive old none verdicts without rewriting history."""
++import copy
++import json
++from dataclasses import replace
++
++import httpx
++import pytest
++
++from plugins.platforms.qqbot.memes import controller_for
++from tests.plugins.platforms.test_qqbot_memes import bot, make_event, wire
++from tests.plugins.platforms.test_qqbot_meme_expression import expression_bot, prepare, emit
++
++
++def choices(notes):
++    note = next(n for n in notes if n.startswith('[本轮QQ表情可用性]'))
++    return note, json.loads(note.split('\n候选=', 1)[1])
++
++
++@pytest.mark.asyncio
++async def test_each_turn_reoffers_nonexcluded_semantics_without_mutating_history(expression_bot):
++    adapter = expression_bot
++    _, first = await prepare(adapter, make_event(adapter))
++    history = [{'role': 'user', 'api_content': '\n'.join(first)},
++               {'role': 'assistant', 'content': '普通回答\n[[qq_meme_none]]'}]
++    before = copy.deepcopy(history)
++    _, notes = await prepare(adapter, make_event(adapter, identifier='next'), history)
++    note, candidates = choices(notes)
++    assert candidates == [{'id': 'yes', 'description': 'affirmation',
++                           'use_when': ['agree'], 'recent_sent_count': 0}]
++    assert 'status=available' in note and '[[qq_meme_optional:完整ID]]' in note
++    assert not any(n.startswith('[QQ表情能力/v1]') for n in notes)
++    assert history == before
++
++
++@pytest.mark.asyncio
++async def test_excluded_catalog_is_reported_as_no_candidates(expression_bot, wire):
++    ctrl = controller_for(expression_bot)
++    _, transport = wire
++    async with httpx.AsyncClient(transport=transport) as client:
++        expression_bot._http_client = client
++        await emit(expression_bot, make_event(expression_bot), '[[qq_meme:yes]]')
++    ctrl.clock = lambda: 2000
++    _, notes = await prepare(expression_bot, make_event(expression_bot, identifier='after'))
++    note, candidates = choices(notes)
++    assert 'status=no_candidates' in note and candidates == []
++    assert '[[qq_meme_none]]' in note
++
++
++@pytest.mark.asyncio
++async def test_disabled_probability_does_not_offer_send_choices(expression_bot):
++    ctrl = controller_for(expression_bot)
++    ctrl.settings = replace(ctrl.settings, probability=0)
++    _, notes = await prepare(expression_bot, make_event(expression_bot))
++    note, candidates = choices(notes)
++    assert 'status=disabled' in note and candidates == []
++
++
++@pytest.mark.asyncio
++async def test_second_explicit_dm_user_gets_choices_and_native_gif_not_other_users(expression_bot, wire):
++    adapter = expression_bot
++    ctrl = controller_for(adapter)
++    ctrl.settings = replace(ctrl.settings, dm_users=frozenset({'owner', 'second-approved-user'}))
++    adapter._chat_type_map['second-approved-user'] = 'c2c'
++    event = make_event(adapter, chat='second-approved-user', user='second-approved-user', kind='dm')
++    requests, transport = wire
++    async with httpx.AsyncClient(transport=transport) as client:
++        adapter._http_client = client
++        notes, results = await emit(adapter, event, '好的。\n[[qq_meme_optional:yes]]')
++    assert choices(notes)[1] == [{'id': 'yes', 'description': 'affirmation',
++                                 'use_when': ['agree'], 'recent_sent_count': 0}]
++    assert all(r.success for r in results)
++    assert [body['msg_type'] for _, body in requests] == [2, 7]
++    assert all(path == '/v2/users/second-approved-user/messages' for path, _ in requests)
++    assert not {'content', 'markdown', 'caption'} & requests[-1][1].keys()
++    adapter._chat_type_map['unlisted-user'] = 'c2c'
++    _, other = await prepare(adapter, make_event(adapter, chat='unlisted-user', user='unlisted-user', kind='dm'))
++    assert other == []
+--- /dev/null
 +++ b/tests/plugins/platforms/test_qqbot_memes.py
 @@ -0,0 +1,428 @@
 +"""Real QQ final-text/media/receipt boundary; network transport is replaced, not policy."""
@@ -13080,6 +13844,112 @@
 +    assert result.success and len(requests) == 1
 +    with sqlite3.connect(ctrl.state.path) as db:
 +        assert db.execute('SELECT COUNT(*) FROM meme_prd').fetchone() == (0,)
+--- /dev/null
++++ b/tests/plugins/platforms/test_qqbot_pure_expression_limits.py
+@@ -0,0 +1,103 @@
++"""Sole GIF replies are expressions, not frequency-limited decorations."""
++import json
++import sqlite3
++from dataclasses import replace
++from unittest.mock import AsyncMock
++
++import httpx
++import pytest
++
++from gateway.platforms.base import ProcessingOutcome
++from plugins.platforms.qqbot.memes import controller_for
++from tests.plugins.platforms.test_qqbot_memes import bot, make_event, wire
++from tests.plugins.platforms.test_qqbot_meme_expression import expression_bot, emit, prepare
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('marker', ['qq_meme', 'qq_meme_optional'])
++@pytest.mark.parametrize('gate', ['recent', 'cooldown', 'same_instant'])
++async def test_sole_gif_bypasses_decoration_frequency_but_not_event_dedup(expression_bot, wire, marker, gate):
++    adapter = expression_bot
++    ctrl = controller_for(adapter)
++    ctrl.settings = replace(ctrl.settings, recent=3 if gate == 'recent' else 0,
++                            cooldown=180 if gate == 'cooldown' else 0)
++    ctrl.draw = lambda: pytest.fail('Sole GIF must never draw')
++    requests, transport = wire
++    async with httpx.AsyncClient(transport=transport) as client:
++        adapter._http_client = client
++        await emit(adapter, make_event(adapter), '[[qq_meme:yes]]')
++        ctrl.clock = lambda: 1000 if gate == 'same_instant' else 1001
++        event = make_event(adapter, identifier='second')
++        notes, results = await emit(adapter, event, f' \n[[{marker}:yes]]\n ')
++        await emit(adapter, event, f' \n[[{marker}:yes]]\n ')
++    assert [body['msg_type'] for _, body in requests] == [7, 7]
++    assert all(r.success for r in results)
++    assert all(not {'content', 'markdown', 'caption'} & body.keys() for _, body in requests)
++    assert any('纯GIF状态=available' in note for note in notes)
++    with sqlite3.connect(ctrl.state.path) as db:
++        assert db.execute('SELECT outcome FROM expressions ORDER BY rowid').fetchall() == [('sent',), ('sent',)]
++    assert not list((ctrl.home / 'cache/qqbot/meme_snapshots').glob('*.gif'))
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('gate', ['disabled', 'daily_limit', 'busy'])
++async def test_pure_reply_keeps_hard_off_quota_and_inflight_guard(expression_bot, wire, gate):
++    adapter = expression_bot
++    ctrl = controller_for(adapter)
++    requests, transport = wire
++    async with httpx.AsyncClient(transport=transport) as client:
++        adapter._http_client = client
++        if gate == 'disabled':
++            ctrl.settings = replace(ctrl.settings, probability=0)
++        elif gate == 'daily_limit':
++            await emit(adapter, make_event(adapter), '[[qq_meme:yes]]')
++            ctrl.settings = replace(ctrl.settings, daily_limit=1, recent=0, cooldown=0)
++            ctrl.clock = lambda: 1001
++        else:
++            assert ctrl.state.claim('inflight', 'group:meme-test-group', 1000,
++                                    probability=1, cooldown=0, daily_limit=0)
++        before = len(requests)
++        await emit(adapter, make_event(adapter, identifier='blocked'), '[[qq_meme_optional:yes]]')
++        assert len(requests) == before
++
++
++@pytest.mark.asyncio
++async def test_recent_candidate_remains_available_for_pure_reply_only(expression_bot, wire):
++    adapter = expression_bot
++    ctrl = controller_for(adapter)
++    _, transport = wire
++    async with httpx.AsyncClient(transport=transport) as client:
++        adapter._http_client = client
++        await emit(adapter, make_event(adapter), '[[qq_meme:yes]]')
++    ctrl.clock = lambda: 2000
++    _, notes = await prepare(adapter, make_event(adapter, identifier='next'))
++    note = next(n for n in notes if n.startswith('[本轮QQ表情可用性]'))
++    assert 'status=no_candidates' in note
++    assert json.loads(note.split('\n候选=', 1)[1]) == []
++    assert '纯GIF状态=available' in note
++    pure = json.loads(note.split('\n纯GIF候选=', 1)[1].split('\n候选=', 1)[0])
++    assert [entry['id'] for entry in pure] == ['yes']
++
++
++@pytest.mark.asyncio
++@pytest.mark.parametrize('path', ['background', 'queued'])
++async def test_consecutive_pure_reply_real_delivery_paths_have_no_empty_notice(expression_bot, wire, path):
++    adapter = expression_bot
++    adapter._message_handler = AsyncMock(return_value='[[qq_meme_optional:yes]]')
++    adapter._run_processing_hook = AsyncMock()
++    adapter._start_typing_refresh = lambda *a, **kw: None
++    requests, transport = wire
++    async with httpx.AsyncClient(transport=transport) as client:
++        adapter._http_client = client
++        for identifier in ('first', 'second'):
++            event = make_event(adapter, identifier=identifier)
++            key, _ = await prepare(adapter, event)
++            if path == 'background':
++                await adapter._process_message_background(event, key)
++            else:
++                assert await adapter.deliver_queued_response('[[qq_meme_optional:yes]]', event, key)
++    assert [body['msg_type'] for _, body in requests] == [7, 7]
++    if path == 'background':
++        outcomes = [call.args[-1] for call in adapter._run_processing_hook.call_args_list
++                    if call.args[0] == 'on_processing_complete']
++        assert outcomes == [ProcessingOutcome.SUCCESS, ProcessingOutcome.SUCCESS]
 --- /dev/null
 +++ b/tests/plugins/platforms/test_qqbot_send_targets.py
 @@ -0,0 +1,36 @@
@@ -13626,7 +14496,7 @@
 +    assert call(p, 'guest_workspace', action='delete', path=path, confirm=True)['success']
 --- /dev/null
 +++ b/tests/tools/test_guest_browser_network.py
-@@ -0,0 +1,367 @@
+@@ -0,0 +1,371 @@
 +"""Behavioral contracts for the guest browser's only external network path.
 +
 +Every network operation is an injected in-memory transport. No private network,
@@ -13757,7 +14627,7 @@
 +def test_hostname_verified_default_tls_over_pinned_connection(transport, monkeypatch):
 +    sockets, _, _ = transport
 +    contexts = []
-+    real_context = ssl.create_default_context()
++    real_context = net.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 +
 +    class Context:
 +        def wrap_socket(self, sock, server_hostname):
@@ -13766,7 +14636,11 @@
 +            contexts.append(server_hostname)
 +            return sock
 +
-+    monkeypatch.setattr(net.ssl, "create_default_context", lambda: Context())
++    def context_factory(protocol):
++        assert protocol == ssl.PROTOCOL_TLS_CLIENT
++        return Context()
++
++    monkeypatch.setattr(net, "SSLContext", context_factory)
 +    assert net.fetch_public("https://example.com/")["body"] == b"ok"
 +    assert contexts == ["example.com"]
 +    assert sockets[0].targets == [(PUBLIC, 443)]
@@ -13947,7 +14821,7 @@
 +        def wrap_socket(self, sock, server_hostname):
 +            raise ssl.SSLCertVerificationError("secret upstream certificate detail")
 +
-+    monkeypatch.setattr(net.ssl, "create_default_context", lambda: BadCertificate())
++    monkeypatch.setattr(net, "SSLContext", lambda protocol: BadCertificate())
 +    with pytest.raises(net.PublicNetworkError, match="Public transport failed") as caught:
 +        net.fetch_public("https://example.com/")
 +    assert caught.value.error_code == "network_tls_error"
@@ -16589,7 +17463,7 @@
 +    )
 --- /dev/null
 +++ b/tools/guest_browser_network.py
-@@ -0,0 +1,331 @@
+@@ -0,0 +1,335 @@
 +"""Public-only, credential-free HTTP broker for a networkless guest browser.
 +
 +No shared URL-safety configuration or proxy settings are consulted. DNS is checked
@@ -16611,6 +17485,8 @@
 +import threading
 +import time
 +from urllib.parse import quote, urljoin, urlsplit, urlunsplit
++
++from truststore import SSLContext
 +
 +MAX_BYTES = 32 * 1024 * 1024
 +MAX_HEADERS = 64 * 1024
@@ -16738,7 +17614,9 @@
 +            stage = "tls"
 +            if tls:
 +                sock.settimeout(_remaining(deadline))
-+                sock = ssl.create_default_context().wrap_socket(sock, server_hostname=host)
++                # Use the OS verifier, including its intermediate-chain building,
++                # without inheriting provider overrides or changing global TLS state.
++                sock = SSLContext(ssl.PROTOCOL_TLS_CLIENT).wrap_socket(sock, server_hostname=host)
 +            return sock
 +        except (OSError, ssl.SSLError) as exc:
 +            code = ("network_tls_error" if stage == "tls" else

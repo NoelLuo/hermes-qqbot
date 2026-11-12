@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from gateway.config import Platform
+from gateway.config import GatewayConfig, Platform, PlatformConfig
 from gateway.platforms.base import SendResult
 from gateway.platforms.event import MessageEvent, MessageType
 from gateway.request_security import policy_from_extra
@@ -75,13 +75,32 @@ async def test_refused_busy_reset_does_not_cancel_drain_or_replace_guard(command
 
 
 @pytest.mark.asyncio
-async def test_guest_busy_text_does_not_clarify_queue_or_steer():
-    obj = adapter()
-    obj._busy_session_handler = AsyncMock()
-    obj._pending_messages = {}
-    await obj._handle_message_while_active(event("yes"), KEY)
-    assert not obj._pending_messages
-    obj._busy_session_handler.assert_not_awaited()
+async def test_guest_busy_text_queues_without_clarifying_or_steering(monkeypatch):
+    config = PlatformConfig(enabled=True, extra=dict(EXTRA, group_sessions_per_user=False))
+    obj = QQAdapter(config)
+    obj.send = AsyncMock(return_value=SendResult(success=True))
+    gateway = GatewayRunner(GatewayConfig(platforms={Platform.QQBOT: config}, group_sessions_per_user=False))
+    gateway.adapters = {Platform.QQBOT: obj}
+    gateway._is_user_authorized_for_source = Mock(return_value=True)
+    gateway._wire_adapter_handlers(obj)
+    incoming = event("yes")
+    key = obj._event_session_key(incoming)
+    guard = object()
+    obj._active_sessions[key] = guard
+    state = gateway._session_state(key)
+    state.turn.event = event(user="admin")
+    state.turn.agent = Mock()
+    from tools import clarify_gateway
+    lookup = Mock(side_effect=AssertionError("must not answer another actor's clarification"))
+    monkeypatch.setattr(clarify_gateway, "get_pending_for_session", lookup)
+    await obj._handle_message_while_active(incoming, key)
+    assert obj.get_pending_message(key) is incoming
+    assert incoming.source.user_id == "guest"
+    assert obj._active_sessions[key] is guard
+    state.turn.agent.steer.assert_not_called()
+    state.turn.agent.interrupt.assert_not_called()
+    lookup.assert_not_called()
+    obj.send.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -107,14 +126,14 @@ async def test_natural_slash_confirmation_does_not_resolve_for_guest(monkeypatch
     resolve.assert_not_awaited()
 
 
-def test_busy_actor_isolation_keeps_sender_and_legacy_semantics():
+@pytest.mark.parametrize("user", ["guest", "admin", "other"])
+def test_ordinary_qq_fifo_does_not_consult_roles_or_running_owner(user):
     obj = runner()
-    assert obj._request_busy_isolation(event(), KEY) == "reject"
-    assert obj._request_busy_isolation(event(user="admin"), KEY) is None
-    obj._peek_session_state.return_value.turn.event = event(user="other")
-    assert obj._request_busy_isolation(event(user="admin"), KEY) == "queue"
+    obj._peek_session_state.side_effect = AssertionError("FIFO must not depend on the running owner")
+    assert obj._ordinary_qq_input_queues(event(user=user))
+    assert not obj._ordinary_qq_input_queues(event("/steer next", user=user))
     obj.config.platforms[Platform.QQBOT].extra = {}
-    assert obj._request_busy_isolation(event(), KEY) is None
+    assert obj._ordinary_qq_input_queues(event(user=user))
 
 
 @pytest.mark.asyncio

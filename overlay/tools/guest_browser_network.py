@@ -20,6 +20,8 @@ import threading
 import time
 from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 
+from truststore import SSLContext
+
 MAX_BYTES = 32 * 1024 * 1024
 MAX_HEADERS = 64 * 1024
 MAX_URL = 8192
@@ -146,7 +148,9 @@ def _dial(host, port, pins, tls, deadline):
             stage = "tls"
             if tls:
                 sock.settimeout(_remaining(deadline))
-                sock = ssl.create_default_context().wrap_socket(sock, server_hostname=host)
+                # Use the OS verifier, including its intermediate-chain building,
+                # without inheriting provider overrides or changing global TLS state.
+                sock = SSLContext(ssl.PROTOCOL_TLS_CLIENT).wrap_socket(sock, server_hostname=host)
             return sock
         except (OSError, ssl.SSLError) as exc:
             code = ("network_tls_error" if stage == "tls" else

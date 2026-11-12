@@ -13,7 +13,7 @@
       "path": "agent/agent_init.py",
       "sha256": "c9cee4d86d7b5b16b0ab707553410415e19323735750218fedfbb647581dfc8d",
       "base_sha256": "29be7ec99508cb1d82685a4d535b63977dd671a43b4bef910426291d40df4da5",
-      "source_sha256": "c9cee4d86d7b5b16b0ab707553410415e19323735750218fedfbb647581dfc8d",
+      "source_sha256": "2224bb84442c2afc4c77fb76053f579ed9fb802de94efcc476dcf3e0b15da59c",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -31,13 +31,15 @@
           "@@ -2321,0 +2336,5 @@ def init_agent("
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "agent/agent_runtime_helpers.py",
       "sha256": "7ae768f2a7ad0a1f00923d137bcf5b79ee91d9f6780c556cc07b201824d7ffa8",
       "base_sha256": "295bd0adcb698ddeb87966f77a79ef1c8016702641db401bfe692ffb63e0dd49",
-      "source_sha256": "7ae768f2a7ad0a1f00923d137bcf5b79ee91d9f6780c556cc07b201824d7ffa8",
+      "source_sha256": "32e24ebcb134c3bd4f087e861e527e8f12a9fcdf4c7ce9107caf527cb6fd7e99",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -55,13 +57,15 @@
           "@@ -2621 +2655,5 @@ def invoke_tool(agent, function_name: str, function_args: dict, effective_task_i"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "agent/conversation_loop.py",
       "sha256": "2152d84954152207da5d8114bd9932741e64728694fbf1f36f5c80cce948f374",
       "base_sha256": "5a2b1973189300f0f07a990e39c6f5ddf200288aaec1032205685bef3437e4bf",
-      "source_sha256": "2152d84954152207da5d8114bd9932741e64728694fbf1f36f5c80cce948f374",
+      "source_sha256": "17ac26dee07b991f858e0ec894d864c46576a1fb9e4d12fc8d182dae69e91671",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -73,7 +77,9 @@
           "@@ -754,0 +755,17 @@ def _restore_or_build_system_prompt(agent, system_message, conversation_history)"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "agent/request_security.py",
@@ -111,7 +117,7 @@
       "path": "agent/system_prompt.py",
       "sha256": "66054c9f2ff565b8106093e362c6ab8ff87c72aed99104a5df2480c892d52c0a",
       "base_sha256": "f804c92ddc7197ad2483960f07d7c2545c163644085b1821ce22bdad8c7f8597",
-      "source_sha256": "66054c9f2ff565b8106093e362c6ab8ff87c72aed99104a5df2480c892d52c0a",
+      "source_sha256": "b89cb0b7ef16c00daa378c652047316800a6dab8b33374a6236a8b43831087cb",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -133,13 +139,15 @@
           "@@ -831 +845 @@ def invalidate_system_prompt(agent: Any) -> None:"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "agent/tool_executor.py",
       "sha256": "da4809d7c5f832bd9337e459438527ccce302acef70b643c9ea0f8be8332e26a",
       "base_sha256": "3fb81cd7ec8946df1f6e50b0879b4be4499223b4236450da0581ac7c0a1727e6",
-      "source_sha256": "da4809d7c5f832bd9337e459438527ccce302acef70b643c9ea0f8be8332e26a",
+      "source_sha256": "053c1d353b795213c8b38d521a9ef6e3778edd9bfc5fa69bbcb837d7482a392f",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -159,7 +167,9 @@
           "@@ -754 +794,6 @@ def _dispatch_authorized_once("
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "agent/turn_final_response.py",
@@ -168,7 +178,7 @@
       "status_at_base": "modified",
       "redaction_rationale": [],
       "sha256": "b4a861d1af76c137352c98e6b5177d099ce16e39074a0b9e6df3db715aeb197d",
-      "source_sha256": "b4a861d1af76c137352c98e6b5177d099ce16e39074a0b9e6df3db715aeb197d",
+      "source_sha256": "654bfebced42ae8ccd7d1e0f7e91a65d80c3d846a738d6fa18a40473079af817",
       "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
@@ -176,13 +186,15 @@
           "@@ -128,0 +129,7 @@"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "cron/jobs.py",
       "sha256": "f9c754b0654c04a3034db363790afb29b44c66ecf84c5be6dcc020860a93d6f3",
       "base_sha256": "81c8ee2fde2e351c3d5d9ac02cbc8f0eab2b2bb626ee7524f3754d9e9f5e3848",
-      "source_sha256": "f9c754b0654c04a3034db363790afb29b44c66ecf84c5be6dcc020860a93d6f3",
+      "source_sha256": "c6938de047693c227e783cceac80ec61b76d3ff43c2ef4246f57c449f51045a5",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -197,13 +209,15 @@
           "@@ -2093,0 +2166,2 @@ def update_job(job_id: str, updates: dict[str, Any]) -> Optional[dict[str, Any]]"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "cron/scheduler.py",
       "sha256": "ab2605b98581c35449ff43390a0c5d0f6ba5f67617486f1c3f666183d53de44b",
       "base_sha256": "d72052adb3fd3944886e75066267fd6c6cdb4c8ece68e2aa20145cfcb564fffd",
-      "source_sha256": "6c8122c2ae2f4a29d99139a92b2757f4368d8775c1c0f18349ba5fe8569c86cb",
+      "source_sha256": "b5e6640e486a95ef9362c57c594556a599c9a9b73d5cdeda21b51a8712808bb2",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -225,7 +239,9 @@
         "excluded_hunks": [
           "@@ -1790,0 +1791,3 @@ def _resolve_job_runtime(job: dict, job_id: str, jc: _CronJobConfig) -> tuple[di"
         ]
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/guest_export_delivery.py",
@@ -257,9 +273,9 @@
     },
     {
       "path": "gateway/platforms/base.py",
-      "sha256": "62959b10fc76ebfec412d507856c8a72c3992077d14568038acedcb7417dbc47",
+      "sha256": "7abb3147ef9b5fceadcbbec29b9c703db199c7f3480d4d7c75793b3809d52831",
       "base_sha256": "de845c825424aa55fb2b081c6cf5a5eba1c185a5275798bc28e100d3b0ce6b78",
-      "source_sha256": "62959b10fc76ebfec412d507856c8a72c3992077d14568038acedcb7417dbc47",
+      "source_sha256": "9d39c1254dba52108c0bcf0f754813c983cd201c60668e34132023f82844a73d",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -268,28 +284,31 @@
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
         "included_hunks": [
-          "@@ -1654,0 +1655 @@ class ExecApprovalPrompt:",
-          "@@ -2853,0 +2855 @@ class BasePlatformAdapter(ABC):",
-          "@@ -2861,0 +2864 @@ class BasePlatformAdapter(ABC):",
-          "@@ -3976,0 +3980,2 @@ class BasePlatformAdapter(ABC):",
-          "@@ -3995,0 +4001,9 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4017,0 +4032,4 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4066,0 +4085,2 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4067,0 +4088,5 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4286,0 +4312,21 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4295 +4341,2 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4303 +4350 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4310,0 +4358,2 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4332 +4381,4 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4345,0 +4398,3 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4347,2 +4402,5 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4427,0 +4486,7 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4435,0 +4501,2 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4465,0 +4533,2 @@ class BasePlatformAdapter(ABC):",
-          "@@ -4466,0 +4536,3 @@ class BasePlatformAdapter(ABC):"
+          "@@ -1654,0 +1655 @@",
+          "@@ -2853,0 +2855 @@",
+          "@@ -2861,0 +2864 @@",
+          "@@ -3976,0 +3980,2 @@",
+          "@@ -3995,0 +4001,9 @@",
+          "@@ -4017,0 +4032,4 @@",
+          "@@ -4066,0 +4085,2 @@",
+          "@@ -4101 +4121 @@",
+          "@@ -4286,0 +4307,21 @@",
+          "@@ -4295 +4336,2 @@",
+          "@@ -4303 +4345 @@",
+          "@@ -4310,0 +4353,2 @@",
+          "@@ -4332 +4376,4 @@",
+          "@@ -4345,0 +4393,3 @@",
+          "@@ -4347,2 +4397,5 @@",
+          "@@ -4427,0 +4481,7 @@",
+          "@@ -4435,0 +4496,2 @@",
+          "@@ -4465,0 +4528,2 @@",
+          "@@ -4466,0 +4531,3 @@"
         ],
-        "excluded_hunks": []
-      }
+        "excluded_hunks_note": "Newer upstream source differences are excluded; see docs/SOURCE_SYNC_AUDIT.json."
+      },
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/request_security.py",
@@ -313,9 +332,9 @@
     },
     {
       "path": "gateway/run_busy.py",
-      "sha256": "0d2b027d6e8220d9a8dc70dec77cdd6aed3dbf63fc1a677cd1aaeaf344af4ad2",
+      "sha256": "5c5182db0a4671772648495340b4af86d4e6fce7b8051aff8994bbfaa63949e4",
       "base_sha256": "dc39233ef2fde3f3bd2475b354ab4ef8137ed6340566333713712acc439b3cb2",
-      "source_sha256": "0d2b027d6e8220d9a8dc70dec77cdd6aed3dbf63fc1a677cd1aaeaf344af4ad2",
+      "source_sha256": "08ac35fdd55ce5d3242f0b35f20c52f530a788560245ac76c552a7f9861c4988",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -324,41 +343,50 @@
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
         "included_hunks": [
-          "@@ -105,0 +106,23 @@ class GatewayBusySessionMixin:",
-          "@@ -467,0 +491,2 @@ class GatewayBusySessionMixin:",
-          "@@ -468,0 +494,2 @@ class GatewayBusySessionMixin:",
-          "@@ -886,0 +914,4 @@ class GatewayBusySessionMixin:",
-          "@@ -918,0 +950,7 @@ class GatewayBusySessionMixin:",
-          "@@ -1058,0 +1097,3 @@ class GatewayBusySessionMixin:",
-          "@@ -1171,0 +1213,3 @@ class GatewayBusySessionMixin:",
-          "@@ -1189,0 +1234,2 @@ class GatewayBusySessionMixin:"
+          "@@ -104,0 +105,14 @@",
+          "@@ -467,0 +482,2 @@",
+          "@@ -468,0 +485,2 @@",
+          "@@ -489,0 +508 @@",
+          "@@ -886,0 +906,4 @@",
+          "@@ -915,0 +939,3 @@",
+          "@@ -1058,0 +1085,3 @@",
+          "@@ -1171,0 +1201,3 @@"
         ],
-        "excluded_hunks": []
-      }
+        "excluded_hunks_note": "Newer upstream source differences are excluded; see docs/SOURCE_SYNC_AUDIT.json."
+      },
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/run_inbound.py",
-      "sha256": "fd6a260c5e3032494260717d4ae21000ff339c2d2fdc514b7aaa20ef3010e66e",
+      "sha256": "eb1f4cdb5b19f993d4508225436a1cdbdacd35f0a06383a408bddc0ccc1bf1b7",
       "base_sha256": "76136f54fa903272b99489999fb84c083827023f840e091db28724696c38f2f8",
-      "source_sha256": "fd6a260c5e3032494260717d4ae21000ff339c2d2fdc514b7aaa20ef3010e66e",
+      "source_sha256": "1d1186672446310a7cc6e6cbcb466ce022d4fc36618a42bb919258b5c3df9122",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
-        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded."
+        "QQ request authorization, privacy, media/native lifecycle or public cron integration only; unrelated provider/fallback changes excluded.",
+        "QQ-only admitted-turn intercept guard backported for the pinned host; newer upstream host changes excluded."
       ],
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
         "included_hunks": [
-          "@@ -313,0 +314,4 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
-          "@@ -471,0 +476,8 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
-          "@@ -478 +490,4 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
-          "@@ -739,0 +755,10 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
-          "@@ -1194,0 +1220,6 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
-          "@@ -1223,0 +1255,3 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)",
-          "@@ -1240,0 +1275,7 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)"
+          "@@ -313,0 +314,4 @@",
+          "@@ -471,0 +476,8 @@",
+          "@@ -478 +490,4 @@",
+          "@@ -716,0 +732,2 @@",
+          "@@ -737,0 +755,6 @@",
+          "@@ -1122,0 +1146,5 @@",
+          "@@ -1194,0 +1223,2 @@",
+          "@@ -1223,0 +1254,3 @@",
+          "@@ -1240,0 +1274,7 @@"
         ],
-        "excluded_hunks": []
-      }
+        "excluded_hunks_note": "Newer upstream source differences are excluded; see docs/SOURCE_SYNC_AUDIT.json."
+      },
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/run_notifications.py",
@@ -367,7 +395,7 @@
       "status_at_base": "modified",
       "redaction_rationale": [],
       "sha256": "9606d0706d92172766502aae28942b1d1848e1c95c7d67a9d742fdb31776a2d9",
-      "source_sha256": "9606d0706d92172766502aae28942b1d1848e1c95c7d67a9d742fdb31776a2d9",
+      "source_sha256": "f0704ef4ebe73b61f78d34bc95c5945e4c7101fce276792ef21fde03ca9a4acf",
       "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
@@ -376,13 +404,15 @@
           "@@ -295,0 +297,5 @@"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/run_turn.py",
       "sha256": "c93c2236efbbcba67ce9ec69319cdb1a6bd03022f1a839cc98e75dbddd89b781",
       "base_sha256": "df1f57156f63b6d5649fae280eb7fad9dc39aefe7e6ee62bf743adc582fc639e",
-      "source_sha256": "c93c2236efbbcba67ce9ec69319cdb1a6bd03022f1a839cc98e75dbddd89b781",
+      "source_sha256": "a93e033190670117c77bcb4303525f8a631aeda5142d6ef3a0409035e0f9ca5d",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -405,13 +435,15 @@
         ],
         "excluded_hunks": []
       },
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/run_turn_prepare.py",
       "sha256": "246eab0965f3bb1646ee23abe9b609ddd02abe7217fd70b975c1e87cddde95ec",
       "base_sha256": "7debb42ae2b7607d8e3e1d75e8590b1f2b49f663461036bf2b32113562c7acf6",
-      "source_sha256": "246eab0965f3bb1646ee23abe9b609ddd02abe7217fd70b975c1e87cddde95ec",
+      "source_sha256": "148a7857a8f888fb00c00f18f12df5a49d9e50e33ee6f96a104f7b8e09ecfca9",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -427,13 +459,15 @@
         ],
         "excluded_hunks": []
       },
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/run_turn_runner.py",
       "sha256": "d7de17aece761d27f272b54cf112e2efda978d52232abf4ae2d82b94eaac3325",
       "base_sha256": "66f4e768959343e4dd52a0b9d7f5937f9b8a5ef292fd78659cc8aae79e44fcc1",
-      "source_sha256": "d7de17aece761d27f272b54cf112e2efda978d52232abf4ae2d82b94eaac3325",
+      "source_sha256": "59a95570df790428f83cca0d91ee2e8de47917575e3ddb62dd7209eeb1534c1d",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -456,13 +490,15 @@
         ],
         "excluded_hunks": []
       },
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/session_context_refs.py",
       "sha256": "ff779eabc17aaa4f43fff754e3fef827d6cf95f93cacb4e8d0036fc4ae6417f2",
       "base_sha256": "a848bbd6ee43558cdd8ebab46097ae710d9c832ff6a9a6334980a6b0a88ae84b",
-      "source_sha256": "ff779eabc17aaa4f43fff754e3fef827d6cf95f93cacb4e8d0036fc4ae6417f2",
+      "source_sha256": "24424fa23c58711891e271ef6376f8bc02ca5c9f891e1b223ceee77095c42f26",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -475,13 +511,15 @@
           "@@ -63,0 +68,6 @@ async def turn_references(runner, event, source, session_key, text):"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/session_envelope.py",
       "sha256": "e86ac9627be9faf3cf509e470b9adab76774972a33d65f1265c470743d39a160",
       "base_sha256": "948d26349e3fb6ea865af33e18dafd2e4177e5fd887afb271de89363f4a0d68a",
-      "source_sha256": "e86ac9627be9faf3cf509e470b9adab76774972a33d65f1265c470743d39a160",
+      "source_sha256": "51bec5aea4dcced7c3e19fccdb2116488fd8a7125a85e2e00b9ad43e128b0a54",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -503,13 +541,15 @@
         ],
         "excluded_hunks": []
       },
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/session_execution.py",
       "sha256": "f6c28b43801dc65cf040fa250f0a538cbe02e11f3930a5a945329269bfb19745",
       "base_sha256": "7c1e294795003b329cc9639fe27e9b8b8fdfbd9b1e3106fcfbd6c8e06f670a60",
-      "source_sha256": "f6c28b43801dc65cf040fa250f0a538cbe02e11f3930a5a945329269bfb19745",
+      "source_sha256": "d5e073caa89aedcd644fea103ed47dfab610b3535cceaafa883e671768c6e26b",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -524,13 +564,15 @@
           "@@ -233,0 +279,2 @@ class GatewaySessionAgentMixin:"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/session_ingress.py",
       "sha256": "13ac248153ee858a86833e4fc09203dd1b41e7c11565dfee8a45743da3c20dc2",
       "base_sha256": "d498954d3867337e3beda70adfbef0f581671e72e73e0526ae0eefe37101127f",
-      "source_sha256": "13ac248153ee858a86833e4fc09203dd1b41e7c11565dfee8a45743da3c20dc2",
+      "source_sha256": "01954154cccb84795606d733da786581156179babfa97652aa236bd47e91def4",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -550,7 +592,29 @@
         ],
         "excluded_hunks": []
       },
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
+    },
+    {
+      "path": "gateway/session_ingress_burst.py",
+      "base_sha256": "ca40bc60a60135b28d4888606bacf4e1853827773662eeea333bb24f143db146",
+      "source_kind": "live_source",
+      "status_at_base": "modified",
+      "redaction_rationale": [],
+      "sha256": "e89aeae026afb86a8fb6afc8e2839b924611117bbf546feeaf12882d43424dc1",
+      "source_sha256": "a165cb90d0b12370449fe3f1ff7760c0bf345244032f227abbc21f4ea6920f8a",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "hunk_selection": {
+        "method": "pinned_base_plus_reviewed_qq_hunks",
+        "included_hunks": [
+          "@@ -14,0 +15 @@",
+          "@@ -29,0 +31,3 @@"
+        ],
+        "excluded_hunks_note": "Newer upstream source differences are excluded; see docs/SOURCE_SYNC_AUDIT.json."
+      },
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/session_transcript.py",
@@ -575,7 +639,7 @@
       "path": "gateway/slash_commands.py",
       "sha256": "aecdff1cb866560ff37825bdbd0b2543d2b58105aa36a2d6f852704507b2e328",
       "base_sha256": "4e31d1342200589e1b3d65e574c00a147433c3c10063b788b8e2dcf28540e655",
-      "source_sha256": "aecdff1cb866560ff37825bdbd0b2543d2b58105aa36a2d6f852704507b2e328",
+      "source_sha256": "1351d98d45fc6c31d74aa26a5a1dab679a358a5a9bdad83b4dd870323f06ebc0",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -591,7 +655,9 @@
           "@@ -1231 +1255,5 @@ class GatewaySlashCommandsMixin("
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "gateway/turn_context.py",
@@ -600,7 +666,7 @@
       "status_at_base": "modified",
       "redaction_rationale": [],
       "sha256": "57fba3530e616e104f21dad78c4e7fe826708cef23b157cad925419fe8fb8b9a",
-      "source_sha256": "57fba3530e616e104f21dad78c4e7fe826708cef23b157cad925419fe8fb8b9a",
+      "source_sha256": "5feb63f492185de2b49e77f908d86d3d1c123ccdadafbe22e310a9dbf266ba64",
       "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
       "hunk_selection": {
         "method": "pinned_base_plus_reviewed_qq_hunks",
@@ -608,7 +674,9 @@
           "@@ -60,0 +61 @@"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/__init__.py",
@@ -621,16 +689,18 @@
     },
     {
       "path": "plugins/platforms/qqbot/adapter.py",
-      "sha256": "d943c97559349ede377b48a7ef1062e863f435942de15fb90c0ff978cc59d8b7",
+      "sha256": "c05043f8720206a17e74f3bd8adf2eba4aeea4cd91763eb2711f8c66c10073c7",
       "base_sha256": "276be678419ca0dc444c95d1b0bf427de109b1a989ea80e70fc83abbe9630e4e",
-      "source_sha256": "b1de69a8bb8557c55acc22b3b9f63a2f100e6af76a8363efe2be2ff626a77258",
+      "source_sha256": "2b130270477f653e43bac8c4872efa9eff6fe48725250c4a51834fcfbca590fb",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
         "Generic assistant label replaces private deployment persona in source/fixtures (1 occurrences); configurable assistant_names retained.",
         "Retain upstream gateway.trust_env=False proxy opt-out while keeping QQ proxy/direct retry; no deployment network setting exported."
       ],
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/chunked_upload.py",
@@ -681,10 +751,12 @@
       "path": "plugins/platforms/qqbot/gateway_env.py",
       "sha256": "414f6b7b3191a04b1b4ce3266409ad555e68e35122a7a939a215e75eb5908696",
       "base_sha256": "414f6b7b3191a04b1b4ce3266409ad555e68e35122a7a939a215e75eb5908696",
-      "source_sha256": "414f6b7b3191a04b1b4ce3266409ad555e68e35122a7a939a215e75eb5908696",
+      "source_sha256": "6dce443c1e90833be8e86732afc1f0bcf6391198406eef78471774ee055ede80",
       "source_kind": "live_source",
       "status_at_base": "unchanged",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "source_audit_decision": "deferred_newer_upstream_interface",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/group_attachments.py",
@@ -776,9 +848,11 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
-      "sha256": "dd0bc1975acb753f2cbc937ec1d46bbedf177e279d7b296ffe99fbc0bebf6f59",
-      "source_sha256": "dd0bc1975acb753f2cbc937ec1d46bbedf177e279d7b296ffe99fbc0bebf6f59",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "sha256": "27f576ff5eba3cf2acb45778c6df5df40aeae9964147f35c6e77f0683ca1aa86",
+      "source_sha256": "27f576ff5eba3cf2acb45778c6df5df40aeae9964147f35c6e77f0683ca1aa86",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/meme_expression.py",
@@ -788,9 +862,11 @@
       "redaction_rationale": [
         "Use catalog-scoped neutral usage guidance rather than private cute-style gallery and blanket all-context approval claims; retain expression directives, frequency and delivery semantics."
       ],
-      "sha256": "32aeb17f5180d67c94a893d4b8be7b16aab4d6f0b0eb418e6616f4be16487145",
-      "source_sha256": "6d094c9c369cc3b44018f3db41247d3c16685301de7fb9fe58ef2e367ea08cf7",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "sha256": "4393dad4b6e7ae5c28dedc608980551ce633b64d87080d52587d03d4d5949bbd",
+      "source_sha256": "3af76189cd6552c638233b51671632a5042d2fc5155a739c4298774abf1793d8",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/meme_expression_delivery.py",
@@ -798,9 +874,11 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
-      "sha256": "9230c400fa2391db6d80235f65e48747a792727c3564e275bd08a6a3a76dac3a",
-      "source_sha256": "9230c400fa2391db6d80235f65e48747a792727c3564e275bd08a6a3a76dac3a",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "sha256": "808db2883e96629e758ed6d94904a74a983611d48945c7020edc55254b1c67e7",
+      "source_sha256": "808db2883e96629e758ed6d94904a74a983611d48945c7020edc55254b1c67e7",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/meme_expression_state.py",
@@ -808,9 +886,11 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
-      "sha256": "91c31a26ea236c9cf0a409c0a0cb385b8a4dc38ff8761c56e8d152c396b63b52",
-      "source_sha256": "91c31a26ea236c9cf0a409c0a0cb385b8a4dc38ff8761c56e8d152c396b63b52",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "sha256": "9098c94512750fc4c9846bda03903b5fe6ebdfbba6b2f2ea16a5a9cd8240010c",
+      "source_sha256": "9098c94512750fc4c9846bda03903b5fe6ebdfbba6b2f2ea16a5a9cd8240010c",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/meme_native.py",
@@ -838,9 +918,11 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
-      "sha256": "089d989dd2574a08bc32bb005f451e9405b243c1a5098eede2f92448fecd67f1",
-      "source_sha256": "089d989dd2574a08bc32bb005f451e9405b243c1a5098eede2f92448fecd67f1",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "sha256": "96be4da00fd5e7478923aff69ef38601c19f327c4326195c4be047e441e7c873",
+      "source_sha256": "96be4da00fd5e7478923aff69ef38601c19f327c4326195c4be047e441e7c873",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/memes.py",
@@ -848,9 +930,11 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
-      "sha256": "b50816c83bf93890089e7c405fb52c4d74cce781a2eafc412b06f0ab9b6dfd1c",
-      "source_sha256": "b50816c83bf93890089e7c405fb52c4d74cce781a2eafc412b06f0ab9b6dfd1c",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "sha256": "8dc370651c9c44995856a84cd6e71568dd61c28da1f1136dcdd3f92b4ae48c49",
+      "source_sha256": "8dc370651c9c44995856a84cd6e71568dd61c28da1f1136dcdd3f92b4ae48c49",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/onboard.py",
@@ -883,10 +967,12 @@
       "path": "plugins/platforms/qqbot/register.py",
       "sha256": "3a10377f3bebdb115c1f7251078fd2add4529bcb4d18f74db48a65e2c1b9b350",
       "base_sha256": "aed6297650598a7b04ef54715209ebdfc0e908fce856529c6481f8a0041b419d",
-      "source_sha256": "3a10377f3bebdb115c1f7251078fd2add4529bcb4d18f74db48a65e2c1b9b350",
+      "source_sha256": "f5d21046c6f17029264c0915df8bf72e6afcb7ae8a7d583a4d91d10777f532b6",
       "source_kind": "live_source",
       "status_at_base": "modified",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "source_audit_decision": "deferred_newer_upstream_interface",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "plugins/platforms/qqbot/reply_gate.py",
@@ -1015,48 +1101,71 @@
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
-      "sha256": "dcad46494a991e628f2ad111dbbba1fdf750e3c04bbb42b7d122ab8836c40b67",
-      "source_sha256": "dcad46494a991e628f2ad111dbbba1fdf750e3c04bbb42b7d122ab8836c40b67",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "sha256": "a910146c89eb36a6c01bcdbf59c897d165cec81c684be0db12740ae4ce2b7840",
+      "source_sha256": "a910146c89eb36a6c01bcdbf59c897d165cec81c684be0db12740ae4ce2b7840",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/gateway/test_guest_export_delivery.py",
       "sha256": "10f1d770ea4f9f6b05f18a63027f4470bc92656228ca6461179e755a942a8eee",
       "base_sha256": null,
-      "source_sha256": "d71dcb5596725544f41bd6f029a550c162fc0465498e4c5653010780b859c73b",
+      "source_sha256": "31999b1348581165162511475defb33a06003e929073d9a102cb0e89e954eb6a",
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [
         "Initialize the real QQAdapter in export fixtures so disabled meme integration is exercised without incomplete __new__ state; transport remains mocked."
       ],
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "source_audit_decision": "retained_pinned_host_or_public_fixture",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/gateway/test_qqbot.py",
       "sha256": "5567a50ea9460c95299584bcf16e1bea0244b54cc2da457abb9dae67fc8da66c",
       "base_sha256": "cd704a9f4c731f7d8681865fabbae83c5b61242ccbbfde4a42ae8d3b39a2956c",
-      "source_sha256": "6ee782b9dd90581141b793c101ecaee96de9cea3ba522cf0cffa87502f5d57ef",
+      "source_sha256": "d1637a49a57051304581b86be9bf6f4da3da70c9996d8c6b9e2afbf66e0ac5dc",
       "source_kind": "live_source",
       "status_at_base": "modified",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "source_audit_decision": "retained_pinned_host_or_public_fixture",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/gateway/test_qqbot_agent_security.py",
       "sha256": "f1f63062d67ae769a777777095139cebd69950eb15a8960f22a522284082131a",
       "base_sha256": null,
-      "source_sha256": "f59d16fa97189d2163074bd370c03d2d84c980cf1c111d51aff1db6af317075d",
+      "source_sha256": "344127578a94611737cf44bd33700b996dcec8d6b6c509ef6300b27e9787251b",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "source_audit_decision": "retained_pinned_host_or_public_fixture",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
+    },
+    {
+      "path": "tests/gateway/test_qqbot_busy_fifo.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "4bb23f8d5fe263ed5eca519fadeeecbd7d1fc1a659616abcdedf4ea3dc6784b6",
+      "source_sha256": "4bb23f8d5fe263ed5eca519fadeeecbd7d1fc1a659616abcdedf4ea3dc6784b6",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/gateway/test_qqbot_control_security.py",
-      "sha256": "2dba63a74484546cba62ecc65814a0735841e4d97aa7790d3477687deccad91b",
+      "sha256": "ff256bc4ac4667821191949a0e77e275f7bbd8fa0e9f0005f4a92c87e5391959",
       "base_sha256": null,
-      "source_sha256": "2dba63a74484546cba62ecc65814a0735841e4d97aa7790d3477687deccad91b",
+      "source_sha256": "ff256bc4ac4667821191949a0e77e275f7bbd8fa0e9f0005f4a92c87e5391959",
       "source_kind": "live_source",
       "status_at_base": "new",
-      "redaction_rationale": []
+      "redaction_rationale": [],
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/gateway/test_qqbot_credential_isolation.py",
@@ -1077,14 +1186,28 @@
       "redaction_rationale": []
     },
     {
+      "path": "tests/gateway/test_qqbot_expression_ingress.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "4d6eab82e75691069480cf059ce329bed219916ee3270bb377c2c775d5a2d657",
+      "source_sha256": "4d6eab82e75691069480cf059ce329bed219916ee3270bb377c2c775d5a2d657",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
+    },
+    {
       "path": "tests/gateway/test_qqbot_expression_native.py",
       "base_sha256": null,
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
       "sha256": "fe260164805032f04f31a7e9b0d3dca0e14bee25a29f37bc6707f8339058a2fb",
-      "source_sha256": "fe260164805032f04f31a7e9b0d3dca0e14bee25a29f37bc6707f8339058a2fb",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "source_sha256": "0905e7094174fdc2d83a297cbc4364a83581c0e144d1ac98b50ff60dacb412a1",
+      "incremental_update": "contextual-meme-expression-and-qq-turn-integration",
+      "source_audit_decision": "retained_pinned_host_or_public_fixture",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/gateway/test_qqbot_group_event_upgrade.py",
@@ -1304,6 +1427,18 @@
       "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
+      "path": "tests/plugins/platforms/test_qqbot_meme_diversity.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "f6f46075d391a2a39b9497429eab150e9199c66a46744688fc41adce4f37e6b2",
+      "source_sha256": "f6f46075d391a2a39b9497429eab150e9199c66a46744688fc41adce4f37e6b2",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
+    },
+    {
       "path": "tests/plugins/platforms/test_qqbot_meme_expression.py",
       "base_sha256": null,
       "source_kind": "live_source",
@@ -1311,9 +1446,11 @@
       "redaction_rationale": [
         "Generic Hermes label replaces deployment persona in synthetic fixtures."
       ],
-      "sha256": "f6681d5de31c8433c3a53b66def885fca8dd5437cf3d4237570163af39709792",
-      "source_sha256": "1efd4df86d988a71fcb8ffa9cf0a4c4738c0438bfbb38730a545335e855da13a",
-      "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
+      "sha256": "4f868cff62568e047849526295e5fd080ea99d5561d8ed475f1a16f9119b5acb",
+      "source_sha256": "14c7fab357ce6a3962706ef518baec173fd9abb583f51396ab19121794f669eb",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/plugins/platforms/test_qqbot_meme_prd.py",
@@ -1336,6 +1473,18 @@
       "incremental_update": "contextual-meme-expression-and-qq-turn-integration"
     },
     {
+      "path": "tests/plugins/platforms/test_qqbot_meme_turn_choices.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "aaf760aec66fd6e04db10244b69d80c83a569d883a648ee87a17b86fb7c2b41e",
+      "source_sha256": "aaf760aec66fd6e04db10244b69d80c83a569d883a648ee87a17b86fb7c2b41e",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
+    },
+    {
       "path": "tests/plugins/platforms/test_qqbot_memes.py",
       "base_sha256": null,
       "source_kind": "live_source",
@@ -1353,6 +1502,18 @@
       "source_kind": "live_source",
       "status_at_base": "unchanged",
       "redaction_rationale": []
+    },
+    {
+      "path": "tests/plugins/platforms/test_qqbot_pure_expression_limits.py",
+      "base_sha256": null,
+      "source_kind": "live_source",
+      "status_at_base": "new",
+      "redaction_rationale": [],
+      "sha256": "e044bf555b1141251a768f89f6bd57962aa94c1627a5c76a3103969e65a15a8d",
+      "source_sha256": "e044bf555b1141251a768f89f6bd57962aa94c1627a5c76a3103969e65a15a8d",
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/plugins/platforms/test_qqbot_send_targets.py",
@@ -1408,13 +1569,15 @@
     },
     {
       "path": "tests/tools/test_guest_browser_network.py",
-      "sha256": "7ef2edd5a6e57b7021bdb8fbb89a84b8665adecfd8d5b83abf26d73bd7de2b44",
+      "sha256": "e785f7be36a965c6ac3e929c6d9d88772d13056c19796f6bbf340581158a3192",
       "base_sha256": null,
-      "source_sha256": "7ef2edd5a6e57b7021bdb8fbb89a84b8665adecfd8d5b83abf26d73bd7de2b44",
+      "source_sha256": "e785f7be36a965c6ac3e929c6d9d88772d13056c19796f6bbf340581158a3192",
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
-      "incremental_update": "isolated-office-and-browser-repair"
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tests/tools/test_guest_browser_surface.py",
@@ -1558,7 +1721,7 @@
       "path": "tools/cronjob_tools.py",
       "sha256": "be0cf917154b3517266a477ebffeee757f0ace7862e6e31283573c2f6f6f46da",
       "base_sha256": "99f980bc671e5dc48bd982a8ed0c21fe93b3ab2262f6c723ff6319d8f6910822",
-      "source_sha256": "be0cf917154b3517266a477ebffeee757f0ace7862e6e31283573c2f6f6f46da",
+      "source_sha256": "f8c9867cf493b7f5e58861c4273cd1153cc4ffc39c9be91e01fa54b0dac07b74",
       "source_kind": "live_source",
       "status_at_base": "modified",
       "redaction_rationale": [
@@ -1571,7 +1734,9 @@
           "@@ -1178,0 +1195,8 @@ def _cronjob_handler(args, **kw):"
         ],
         "excluded_hunks": []
-      }
+      },
+      "source_audit_decision": "retained_pinned_host_qq_hunks_excluded_upstream_drift",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tools/guest_browser_docker.py",
@@ -1595,13 +1760,15 @@
     },
     {
       "path": "tools/guest_browser_network.py",
-      "sha256": "b2ce63945f337979a61ef29eed93dae2b66bea5e87bfbce7053198c205e7957b",
+      "sha256": "617a1b37fb7f4d79a06a406cf649fa33b1fc5bb9a18d44beda666e083016f003",
       "base_sha256": null,
-      "source_sha256": "b2ce63945f337979a61ef29eed93dae2b66bea5e87bfbce7053198c205e7957b",
+      "source_sha256": "617a1b37fb7f4d79a06a406cf649fa33b1fc5bb9a18d44beda666e083016f003",
       "source_kind": "live_source",
       "status_at_base": "new",
       "redaction_rationale": [],
-      "incremental_update": "isolated-office-and-browser-repair"
+      "incremental_update": "full-qq-delta-audit-fifo-generation-pure-gif-diversity-tls",
+      "source_audit_decision": "ported_reviewed_qq_delta",
+      "source_audit_reference": "docs/SOURCE_SYNC_AUDIT.json"
     },
     {
       "path": "tools/guest_browser_service.py",
@@ -1719,11 +1886,13 @@
       "path": "plugins/guest-workspace/plugin.yaml",
       "sha256": "483f3b49e74da14ba98e8ff10293c7ea49099e1c2f1800a861d4b20307c09781",
       "base_sha256": null,
-      "source_sha256": "483f3b49e74da14ba98e8ff10293c7ea49099e1c2f1800a861d4b20307c09781",
+      "source_sha256": "a12886bd3d7cd79270861a978fa293d13576a9f7b3cb7f83ebf29362f87453b4",
       "source_kind": "profile_plugin_source_only",
       "redaction_rationale": [
-        "Only plugin entrypoint/manifest copied; no runtime data, configuration, README, build receipts, binaries or archives."
-      ]
+        "Only plugin entrypoint/manifest copied; no runtime data, configuration, README, build receipts, binaries or archives.",
+        "Current source description differs; retain independently maintained public description."
+      ],
+      "previous_source_sha256": "483f3b49e74da14ba98e8ff10293c7ea49099e1c2f1800a861d4b20307c09781"
     }
   ],
   "tests": [
@@ -1741,9 +1910,11 @@
     "tests/gateway/test_guest_export_delivery.py",
     "tests/gateway/test_qqbot.py",
     "tests/gateway/test_qqbot_agent_security.py",
+    "tests/gateway/test_qqbot_busy_fifo.py",
     "tests/gateway/test_qqbot_control_security.py",
     "tests/gateway/test_qqbot_credential_isolation.py",
     "tests/gateway/test_qqbot_delivery_receipts.py",
+    "tests/gateway/test_qqbot_expression_ingress.py",
     "tests/gateway/test_qqbot_expression_native.py",
     "tests/gateway/test_qqbot_group_event_upgrade.py",
     "tests/gateway/test_qqbot_group_identity.py",
@@ -1767,11 +1938,14 @@
     "tests/plugins/platforms/test_qqbot_expression_silence.py",
     "tests/plugins/platforms/test_qqbot_long_reply.py",
     "tests/plugins/platforms/test_qqbot_meme_catalog.py",
+    "tests/plugins/platforms/test_qqbot_meme_diversity.py",
     "tests/plugins/platforms/test_qqbot_meme_expression.py",
     "tests/plugins/platforms/test_qqbot_meme_prd.py",
     "tests/plugins/platforms/test_qqbot_meme_selector.py",
+    "tests/plugins/platforms/test_qqbot_meme_turn_choices.py",
     "tests/plugins/platforms/test_qqbot_memes.py",
     "tests/plugins/platforms/test_qqbot_plugin.py",
+    "tests/plugins/platforms/test_qqbot_pure_expression_limits.py",
     "tests/plugins/platforms/test_qqbot_send_targets.py",
     "tests/tools/test_guest_browser_diagnostics.py",
     "tests/tools/test_guest_browser_docker.py",
@@ -1805,7 +1979,8 @@
     "Canonical scripts/run_tests.sh with PM-managed test interpreter and -p tests.qq_role_runtime_bootstrap; retain real-home I/O protection.",
     "Browser Docker tests require a locally built hermes-guest-browser:1.63.0 image; missing engine/image is an actual test failure in the source suite.",
     "Python live Docker test requires QQBOT_TEST_PYTHON_IMAGE=sha256:<64 hex> and a verified local image; no automatic pull or host fallback.",
-    "Actual-public-browser integration accesses https://example.com/ through the guarded broker; this extraction does not execute it."
+    "Actual-public-browser integration accesses https://example.com/ through the guarded broker; this extraction does not execute it.",
+    "OS-backed guest-browser TLS requires truststore==0.10.4; pinned host declares it automatically on Python 3.14. This release is verified on PM Python 3.14.7; older Python environments are not validated."
   ],
   "excluded_core_changes": [
     "agent/auxiliary_client.py",
@@ -1853,7 +2028,9 @@
       "live_model_or_QQ_actions_performed": false,
       "QQ_client_rendering_verified": false
     },
-    "latest_focused_test_summary": {
+    "source_delta_audit": "docs/SOURCE_SYNC_AUDIT.json",
+    "audited_source_checkout_commit": "c314285f077e91937c995d419b9fa40af9eb4981",
+    "previous_contextual_expression_test_summary": {
       "scope": "Contextual meme expression and required QQ turn integration on a freshly applied exact pinned public host; 60 of 64 manifest test files plus 16 upstream queue/receipt/prompt-cache regression files",
       "files": 76,
       "passed": 1504,
@@ -1881,18 +2058,167 @@
         "tests/tools/test_guest_workspace_live_docker.py"
       ],
       "validation_repair": "The export delivery fixture bypassed QQAdapter initialization via __new__, causing 23 failures after the new delivery mixin was added. It now uses the real constructor with synthetic credentials and mocked transport; all original assertions remain."
+    },
+    "latest_focused_test_summary": {
+      "scope": "Complete source-delta audit: offline manifest and related upstream ingress/queue/followup/refusal regressions on the exact pinned public candidate",
+      "files": 108,
+      "passed": 1663,
+      "failed": 0,
+      "skipped": 12,
+      "skip_reason": "Existing Linux/POSIX-only platform guards on Windows",
+      "seconds": 547.5,
+      "workers": 3,
+      "file_retries": 0,
+      "manifest_test_files_run": 65,
+      "additional_upstream_test_files": 43,
+      "real_home_guard_retained": true,
+      "all_overlay_files_read_back": 147,
+      "scoped_ruff_passed": true,
+      "release_tool_unittests_passed": 8,
+      "live_model_or_QQ_actions_performed": false,
+      "docker_or_live_browser_tests_run": false,
+      "QQ_client_rendering_verified": false,
+      "excluded_test_files": [
+        "tests/tools/test_guest_browser_docker.py",
+        "tests/tools/test_guest_browser_live_integration.py",
+        "tests/tools/test_guest_office_live.py",
+        "tests/tools/test_guest_workspace_live_docker.py"
+      ],
+      "validation_repair": "Backport the missing pinned-host QQ admitted-turn clarification guard; prepare an isolated ACP-capable PM test environment. Earlier parallel timing failures remain disclosed, not claimed fixed. See docs/VERIFICATION.md.",
+      "test_files": [
+        "tests/agent/test_guest_browser_invalid_arguments.py",
+        "tests/agent/test_guest_office_surface.py",
+        "tests/agent/test_guest_workspace_prompt.py",
+        "tests/agent/test_guest_workspace_repair_guidance.py",
+        "tests/agent/test_guest_workspace_surface.py",
+        "tests/agent/test_request_security.py",
+        "tests/agent/test_request_security_direct_and_restore.py",
+        "tests/agent/test_required_reply_loop.py",
+        "tests/cron/test_public_admin_cron_context.py",
+        "tests/cron/test_public_cron_policy.py",
+        "tests/gateway/test_adapter_turn_notes.py",
+        "tests/gateway/test_api_admission_queued_on_drain.py",
+        "tests/gateway/test_api_runs_native_session_refusal.py",
+        "tests/gateway/test_authority_busy_plaintext_approval.py",
+        "tests/gateway/test_authority_busy_preempt_parity.py",
+        "tests/gateway/test_bot_receipt_refusal.py",
+        "tests/gateway/test_busy_burst_merge_shared.py",
+        "tests/gateway/test_busy_command.py",
+        "tests/gateway/test_busy_durable_acceptance.py",
+        "tests/gateway/test_busy_followup_after_session_release.py",
+        "tests/gateway/test_busy_followup_guard_release.py",
+        "tests/gateway/test_busy_followup_marker_handoff.py",
+        "tests/gateway/test_busy_redirect_anchor.py",
+        "tests/gateway/test_busy_reply_internal_anchor.py",
+        "tests/gateway/test_busy_requeue_hot_loop.py",
+        "tests/gateway/test_busy_session_ack.py",
+        "tests/gateway/test_busy_session_auth_bypass.py",
+        "tests/gateway/test_busy_session_profile_scope.py",
+        "tests/gateway/test_busy_steer_origin.py",
+        "tests/gateway/test_busy_steer_subagent_fanout.py",
+        "tests/gateway/test_busy_wake_admission.py",
+        "tests/gateway/test_clarify_thread_followup_not_swallowed.py",
+        "tests/gateway/test_follow_profile_followups.py",
+        "tests/gateway/test_guest_export_delivery.py",
+        "tests/gateway/test_host_gateway_lock_refusal.py",
+        "tests/gateway/test_hosted_clarification_refusal.py",
+        "tests/gateway/test_internal_event_never_interrupts_busy_session.py",
+        "tests/gateway/test_journey_new_session_queued_work.py",
+        "tests/gateway/test_messaging_stop_new_cancel_queued.py",
+        "tests/gateway/test_multiplex_busy_input_mode.py",
+        "tests/gateway/test_native_admission_named_refusal.py",
+        "tests/gateway/test_qqbot.py",
+        "tests/gateway/test_qqbot_agent_security.py",
+        "tests/gateway/test_qqbot_busy_fifo.py",
+        "tests/gateway/test_qqbot_control_security.py",
+        "tests/gateway/test_qqbot_credential_isolation.py",
+        "tests/gateway/test_qqbot_delivery_receipts.py",
+        "tests/gateway/test_qqbot_expression_ingress.py",
+        "tests/gateway/test_qqbot_expression_native.py",
+        "tests/gateway/test_qqbot_group_event_upgrade.py",
+        "tests/gateway/test_qqbot_group_identity.py",
+        "tests/gateway/test_qqbot_group_images.py",
+        "tests/gateway/test_qqbot_group_observation.py",
+        "tests/gateway/test_qqbot_group_portability.py",
+        "tests/gateway/test_qqbot_guest_attachment_ingress.py",
+        "tests/gateway/test_qqbot_local_migration.py",
+        "tests/gateway/test_qqbot_markdown.py",
+        "tests/gateway/test_qqbot_public_reference_security.py",
+        "tests/gateway/test_qqbot_real_message_ids.py",
+        "tests/gateway/test_qqbot_receipt_integration.py",
+        "tests/gateway/test_qqbot_reply_gate.py",
+        "tests/gateway/test_qqbot_required_reply.py",
+        "tests/gateway/test_qqbot_scope_paths.py",
+        "tests/gateway/test_qqbot_security_delivery_binding.py",
+        "tests/gateway/test_qqbot_update_prompt_key.py",
+        "tests/gateway/test_queued_final_ledger.py",
+        "tests/gateway/test_queued_followup_final_delivery.py",
+        "tests/gateway/test_queued_followup_processing_hooks.py",
+        "tests/gateway/test_queued_native_image_session_key.py",
+        "tests/gateway/test_quoted_attachment_workspace_guidance.py",
+        "tests/gateway/test_relay_delivery_followups.py",
+        "tests/gateway/test_request_security_policy_resolution.py",
+        "tests/gateway/test_retry_authority_refusal.py",
+        "tests/gateway/test_session_busy_controls.py",
+        "tests/gateway/test_session_mutation_model_busy.py",
+        "tests/gateway/test_session_policy_refusal_fields.py",
+        "tests/gateway/test_shared_busy_receive_loop.py",
+        "tests/gateway/test_stream_consumer_fresh_final.py",
+        "tests/gateway/test_stream_final_contract.py",
+        "tests/gateway/test_tts_media_routing.py",
+        "tests/gateway/test_tui_busy_default.py",
+        "tests/plugins/platforms/test_qqbot_expression_edges.py",
+        "tests/plugins/platforms/test_qqbot_expression_silence.py",
+        "tests/plugins/platforms/test_qqbot_long_reply.py",
+        "tests/plugins/platforms/test_qqbot_meme_catalog.py",
+        "tests/plugins/platforms/test_qqbot_meme_diversity.py",
+        "tests/plugins/platforms/test_qqbot_meme_expression.py",
+        "tests/plugins/platforms/test_qqbot_meme_prd.py",
+        "tests/plugins/platforms/test_qqbot_meme_selector.py",
+        "tests/plugins/platforms/test_qqbot_meme_turn_choices.py",
+        "tests/plugins/platforms/test_qqbot_memes.py",
+        "tests/plugins/platforms/test_qqbot_plugin.py",
+        "tests/plugins/platforms/test_qqbot_pure_expression_limits.py",
+        "tests/plugins/platforms/test_qqbot_send_targets.py",
+        "tests/tools/test_guest_browser_diagnostics.py",
+        "tests/tools/test_guest_browser_network.py",
+        "tests/tools/test_guest_browser_surface.py",
+        "tests/tools/test_guest_office_docker.py",
+        "tests/tools/test_guest_office_store.py",
+        "tests/tools/test_guest_workspace_docker.py",
+        "tests/tools/test_guest_workspace_lifecycle.py",
+        "tests/tools/test_guest_workspace_maintenance.py",
+        "tests/tools/test_guest_workspace_plugin.py",
+        "tests/tools/test_guest_workspace_store.py",
+        "tests/tools/test_guest_workspace_text.py",
+        "tests/tools/test_qqbot_public_cron_security.py",
+        "tests/tools/test_send_message_plugin_extensibility.py",
+        "tests/tools/test_send_message_target_parse.py"
+      ],
+      "python_version": "3.14.7",
+      "testenv_extras": [
+        "messaging",
+        "acp"
+      ],
+      "agent_client_protocol_version": "0.9.0",
+      "prior_parallel_instability": [
+        "tests/gateway/test_busy_requeue_hot_loop.py::test_requeued_event_runs_once_the_agent_finishes",
+        "tests/plugins/platforms/test_qqbot_meme_selector.py::test_one_request_pins_model_tokens_and_disables_thinking"
+      ],
+      "release_hygiene_files_checked": 186,
+      "release_hygiene_findings": 0
     }
   },
   "counts": {
-    "overlay_files": 141,
+    "overlay_files": 147,
     "complete_qq_package_files": 32,
-    "core_reconstructed_files": 23,
-    "regression_test_files": 64,
+    "core_reconstructed_files": 24,
+    "regression_test_files": 69,
     "bootstrap_files": 1,
     "external_plugin_files": 14,
-    "new_at_base": 99,
-    "modified_at_base": 30,
+    "new_at_base": 104,
+    "modified_at_base": 31,
     "unchanged_at_base": 12
   },
-  "patch_sha256": "efc5e8648db76c2f2a90d5ede1a9f0f486ddd8a02c87dbd0344c494b347cb41b"
+  "patch_sha256": "c63019828baa49c27852b7555e4bd8b8a7292c94beee3d0fee831a89b60dbbf7"
 }

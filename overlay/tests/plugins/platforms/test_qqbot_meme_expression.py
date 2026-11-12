@@ -93,11 +93,11 @@ async def emit(bot, event, text, *, history=(), session='session-one'):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('text,types', [(TAG, [7]), ('这张给管理员。\n' + TAG, [2, 7])])
-async def test_explicit_choices_bypass_rng_and_use_separate_native_gif(expression_bot, wire, text, types):
+@pytest.mark.parametrize('text,types', [(TAG, [7]), (' \n[[qq_meme_optional:yes]]\n ', [7])])
+async def test_gif_only_choices_bypass_rng_and_use_native_gif(expression_bot, wire, text, types):
     bot = expression_bot
     ctrl = controller_for(bot)
-    ctrl.draw = lambda: pytest.fail('An explicit choice must not be randomly dropped')
+    ctrl.draw = lambda: pytest.fail('A GIF-only reply must not be randomly dropped')
     requests, transport = wire
     async with httpx.AsyncClient(transport=transport) as client:
         bot._http_client = client
@@ -166,8 +166,8 @@ async def test_plain_chat_does_not_get_background_decoration(expression_bot, wir
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('text', ['[[qq_meme:unknown]]', '[[qq_meme:../secret.gif]]', '[[qq_meme_optional:yes]]'])
-async def test_invalid_or_optional_only_choices_do_not_send_images(expression_bot, wire, text):
+@pytest.mark.parametrize('text', ['[[qq_meme:unknown]]', '[[qq_meme:../secret.gif]]'])
+async def test_invalid_choices_do_not_send_images(expression_bot, wire, text):
     bot = expression_bot
     requests, transport = wire
     async with httpx.AsyncClient(transport=transport) as client:
@@ -292,19 +292,38 @@ async def test_reentrant_extract_does_not_orphan_or_generically_resend_the_gif(e
 
 
 @pytest.mark.asyncio
-async def test_optional_miss_is_persisted_without_pulling_another_model(expression_bot, wire):
+@pytest.mark.parametrize('marker', [TAG, '[[qq_meme_optional:yes]]'])
+async def test_attached_miss_is_persisted_without_pulling_another_model(expression_bot, wire, marker):
     bot = expression_bot
     ctrl = controller_for(bot)
     ctrl.draw = lambda: .99
     requests, transport = wire
     async with httpx.AsyncClient(transport=transport) as client:
         bot._http_client = client
-        await emit(bot, make_event(bot), '普通文字，不承诺图。\n[[qq_meme_optional:yes]]')
+        await emit(bot, make_event(bot), '普通文字，不承诺图。\n' + marker)
     assert [body['msg_type'] for _, body in requests] == [2]
     with sqlite3.connect(ctrl.state.path) as db:
         assert db.execute('SELECT outcome FROM expressions').fetchone() == ('not_selected',)
         assert db.execute('SELECT misses FROM meme_prd').fetchone() == (1,)
     ctrl.selector.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('marker', [TAG, '[[qq_meme_optional:yes]]'])
+async def test_attached_hit_sends_text_then_pure_gif(expression_bot, wire, marker):
+    bot = expression_bot
+    draws = []
+    def draw():
+        draws.append(True)
+        return 0
+    controller_for(bot).draw = draw
+    requests, transport = wire
+    async with httpx.AsyncClient(transport=transport) as client:
+        bot._http_client = client
+        await emit(bot, make_event(bot), '普通文字。\n' + marker)
+    assert draws == [True]
+    assert [body['msg_type'] for _, body in requests] == [2, 7]
+    assert not {'content', 'markdown', 'caption'} & requests[-1][1].keys()
 
 
 @pytest.mark.asyncio

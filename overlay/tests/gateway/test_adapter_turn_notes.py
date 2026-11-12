@@ -1,6 +1,8 @@
 """Adapter notes reach real model input/persistence without changing the cached prefix."""
 from copy import deepcopy
+from dataclasses import replace
 from datetime import datetime
+import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -14,6 +16,7 @@ from gateway.session import SessionEntry
 from gateway.session_surface import arm_surface_turn
 from hermes_state import SessionDB
 from run_agent import AIAgent
+from plugins.platforms.qqbot.memes import controller_for
 from tests.plugins.platforms.test_qqbot_memes import bot, wire, make_event
 from tests.plugins.platforms.test_qqbot_meme_expression import expression_bot, emit, TAG
 from gateway.session_envelope import prepare_native, restore_native
@@ -29,10 +32,11 @@ class _ModelInputObserved(BaseException):
 async def test_real_prepare_and_agent_sidecar_persistence_keep_old_prefix_stable(
         expression_bot, wire, tmp_path, monkeypatch, durable):
     bot = expression_bot
+    ctrl = controller_for(bot)
+    ctrl.settings = replace(ctrl.settings, cooldown=0, recent=0)
     bot._chat_type_map['owner'] = 'c2c'
     event = make_event(bot, chat='owner', user='owner', kind='dm')
     if durable:
-        import json
         native = native_runner(bot)
         payload = json.loads(json.dumps(await prepare_native(native, event)))
         event = restore_native(payload, native)
@@ -110,6 +114,11 @@ async def test_real_prepare_and_agent_sidecar_persistence_keep_old_prefix_stable
                                    persist_user_message=second.persist_user_message)
         assert inputs[0][0] == inputs[1][0]  # exact system message, not merely its hash
         assert inputs[0][-1]['content'] == inputs[1][1]['content']  # previous user API bytes unchanged
+        for payload, count in zip(inputs, [0, 1]):
+            choice_json = payload[-1]['content'].split('\n候选=', 1)[1]
+            candidates, _ = json.JSONDecoder().raw_decode(choice_json)
+            assert candidates[0]['use_when'] == ['agree']
+            assert candidates[0]['recent_sent_count'] == count
         assert '本机QQ表情发送事实/v1' in inputs[1][-1]['content']
         assert db.get_messages(session_id)[:len(old_rows)] == old_rows
         assert runner._consume_pending_turn_sidecar_notes(key) == []

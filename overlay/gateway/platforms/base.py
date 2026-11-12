@@ -4085,11 +4085,6 @@ class BasePlatformAdapter(ABC):
         if await self._reject_role_command(event):
             return
         # The shared runtime's durable FIFO replaces the adapter's busy-message slot.
-        from gateway.request_security import policy_for_adapter
-        policy = policy_for_adapter(self, event.source)
-        if policy is not None and not policy.is_admin and not event.get_command():
-            await self.send(event.source.chat_id, "正在处理其他请求，请稍后重试。", reply_to=event.message_id)
-            return
         if self._shared_runtime_owns_input(event):
             from gateway.session_ingress_burst import dispatch_busy_burst
             await dispatch_busy_burst(self, event, session_key)  # main's photo/text burst merge
@@ -4123,7 +4118,7 @@ class BasePlatformAdapter(ABC):
         # discarded.  Same shape as the /approve deadlock fix (PR #4926): agent thread
         # blocked on Event.wait, message must reach the resolver before being a new turn.
         # See #4926.
-        if not cmd and event.allow_gateway_control:
+        if not cmd and event.allow_gateway_control and event.source.platform != Platform.QQBOT:
             try:
                 from tools import clarify_gateway as _clarify_mod
                 _has_text_clarify = _clarify_mod.get_pending_for_session(

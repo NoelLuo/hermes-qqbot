@@ -53,7 +53,7 @@ class ExpressionJournal:
             db.commit()
             return changed == 1
 
-    def availability(self, chat, now, settings):
+    def availability(self, chat, now, settings, *, sole_reply=False):
         with self.state._db() as db:
             last = db.execute('''SELECT MAX(created) FROM decisions WHERE transport=? AND chat=?
                 AND state IN ('deciding','ready','attempting','sent','unknown','error')''',
@@ -66,7 +66,7 @@ class ExpressionJournal:
                 (self.state.transport, chat, now - 86400)).fetchone()[0]
         if settings.probability == 0:
             return 'disabled'
-        if busy or (last is not None and now - last < settings.cooldown):
+        if busy or (not sole_reply and last is not None and now - last < settings.cooldown):
             return 'cooldown'
         if settings.daily_limit > 0 and count >= settings.daily_limit:
             return 'daily_limit'

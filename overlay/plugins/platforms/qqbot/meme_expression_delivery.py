@@ -5,9 +5,12 @@ import asyncio
 import logging
 
 from .meme_catalog import MemeCatalog
-from .meme_expression import ExpressionContext, ExpressionDelivery, capability_note
+from .meme_expression import (
+    RECENT_SENT_WINDOW, ExpressionContext, ExpressionDelivery, capability_note, turn_choice_note,
+)
 from .meme_expression_state import ExpressionJournal
-from .memes import eligible, eligible_source
+from .memes import controller_for, eligible, eligible_source
+from .delivery_binding import turn_context
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +36,13 @@ def _catalog(controller):
     return MemeCatalog.load(settings.root, path)
 
 
+def _notes_with_fact(context, fact):
+    notes = list(context.notes)
+    if fact:
+        notes.insert(len(notes) if context.entries else 0, fact)
+    return notes
+
+
 class ExpressionEngine:
     def __init__(self, controller):
         self.controller = controller
@@ -44,8 +54,14 @@ class ExpressionEngine:
                 or not isinstance(session_id, str) or not session_id or not _same_home(ctrl)
                 or not eligible_source(adapter, event, settings)):
             return []
-        # Historical receipts do not depend on the current catalog remaining readable/enabled.
+        # Receipts stay live even when the same event reuses its choice snapshot.
         fact = self.journal.recent_note(_chat(event), session_id)
+        previous = getattr(event, '_qq_expression_context', None)
+        if (isinstance(previous, ExpressionContext) and previous.session_id == session_id
+                and previous.session_key == session_key and previous.home == ctrl.home
+                and previous.transport == ctrl.state.transport and previous.notes):
+            # Preparation reentry keeps one prompt snapshot; sending still rechecks live gates.
+            return _notes_with_fact(previous, fact)
         try:
             audiences = _audiences(event, settings)
             entries = tuple(entry for entry in _catalog(ctrl).entries
@@ -53,31 +69,29 @@ class ExpressionEngine:
         except Exception as exc:
             logger.warning('QQ expression catalog unavailable: %s', type(exc).__name__)
             entries = ()
-        event._qq_expression_context = ExpressionContext(
-            session_id, session_key, ctrl.home, ctrl.state.transport, entries)
         if not entries:
-            return ([fact] if fact else []) + [
+            notes = [
                 '[本轮QQ表情可用性] status=unavailable；本轮在末行写 [[qq_meme_none]]，正常回复文字，不发送新图。']
-        note = capability_note(entries)
-        # The one-time catalog rides a NEW user sidecar, never rewrites a cached system prefix.
-        # Exact full-text matching is safe: a pasted identical catalog carries no extra authority.
-        present = any(note in str(row.get('api_content') or row.get('content') or '')
-                      for row in history if isinstance(row, dict))
-        notes = [] if present else [note]
-        availability = self.journal.availability(_chat(event), ctrl.clock(), settings)
-        excluded = ctrl.state.recent(_chat(event), settings.recent)
-        notes.append('[本轮QQ表情可用性] status=' + availability
-                     + '；最近排除ID=' + ','.join(excluded)
-                     + '。本轮必须给出表情结论：末行写 [[qq_meme:ID]] 或 [[qq_meme_optional:ID]]，'
-                     '都不合适写 [[qq_meme_none]]；漏掉会被本机记录。'
-                     'status 不可用时只写 none，正常回复文字，不承诺发图。')
-        if fact:
-            notes.append(fact)
-        return notes
+        else:
+            note = capability_note(entries)
+            # The one-time catalog rides a NEW user sidecar, never rewrites a cached system prefix.
+            # Exact full-text matching is safe: a pasted identical catalog carries no extra authority.
+            present = any(note in str(row.get('api_content') or row.get('content') or '')
+                          for row in history if isinstance(row, dict))
+            notes = [] if present else [note]
+            availability = self.journal.availability(_chat(event), ctrl.clock(), settings)
+            # One scoped snapshot keeps the hard exclusions and soft usage hints consistent.
+            recent_sent = ctrl.state.recent(_chat(event), max(settings.recent, RECENT_SENT_WINDOW))
+            excluded = recent_sent[:settings.recent]
+            pure_availability = self.journal.availability(_chat(event), ctrl.clock(), settings, sole_reply=True)
+            notes.append(turn_choice_note(entries, availability, excluded, recent_sent=recent_sent,
+                                          pure_availability=pure_availability))
+        event._qq_expression_context = ExpressionContext(
+            session_id, session_key, ctrl.home, ctrl.state.transport, entries, tuple(notes))
+        return _notes_with_fact(event._qq_expression_context, fact)
 
     def prepare(self, adapter, event, session_key, expression, extracted, ephemeral):
         """Resolve an already-selected ID to exact granted bytes, before any network I/O."""
-        from .delivery_binding import turn_context
         from gateway.platforms.base import SendResult
         ctrl, context = self.controller, getattr(event, '_qq_expression_context', None)
         if not expression.marked:
@@ -117,13 +131,13 @@ class ExpressionEngine:
                 or not eligible(adapter, event, plan.text or 'GIF', ephemeral, settings)):
             self._stop(delivery, 'blocked', 'ineligible')
             return
-        if plan.error or entry is None or (plan.optional and not plan.text):
+        if plan.error or entry is None:
             self._stop(delivery, 'blocked', plan.error or 'invalid_selection')
             return
-        if entry.id in ctrl.state.recent(delivery.chat, settings.recent):
+        if plan.text and entry.id in ctrl.state.recent(delivery.chat, settings.recent):
             self._stop(delivery, 'blocked', 'recent')
             return
-        available = self.journal.availability(delivery.chat, ctrl.clock(), settings)
+        available = self.journal.availability(delivery.chat, ctrl.clock(), settings, sole_reply=not plan.text)
         if available != 'available':
             self._stop(delivery, 'blocked', available)
             return
@@ -186,19 +200,23 @@ class ExpressionEngine:
             async with asyncio.timeout(15):
                 # Text delivery can take arbitrarily long. Admit only NOW: no stale ready
                 # reservation may outlive the busy window and leapfrog another conversation.
-                available = self.journal.availability(delivery.chat, ctrl.clock(), ctrl.settings)
-                if delivery.expression.meme_id in ctrl.state.recent(delivery.chat, ctrl.settings.recent):
+                sole_reply = not delivery.expression.text
+                available = self.journal.availability(delivery.chat, ctrl.clock(), ctrl.settings,
+                                                      sole_reply=sole_reply)
+                if not sole_reply and delivery.expression.meme_id in ctrl.state.recent(delivery.chat, ctrl.settings.recent):
                     available = 'recent'
                 if available != 'available':
                     self._stop(delivery, 'blocked', available)
                     return SendResult(success=False, error='Expression limit changed before send')
                 if not ctrl.state.claim(delivery.turn_id, delivery.chat, ctrl.clock(),
                         probability=ctrl.settings.probability, cooldown=ctrl.settings.cooldown,
-                        daily_limit=ctrl.settings.daily_limit):
+                        daily_limit=ctrl.settings.daily_limit, sole_reply=sole_reply):
                     self._stop(delivery, 'blocked', 'already_claimed')
                     return SendResult(success=False, error='Expression not admitted')
+                # Probability controls attached decoration, never the sole reply.
+                # Both marker spellings obey the same content-based rule.
                 if not ctrl.state.choose(delivery.turn_id,
-                        'natural' if delivery.expression.optional else 'strong', ctrl.clock(),
+                        'natural' if delivery.expression.text else 'strong', ctrl.clock(),
                         probability=ctrl.settings.probability, draw=ctrl.draw):
                     self._stop(delivery, 'not_selected', 'optional_prd')
                     return None
@@ -242,7 +260,6 @@ def cleanup(delivery):
 
 
 def engine_for(adapter):
-    from .memes import controller_for
     controller = controller_for(adapter)
     engine = getattr(controller, '_expression_engine', None)
     if engine is None:

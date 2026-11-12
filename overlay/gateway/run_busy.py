@@ -112,19 +112,10 @@ class GatewayBusySessionMixin:
             return EphemeralReply("此操作仅限管理员。")
         return None
 
-    def _request_busy_isolation(self, event, session_key):
-        """Different actors never steer or interrupt a privileged running turn."""
-        from gateway.request_security import policy_for_source
-        policy = policy_for_source(self, event.source)
-        if policy is None:
-            return None
-        if not policy.is_admin:
-            return "reject"
-        state = self._peek_session_state(session_key)
-        owner = getattr(getattr(state, "turn", None), "event", None)
-        if owner is None or str(owner.source.user_id) != str(event.source.user_id):
-            return "queue"
-        return None
+    @staticmethod
+    def _ordinary_qq_input_queues(event):
+        """Every QQ conversation uses FIFO for ordinary input, regardless of actor."""
+        return event.source.platform == Platform.QQBOT and not event.internal and not event.get_command()
 
     def _queue_during_drain_enabled(self, busy_input_mode: Optional[str] = None) -> bool:
         # "queue"/"steer" mean messages survive a restart (queued for the new process); "interrupt" drops.
@@ -514,6 +505,7 @@ class GatewayBusySessionMixin:
         }
         if (
             same_security_context
+            and event.source.platform != Platform.QQBOT
             and MessageType.PHOTO in merge_types
             and merge_types <= {MessageType.TEXT, MessageType.PHOTO}
         ):
@@ -945,14 +937,10 @@ class GatewayBusySessionMixin:
         if self._draining:  # gateway restarting/stopping
             await self._send_busy_drain_notice(event, session_key, effective_mode)
             return True
-        if await self._route_plaintext_approval_while_busy(event, session_key):
-            return True
-        isolation = self._request_busy_isolation(event, session_key)
-        if isolation == "reject":
-            await self._send_busy_reply(event, self._delivery_adapter_for(event.source), "正在处理其他请求，请稍后重试。")
-            return True
-        if isolation == "queue":
+        if self._ordinary_qq_input_queues(event):
             self._queue_or_replace_pending_event(session_key, event)
+            return True
+        if await self._route_plaintext_approval_while_busy(event, session_key):
             return True
         adapter = self._delivery_adapter_for(event.source)
         if not adapter:
@@ -1210,9 +1198,9 @@ class GatewayBusySessionMixin:
         # /steer lands BETWEEN tool-call iterations of the same run (appended to the last tool
         # result) — no interrupt, no new user turn, no role-alternation violation.
         from gateway.run import _AGENT_PENDING_SENTINEL
-        isolation = self._request_busy_isolation(event, quick_key)
-        if isolation == "reject":
-            return EphemeralReply("此操作仅限管理员。")
+        denial = self._request_command_denial(event)
+        if denial is not None:
+            return denial
         steer_text = event.get_command_args().strip()
         if not steer_text:
             return t("gateway.steer.usage")
@@ -1231,8 +1219,6 @@ class GatewayBusySessionMixin:
                 ), adapter)
             return reply
 
-        if isolation == "queue":
-            return _queue_fallback(t("gateway.steer.queued_starting"))
         if running_agent is _AGENT_PENDING_SENTINEL:
             return _queue_fallback(t("gateway.steer.queued_starting"))
         if not running_agent or not hasattr(running_agent, "steer"):
